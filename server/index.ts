@@ -1,0 +1,389 @@
+import express from 'express'
+import cors from 'cors'
+import * as h3 from 'h3-js'
+import fetch from 'node-fetch'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const app = express()
+const port = 4000
+
+app.use(cors())
+app.use(express.json())
+
+// Very simple user + wallet model for demo purposes.
+// In a real system you'd use a proper database and real authentication.
+type User = {
+  id: string
+  balance: number
+  ownedHexes: Set<string>
+}
+
+type StoredUser = {
+  id: string
+  balance: number
+  ownedHexes: string[]
+}
+
+const dataDir = path.join(__dirname, '..', 'data')
+const userDataPath = path.join(dataDir, 'demoUser.json')
+
+function loadDemoUser(): User {
+  try {
+    if (!fs.existsSync(userDataPath)) {
+      return {
+        id: 'demo-user',
+        balance: 0,
+        ownedHexes: new Set<string>(),
+      }
+    }
+
+    const raw = fs.readFileSync(userDataPath, 'utf8')
+    const stored = JSON.parse(raw) as StoredUser
+
+    return {
+      id: stored.id ?? 'demo-user',
+      balance: typeof stored.balance === 'number' ? stored.balance : 0,
+      ownedHexes: new Set<string>(Array.isArray(stored.ownedHexes) ? stored.ownedHexes : []),
+    }
+  } catch {
+    return {
+      id: 'demo-user',
+      balance: 0,
+      ownedHexes: new Set<string>(),
+    }
+  }
+}
+
+function saveDemoUser(user: User): void {
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true })
+    }
+
+    const stored: StoredUser = {
+      id: user.id,
+      balance: user.balance,
+      ownedHexes: Array.from(user.ownedHexes),
+    }
+
+    fs.writeFileSync(userDataPath, JSON.stringify(stored, null, 2), 'utf8')
+  } catch {
+    // For demo purposes ignore persistence errors
+  }
+}
+
+const demoUser: User = loadDemoUser()
+
+type ZoneType =
+  | 'SEA'
+  | 'MAIN_ROAD'
+  | 'URBAN'
+  | 'MILITARY'
+  | 'HOSPITAL'
+  | 'CLIFF'
+  | 'COAST'
+  | 'NATURE_RESERVE'
+  | 'RIVER'
+
+function fallbackZoneType(h3Index: string): ZoneType {
+  const zoneTypes: ZoneType[] = ['SEA', 'MAIN_ROAD', 'URBAN', 'MILITARY', 'HOSPITAL', 'CLIFF', 'COAST']
+
+  let hash = 0
+  for (const ch of h3Index) {
+    hash = (hash + ch.charCodeAt(0)) % 10000
+  }
+  return zoneTypes[hash % zoneTypes.length]
+}
+
+type OverpassElement = {
+  type: string
+  tags?: Record<string, string>
+}
+
+type InferredZone = {
+  zoneType: ZoneType
+  debug: string[]
+}
+
+async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone> {
+  const boundary = h3.cellToBoundary(h3Index, true)
+
+  const lats = boundary.map(([lat]) => lat)
+  const lngs = boundary.map(([, lng]) => lng)
+  const south = Math.min(...lats)
+  const north = Math.max(...lats)
+  const west = Math.min(...lngs)
+  const east = Math.max(...lngs)
+
+  const overpassQuery = `
+    [out:json][timeout:10];
+    (
+      // Roads / traffic
+      way["highway"](${south},${west},${north},${east});
+
+      // Military / safety sensitive
+      way["landuse"="military"](${south},${west},${north},${east});
+      node["military"](${south},${west},${north},${east});
+
+      // Hospitals
+      node["amenity"="hospital"](${south},${west},${north},${east});
+      way["amenity"="hospital"](${south},${west},${north},${east});
+
+      // Nature reserves / forests / parks
+      way["leisure"="nature_reserve"](${south},${west},${north},${east});
+      relation["leisure"="nature_reserve"](${south},${west},${north},${east});
+      way["boundary"="protected_area"](${south},${west},${north},${east});
+      relation["boundary"="protected_area"](${south},${west},${north},${east});
+      way["leisure"="park"](${south},${west},${north},${east});
+      relation["leisure"="park"](${south},${west},${north},${east});
+      way["landuse"="forest"](${south},${west},${north},${east});
+      relation["landuse"="forest"](${south},${west},${north},${east});
+      way["natural"="wood"](${south},${west},${north},${east});
+      relation["natural"="wood"](${south},${west},${north},${east});
+
+      // Rivers / streams / canals
+      way["waterway"="river"](${south},${west},${north},${east});
+      way["waterway"="stream"](${south},${west},${north},${east});
+      way["waterway"="canal"](${south},${west},${north},${east});
+      way["water"="river"](${south},${west},${north},${east});
+      relation["water"="river"](${south},${west},${north},${east});
+
+      // Sea / water detection – be generous here so that open-sea hexes
+      // are reliably classified as SEA and not as URBAN.
+      way["natural"="sea"](${south},${west},${north},${east});
+      relation["natural"="sea"](${south},${west},${north},${east});
+      way["natural"="water"](${south},${west},${north},${east});
+      relation["natural"="water"](${south},${west},${north},${east});
+      way["place"="sea"](${south},${west},${north},${east});
+      relation["place"="sea"](${south},${west},${north},${east});
+      way["water"](${south},${west},${north},${east});
+      relation["water"](${south},${west},${north},${east});
+
+      // Coastline / cliffs
+      way["natural"="coastline"](${south},${west},${north},${east});
+      way["natural"="cliff"](${south},${west},${north},${east});
+    );
+    out body;
+  `
+
+  const response = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+    // Overpass expects the raw query string in the body
+    body: overpassQuery,
+  })
+
+  if (!response.ok) {
+    throw new Error(`Overpass error: ${response.status}`)
+  }
+
+  const data = (await response.json()) as { elements?: OverpassElement[] }
+  const elements = data.elements ?? []
+
+  let hasMilitary = false
+  let hasHospital = false
+  let hasSea = false
+  let hasCoast = false
+  let hasCliff = false
+  let hasMainRoad = false
+  let hasNature = false
+  let hasRiver = false
+  const debug: string[] = []
+
+  for (const el of elements) {
+    const tags = el.tags ?? {}
+
+    if (tags.landuse === 'military' || tags.military) {
+      hasMilitary = true
+    }
+
+    if (tags.amenity === 'hospital') {
+      hasHospital = true
+    }
+
+    // Nature reserves / protected areas / forests / large parks
+    if (
+      tags.leisure === 'nature_reserve' ||
+      tags.boundary === 'protected_area' ||
+      tags.leisure === 'park' ||
+      tags.landuse === 'forest' ||
+      tags.natural === 'wood'
+    ) {
+      hasNature = true
+    }
+
+    if (tags.waterway === 'river' || tags.waterway === 'stream' || tags.waterway === 'canal' || tags.water === 'river') {
+      hasRiver = true
+    }
+
+    if (tags.natural === 'sea' || tags.natural === 'water' || tags.water) {
+      hasSea = true
+    }
+
+    if (tags.natural === 'coastline') {
+      hasCoast = true
+    }
+
+    if (tags.natural === 'cliff') {
+      hasCliff = true
+    }
+
+    if (tags.highway && ['motorway', 'trunk', 'primary', 'secondary'].includes(tags.highway)) {
+      hasMainRoad = true
+    }
+  }
+
+  // Priority order: military / hospital / main road / nature / river / sea / coast / cliff / urban
+  if (hasMilitary) {
+    debug.push('OSM: military landuse detected')
+    return { zoneType: 'MILITARY', debug }
+  }
+  if (hasHospital) {
+    debug.push('OSM: hospital detected')
+    return { zoneType: 'HOSPITAL', debug }
+  }
+   if (hasMainRoad) {
+    debug.push('OSM: main road (motorway/trunk/primary/secondary) detected')
+    return { zoneType: 'MAIN_ROAD', debug }
+  }
+  if (hasNature) {
+    debug.push('OSM: nature reserve / forest / park detected')
+    return { zoneType: 'NATURE_RESERVE', debug }
+  }
+  if (hasRiver) {
+    debug.push('OSM: river / stream / canal detected')
+    return { zoneType: 'RIVER', debug }
+  }
+  if (hasSea) {
+    debug.push('OSM: water/sea detected')
+    return { zoneType: 'SEA', debug }
+  }
+  if (hasCoast) {
+    debug.push('OSM: coastline detected')
+    return { zoneType: 'COAST', debug }
+  }
+  if (hasCliff) {
+    debug.push('OSM: cliff detected')
+    return { zoneType: 'CLIFF', debug }
+  }
+
+  debug.push('OSM: no special tags found, defaulting to URBAN')
+  return { zoneType: 'URBAN', debug }
+}
+
+// Cheap endpoint used for initial map rendering – uses only the deterministic fallback
+// and does NOT call Overpass, to avoid rate limiting.
+app.get('/api/hex/:h3Index', (req, res) => {
+  const { h3Index } = req.params
+
+  const zoneType = fallbackZoneType(h3Index)
+  const debug = ['Hash-based zoneType (OSM/Overpass not queried for this request)']
+
+  const result = {
+    h3Index,
+    zoneType,
+    debug,
+  }
+
+  res.json(result)
+})
+
+// Simple user info endpoint for the demo user.
+app.get('/api/user', (_req, res) => {
+  res.json({
+    id: demoUser.id,
+    balance: demoUser.balance,
+    ownedCount: demoUser.ownedHexes.size,
+  })
+})
+
+// Check if a specific hex is already owned by the demo user.
+app.get('/api/hex/:h3Index/owned', (req, res) => {
+  const { h3Index } = req.params
+
+  if (!h3Index || typeof h3Index !== 'string') {
+    res.status(400).json({ owned: false, error: 'INVALID_H3_INDEX' })
+    return
+  }
+
+  const owned = demoUser.ownedHexes.has(h3Index)
+  res.json({ owned })
+})
+
+// Return all owned hex indices for the demo user.
+app.get('/api/owned-hexes', (_req, res) => {
+  res.json({ hexes: Array.from(demoUser.ownedHexes) })
+})
+
+// Mining endpoint: marks a hex as mined for the demo user and increases balance by 1
+// if this is the first time it is mined for this user.
+app.post('/api/mine', (req, res) => {
+  const { h3Index } = req.body as { h3Index?: string }
+
+  if (!h3Index || typeof h3Index !== 'string') {
+    res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' })
+    return
+  }
+
+  const alreadyOwned = demoUser.ownedHexes.has(h3Index)
+
+  if (alreadyOwned) {
+    res.json({
+      ok: false,
+      reason: 'ALREADY_MINED',
+      balance: demoUser.balance,
+      owned: true,
+    })
+    return
+  }
+
+  demoUser.ownedHexes.add(h3Index)
+  demoUser.balance += 1
+
+  saveDemoUser(demoUser)
+
+  res.json({
+    ok: true,
+    balance: demoUser.balance,
+    owned: true,
+  })
+})
+
+// Heavier endpoint used only on explicit user interaction (click on a hex).
+// This tries Overpass once for the given hex and falls back on error.
+app.get('/api/hex/:h3Index/osm', async (req, res) => {
+  const { h3Index } = req.params
+
+  let zoneType: ZoneType
+  let debug: string[] = []
+
+  try {
+    const inferred = await inferZoneTypeFromOverpass(h3Index)
+    zoneType = inferred.zoneType
+    debug = inferred.debug
+  } catch (err) {
+    console.error('Overpass error for h3Index', h3Index, err)
+    zoneType = fallbackZoneType(h3Index)
+    const message = err instanceof Error ? err.message : String(err)
+    debug = [`Overpass failed: ${message}`, 'Using hash-based fallback']
+  }
+
+  const result = {
+    h3Index,
+    zoneType,
+    debug,
+  }
+
+  res.json(result)
+})
+
+app.listen(port, () => {
+  console.log(`Backend listening on http://localhost:${port}`)
+})
