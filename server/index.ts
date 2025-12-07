@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
-const port = 4000
+const port = Number(process.env.PORT) || 4000
 
 app.use(cors())
 app.use(express.json())
@@ -31,6 +31,7 @@ type StoredUser = {
 
 const dataDir = path.join(__dirname, '..', 'data')
 const userDataPath = path.join(dataDir, 'demoUser.json')
+const hexCachePath = path.join(dataDir, 'hexCache.json')
 
 function loadDemoUser(): User {
   try {
@@ -78,6 +79,43 @@ function saveDemoUser(user: User): void {
 }
 
 const demoUser: User = loadDemoUser()
+
+type HexCacheEntry = {
+  zoneType: ZoneType
+  debug: string[]
+}
+
+function loadHexCache(): Record<string, HexCacheEntry> {
+  try {
+    if (!fs.existsSync(hexCachePath)) {
+      return {}
+    }
+
+    const raw = fs.readFileSync(hexCachePath, 'utf8')
+    const parsed = JSON.parse(raw) as Record<string, HexCacheEntry>
+    if (parsed && typeof parsed === 'object') {
+      return parsed
+    }
+  } catch {
+    // ignore cache load errors
+  }
+
+  return {}
+}
+
+function saveHexCache(cache: Record<string, HexCacheEntry>): void {
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true })
+    }
+
+    fs.writeFileSync(hexCachePath, JSON.stringify(cache, null, 2), 'utf8')
+  } catch {
+    // ignore cache save errors for demo purposes
+  }
+}
+
+const hexCache: Record<string, HexCacheEntry> = loadHexCache()
 
 type ZoneType =
   | 'SEA'
@@ -278,18 +316,46 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
   return { zoneType: 'URBAN', debug }
 }
 
-// Cheap endpoint used for initial map rendering – uses only the deterministic fallback
-// and does NOT call Overpass, to avoid rate limiting.
-app.get('/api/hex/:h3Index', (req, res) => {
+// Endpoint used for initial map rendering – first tries cached OSM/Overpass-based
+// classification, then falls back to a deterministic hash-based type on error.
+app.get('/api/hex/:h3Index', async (req, res) => {
   const { h3Index } = req.params
 
-  const zoneType = fallbackZoneType(h3Index)
-  const debug = ['Hash-based zoneType (OSM/Overpass not queried for this request)']
+  if (!h3Index || typeof h3Index !== 'string') {
+    res.status(400).json({ error: 'INVALID_H3_INDEX' })
+    return
+  }
+
+  let entry = hexCache[h3Index]
+
+  if (!entry) {
+    try {
+      const inferred = await inferZoneTypeFromOverpass(h3Index)
+      entry = {
+        zoneType: inferred.zoneType,
+        debug: inferred.debug,
+      }
+      hexCache[h3Index] = entry
+      saveHexCache(hexCache)
+    } catch (err) {
+      const zoneType = fallbackZoneType(h3Index)
+      const message = err instanceof Error ? err.message : String(err)
+      entry = {
+        zoneType,
+        debug: [
+          `Overpass failed in /api/hex: ${message}`,
+          'Using hash-based zoneType fallback for this hex',
+        ],
+      }
+      hexCache[h3Index] = entry
+      saveHexCache(hexCache)
+    }
+  }
 
   const result = {
     h3Index,
-    zoneType,
-    debug,
+    zoneType: entry.zoneType,
+    debug: entry.debug,
   }
 
   res.json(result)
