@@ -33,6 +33,7 @@ const dataDir = path.join(__dirname, '..', 'data')
 const userDataPath = path.join(dataDir, 'demoUser.json')
 const hexCachePath = path.join(dataDir, 'hexCache.json')
 const tradesDataPath = path.join(dataDir, 'marketTrades.json')
+const miningEventsPath = path.join(dataDir, 'miningEvents.json')
 
 function loadDemoUser(): User {
   try {
@@ -87,6 +88,20 @@ type HexCacheEntry = {
 }
 
 function loadHexCache(): Record<string, HexCacheEntry> {
+  try {
+    if (!fs.existsSync(hexCachePath)) {
+      return {}
+    }
+
+    const raw = fs.readFileSync(hexCachePath, 'utf8')
+    const parsed = JSON.parse(raw) as Record<string, HexCacheEntry>
+    if (parsed && typeof parsed === 'object') {
+      return parsed
+    }
+  } catch {
+    // ignore cache load errors and start with empty cache
+  }
+
   return {}
 }
 
@@ -103,6 +118,43 @@ function saveHexCache(cache: Record<string, HexCacheEntry>): void {
 }
 
 const hexCache: Record<string, HexCacheEntry> = loadHexCache()
+
+type MiningEvent = {
+  timestamp: number
+  h3Index: string
+}
+
+function loadMiningEvents(): MiningEvent[] {
+  try {
+    if (!fs.existsSync(miningEventsPath)) {
+      return []
+    }
+
+    const raw = fs.readFileSync(miningEventsPath, 'utf8')
+    const parsed = JSON.parse(raw) as MiningEvent[]
+    if (Array.isArray(parsed)) {
+      return parsed
+    }
+  } catch {
+    // ignore
+  }
+
+  return []
+}
+
+function saveMiningEvents(events: MiningEvent[]): void {
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true })
+    }
+
+    fs.writeFileSync(miningEventsPath, JSON.stringify(events, null, 2), 'utf8')
+  } catch {
+    // ignore
+  }
+}
+
+const miningEvents: MiningEvent[] = loadMiningEvents()
 
 type ZoneType =
   | 'SEA'
@@ -350,6 +402,33 @@ app.get('/api/hex/:h3Index', async (req, res) => {
   res.json(result)
 })
 
+// Simple stats endpoint: returns mined GHX over time, bucketed by day
+// (UTC date string) with daily and cumulative counts.
+app.get('/api/stats/mined', (_req, res) => {
+  const byDay = new Map<string, number>()
+
+  for (const ev of miningEvents) {
+    const date = new Date(ev.timestamp)
+    const dayKey = date.toISOString().slice(0, 10) // YYYY-MM-DD in UTC
+    byDay.set(dayKey, (byDay.get(dayKey) ?? 0) + 1)
+  }
+
+  const days = Array.from(byDay.keys()).sort()
+  const points: { day: string; daily: number; cumulative: number }[] = []
+  let cumulative = 0
+
+  for (const day of days) {
+    const daily = byDay.get(day) ?? 0
+    cumulative += daily
+    points.push({ day, daily, cumulative })
+  }
+
+  res.json({
+    points,
+    total: cumulative,
+  })
+})
+
 // ---- Basic market API for GeoHex (GHX) trading against USDT ----
 
 // Return balances for the demo user for GHX and USDT.
@@ -588,6 +667,12 @@ app.post('/api/mine', (req, res) => {
 
   demoUser.ownedHexes.add(h3Index)
   demoUser.balance += 1
+
+  miningEvents.push({
+    timestamp: Date.now(),
+    h3Index,
+  })
+  saveMiningEvents(miningEvents)
 
   saveDemoUser(demoUser)
 
