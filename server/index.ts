@@ -32,6 +32,7 @@ type StoredUser = {
 const dataDir = path.join(__dirname, '..', 'data')
 const userDataPath = path.join(dataDir, 'demoUser.json')
 const hexCachePath = path.join(dataDir, 'hexCache.json')
+const tradesDataPath = path.join(dataDir, 'marketTrades.json')
 
 function loadDemoUser(): User {
   try {
@@ -348,6 +349,193 @@ app.get('/api/hex/:h3Index', async (req, res) => {
 
   res.json(result)
 })
+
+// ---- Basic market API for GeoHex (GHX) trading against USDT ----
+
+// Return balances for the demo user for GHX and USDT.
+app.get('/api/market/balance', (_req, res) => {
+  res.json({
+    userId: demoUser.id,
+    ghx: demoUser.balance,
+    usdt: demoUserUsdtBalance,
+  })
+})
+
+// Ticker endpoint for GHX-USDT – based on the last trade if available.
+app.get('/api/market/ticker', (_req, res) => {
+  const last = getLastTrade()
+
+  if (!last) {
+    res.json({
+      pair: 'GHX-USDT',
+      lastPrice: null,
+      volume24h: 0,
+      trades: 0,
+    })
+    return
+  }
+
+  const now = Date.now()
+  const dayAgo = now - 24 * 60 * 60 * 1000
+  let volume24h = 0
+  let trades24h = 0
+
+  for (const t of trades) {
+    if (t.timestamp >= dayAgo) {
+      volume24h += t.amount
+      trades24h += 1
+    }
+  }
+
+  res.json({
+    pair: 'GHX-USDT',
+    lastPrice: last.price,
+    volume24h,
+    trades: trades24h,
+  })
+})
+
+// Very simple orderbook implementation: exposes the last N trades as a pseudo book.
+// In later versions this can be replaced with a real limit order book.
+app.get('/api/market/orderbook', (_req, res) => {
+  const last = getLastTrade()
+  const midPrice = last?.price ?? 1
+
+  res.json({
+    pair: 'GHX-USDT',
+    midPrice,
+    bids: [],
+    asks: [],
+  })
+})
+
+// Return recent trades for GHX-USDT (most recent first).
+app.get('/api/market/trades', (_req, res) => {
+  const recent = [...trades].slice(-100).reverse()
+  res.json({ pair: 'GHX-USDT', trades: recent })
+})
+
+// Very simple market order endpoint that trades against an implicit system counterparty.
+// This is NOT a real matching engine, but is enough to power a demo trading UI and price chart.
+app.post('/api/market/order', (req, res) => {
+  const body = req.body as {
+    side?: 'BUY' | 'SELL'
+    price?: number
+    amount?: number
+  }
+
+  const side = body.side
+  const price = body.price
+  const amount = body.amount
+
+  if (side !== 'BUY' && side !== 'SELL') {
+    res.status(400).json({ ok: false, error: 'INVALID_SIDE' })
+    return
+  }
+
+  if (typeof price !== 'number' || price <= 0 || !Number.isFinite(price)) {
+    res.status(400).json({ ok: false, error: 'INVALID_PRICE' })
+    return
+  }
+
+  if (typeof amount !== 'number' || amount <= 0 || !Number.isFinite(amount)) {
+    res.status(400).json({ ok: false, error: 'INVALID_AMOUNT' })
+    return
+  }
+
+  // Check balances for the demo user.
+  if (side === 'BUY') {
+    const cost = price * amount
+    if (demoUserUsdtBalance < cost) {
+      res.status(400).json({ ok: false, error: 'INSUFFICIENT_USDT' })
+      return
+    }
+
+    demoUserUsdtBalance -= cost
+    demoUser.balance += amount
+  } else {
+    if (demoUser.balance < amount) {
+      res.status(400).json({ ok: false, error: 'INSUFFICIENT_GHX' })
+      return
+    }
+
+    demoUser.balance -= amount
+    demoUserUsdtBalance += price * amount
+  }
+
+  saveDemoUser(demoUser)
+
+  const trade: Trade = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    pair: 'GHX-USDT',
+    side,
+    price,
+    amount,
+    timestamp: Date.now(),
+  }
+
+  trades.push(trade)
+  saveTrades(trades)
+
+  res.json({
+    ok: true,
+    trade,
+    balances: {
+      ghx: demoUser.balance,
+      usdt: demoUserUsdtBalance,
+    },
+  })
+})
+
+// In this initial version we treat demoUser.balance as the GHX balance.
+// For trading we also maintain a simple USDT balance in memory for the demo user.
+let demoUserUsdtBalance = 1_000
+
+type Trade = {
+  id: string
+  pair: 'GHX-USDT'
+  side: 'BUY' | 'SELL'
+  price: number
+  amount: number
+  timestamp: number
+}
+
+function loadTrades(): Trade[] {
+  try {
+    if (!fs.existsSync(tradesDataPath)) {
+      return []
+    }
+
+    const raw = fs.readFileSync(tradesDataPath, 'utf8')
+    const parsed = JSON.parse(raw) as Trade[]
+    if (Array.isArray(parsed)) {
+      return parsed
+    }
+  } catch {
+    // ignore
+  }
+
+  return []
+}
+
+function saveTrades(trades: Trade[]): void {
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true })
+    }
+
+    fs.writeFileSync(tradesDataPath, JSON.stringify(trades, null, 2), 'utf8')
+  } catch {
+    // ignore
+  }
+}
+
+let trades: Trade[] = loadTrades()
+
+function getLastTrade(): Trade | undefined {
+  if (!trades.length) return undefined
+  return trades[trades.length - 1]
+}
 
 // Simple user info endpoint for the demo user.
 app.get('/api/user', (_req, res) => {
