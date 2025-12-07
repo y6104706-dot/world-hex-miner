@@ -108,6 +108,15 @@ function App() {
   const [orderError, setOrderError] = useState<string | null>(null)
   const featuresRef = useRef<HexFeature[]>([])
   const ownedHexesRef = useRef<Set<string>>(new Set())
+  const hexInfoCacheRef = useRef<
+    Map<
+      string,
+      {
+        zoneType: ZoneType
+        debugInfo: string[]
+      }
+    >
+  >(new Map())
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -211,6 +220,7 @@ function App() {
         const hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
 
         const ownedSet = ownedHexesRef.current
+        const infoCache = hexInfoCacheRef.current
 
         const newFeatures: HexFeature[] = []
 
@@ -221,19 +231,31 @@ function App() {
 
           let zoneType: ZoneType = 'URBAN'
           let debugInfo: string[] = []
-          try {
-            const res = await fetch(`${apiBase}/api/hex/${hexIndex}`)
-            if (res.ok) {
-              const data: { zoneType?: ZoneType; debug?: string[] } = await res.json()
-              if (data.zoneType) {
-                zoneType = data.zoneType
+
+          const cached = infoCache.get(hexIndex)
+          if (cached) {
+            zoneType = cached.zoneType
+            debugInfo = cached.debugInfo
+          } else {
+            try {
+              const res = await fetch(`${apiBase}/api/hex/${hexIndex}`)
+              if (res.ok) {
+                const data: { zoneType?: ZoneType; debug?: string[] } = await res.json()
+                if (data.zoneType) {
+                  zoneType = data.zoneType
+                }
+                if (Array.isArray(data.debug)) {
+                  debugInfo = data.debug
+                }
               }
-              if (Array.isArray(data.debug)) {
-                debugInfo = data.debug
-              }
+            } catch {
+              // fallback to default URBAN if backend call fails
             }
-          } catch {
-            // fallback to default URBAN if backend call fails
+
+            infoCache.set(hexIndex, {
+              zoneType,
+              debugInfo,
+            })
           }
 
           const isOwned = ownedSet.has(hexIndex)
