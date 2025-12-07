@@ -168,13 +168,12 @@ type ZoneType =
   | 'RIVER'
 
 function fallbackZoneType(h3Index: string): ZoneType {
-  const zoneTypes: ZoneType[] = ['SEA', 'MAIN_ROAD', 'URBAN', 'MILITARY', 'HOSPITAL', 'CLIFF', 'COAST']
-
-  let hash = 0
-  for (const ch of h3Index) {
-    hash = (hash + ch.charCodeAt(0)) % 10000
-  }
-  return zoneTypes[hash % zoneTypes.length]
+  // To avoid random-looking mixes of categories when Overpass fails or is
+  // rate-limited, we now always fall back to URBAN. Special categories such as
+  // SEA / MILITARY / HOSPITAL / RIVER / COAST / CLIFF are only assigned when
+  // we have a clear signal from OSM/Overpass.
+  void h3Index
+  return 'URBAN'
 }
 
 type OverpassElement = {
@@ -269,8 +268,6 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
   let hasSea = false
   let hasCoast = false
   let hasCliff = false
-  let hasMainRoad = false
-  let hasNature = false
   let hasRiver = false
   const debug: string[] = []
 
@@ -283,17 +280,6 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
 
     if (tags.amenity === 'hospital') {
       hasHospital = true
-    }
-
-    // Nature reserves / protected areas / forests / large parks
-    if (
-      tags.leisure === 'nature_reserve' ||
-      tags.boundary === 'protected_area' ||
-      tags.leisure === 'park' ||
-      tags.landuse === 'forest' ||
-      tags.natural === 'wood'
-    ) {
-      hasNature = true
     }
 
     if (tags.waterway === 'river' || tags.waterway === 'stream' || tags.waterway === 'canal' || tags.water === 'river') {
@@ -311,15 +297,12 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
     if (tags.natural === 'cliff') {
       hasCliff = true
     }
-
-    if (tags.highway && ['motorway', 'trunk', 'primary', 'secondary'].includes(tags.highway)) {
-      hasMainRoad = true
-    }
   }
 
-  // Priority order: sea (any open water) / military / hospital / main road / nature / river / coast / cliff / urban.
-  // For gameplay purposes, as soon as we detect "sea/water" tags we treat the hex as SEA even if
-  // other tags (roads, military etc.) also exist in the same Overpass window.
+  // Priority order: sea (any open water) / military / hospital / river / coast / cliff / urban.
+  // For gameplay purposes, as soon as we detect "sea/water" tags we treat the
+  // hex as SEA even if other tags (roads, military etc.) also exist in the same
+  // Overpass window.
   if (hasSea) {
     debug.push('OSM: water/sea detected (forced SEA for gameplay)')
     return { zoneType: 'SEA', debug }
@@ -331,14 +314,6 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
   if (hasHospital) {
     debug.push('OSM: hospital detected')
     return { zoneType: 'HOSPITAL', debug }
-  }
-  if (hasMainRoad) {
-    debug.push('OSM: main road (motorway/trunk/primary/secondary) detected')
-    return { zoneType: 'MAIN_ROAD', debug }
-  }
-  if (hasNature) {
-    debug.push('OSM: nature reserve / forest / park detected')
-    return { zoneType: 'NATURE_RESERVE', debug }
   }
   if (hasRiver) {
     debug.push('OSM: river / stream / canal detected')

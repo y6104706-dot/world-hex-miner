@@ -90,6 +90,22 @@ function App() {
   const [ownedCount, setOwnedCount] = useState<number | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error' | null>(null)
+
+  const [viewMode, setViewMode] = useState<'MAP' | 'TRADE'>('MAP')
+
+  const [usdtBalance, setUsdtBalance] = useState<number | null>(null)
+  const [lastPrice, setLastPrice] = useState<number | null>(null)
+  const [tradeCount24h, setTradeCount24h] = useState<number | null>(null)
+  const [volume24h, setVolume24h] = useState<number | null>(null)
+  const [recentTrades, setRecentTrades] = useState<
+    { id: string; side: 'BUY' | 'SELL'; price: number; amount: number; timestamp: number }[]
+  >([])
+
+  const [orderSide, setOrderSide] = useState<'BUY' | 'SELL'>('BUY')
+  const [orderPrice, setOrderPrice] = useState<string>('')
+  const [orderAmount, setOrderAmount] = useState<string>('')
+  const [orderSubmitting, setOrderSubmitting] = useState(false)
+  const [orderError, setOrderError] = useState<string | null>(null)
   const featuresRef = useRef<HexFeature[]>([])
   const ownedHexesRef = useRef<Set<string>>(new Set())
 
@@ -164,15 +180,26 @@ function App() {
         // so that claimed state is correct after reload or viewport changes.
         await loadOwnedHexes()
 
-        const bounds = map.getBounds()
-        const south = bounds.getSouth()
-        const north = bounds.getNorth()
-        const west = bounds.getWest()
-        const east = bounds.getEast()
+        // Instead of using the full viewport bounds (which can cover a large
+        // area and trigger many Overpass calls), only consider a small square
+        // around the map center. This better matches the gameplay, where the
+        // player can usually mine only nearby hexes.
+        const center = map.getCenter()
+        const centerLat = center.lat
+        const centerLng = center.lng
 
-        // h3-js expects coordinates in [lat, lng] order, while map bounds give
-        // us lng (west/east) and lat (south/north). Build the polygon in
-        // [lat, lng] format for polygonToCells.
+        // Roughly ~300m radius in degrees (depends on latitude, but good
+        // enough for our purposes).
+        const deltaLat = 0.003
+        const deltaLng = 0.003
+
+        const south = centerLat - deltaLat
+        const north = centerLat + deltaLat
+        const west = centerLng - deltaLng
+        const east = centerLng + deltaLng
+
+        // h3-js expects coordinates in [lat, lng] order. Build a small
+        // rectangle polygon centred on the current map center.
         const polygon: number[][][] = [[
           [south, west],
           [south, east],
@@ -405,6 +432,70 @@ function App() {
     void loadUser()
   }, [])
 
+  useEffect(() => {
+    const loadBalances = async () => {
+      try {
+        const res = await fetch(`${apiBase}/api/market/balance`)
+        if (!res.ok) return
+        const data: { ghx?: number; usdt?: number } = await res.json()
+        if (typeof data.ghx === 'number') {
+          setUserBalance(data.ghx)
+        }
+        if (typeof data.usdt === 'number') {
+          setUsdtBalance(data.usdt)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    const loadTicker = async () => {
+      try {
+        const res = await fetch(`${apiBase}/api/market/ticker`)
+        if (!res.ok) return
+        const data: { lastPrice: number | null; volume24h?: number; trades?: number } = await res.json()
+        setLastPrice(data.lastPrice)
+        if (typeof data.volume24h === 'number') {
+          setVolume24h(data.volume24h)
+        }
+        if (typeof data.trades === 'number') {
+          setTradeCount24h(data.trades)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    const loadTrades = async () => {
+      try {
+        const res = await fetch(`${apiBase}/api/market/trades`)
+        if (!res.ok) return
+        const data: {
+          trades?: { id: string; side: 'BUY' | 'SELL'; price: number; amount: number; timestamp: number }[]
+        } = await res.json()
+        if (Array.isArray(data.trades)) {
+          setRecentTrades(data.trades)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    void loadBalances()
+    void loadTicker()
+    void loadTrades()
+
+    const interval = window.setInterval(() => {
+      void loadBalances()
+      void loadTicker()
+      void loadTrades()
+    }, 10_000)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [apiBase])
+
   const handleMineClick = () => {
     if (!selectedHex) {
       return
@@ -551,26 +642,262 @@ function App() {
 
   return (
     <div className="app-root">
-      <div className="map-wrapper">
-        <div ref={mapContainerRef} className="map-container" />
-        <button
-          type="button"
-          className="use-location-button"
-          onClick={handleUseMyLocationClick}
-        >
-          Use my location
-        </button>
-      </div>
-      <div className="hud-panel">
-        <div className="hud-line">
-          <span className="hud-label">Balance:</span>{' '}
-          <span className="hud-value">{typeof userBalance === 'number' ? userBalance : '-'}</span>
+      <div className="top-bar">
+        <div className="top-bar-title">GeoHex Miner</div>
+        <div className="top-bar-tabs">
+          <button
+            type="button"
+            className={viewMode === 'MAP' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+            onClick={() => setViewMode('MAP')}
+          >
+            Map
+          </button>
+          <button
+            type="button"
+            className={viewMode === 'TRADE' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+            onClick={() => setViewMode('TRADE')}
+          >
+            Trade
+          </button>
         </div>
-        <div className="hud-line">
-          <span className="hud-label">Owned hexes:</span>{' '}
-          <span className="hud-value">{typeof ownedCount === 'number' ? ownedCount : '-'}</span>
-        </div>
       </div>
+
+      {viewMode === 'MAP' && (
+        <>
+          <div className="map-wrapper">
+            <div ref={mapContainerRef} className="map-container" />
+            <button
+              type="button"
+              className="use-location-button"
+              onClick={handleUseMyLocationClick}
+            >
+              Use my location
+            </button>
+          </div>
+          <div className="hud-panel">
+            <div className="hud-line">
+              <span className="hud-label">GHX balance:</span>{' '}
+              <span className="hud-value">
+                {typeof userBalance === 'number' ? userBalance : '-'}
+              </span>
+            </div>
+            <div className="hud-line">
+              <span className="hud-label">Owned hexes:</span>{' '}
+              <span className="hud-value">{typeof ownedCount === 'number' ? ownedCount : '-'}</span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {viewMode === 'TRADE' && (
+        <div className="trade-panel">
+          <div className="trade-header">
+            <div className="trade-pair">GHX / USDT</div>
+            <div className="trade-ticker">
+              <div className="trade-ticker-line">
+                <span className="trade-ticker-label">Last price:</span>
+                <span className="trade-ticker-value">
+                  {lastPrice != null ? `${lastPrice.toFixed(4)} USDT` : '-'}
+                </span>
+              </div>
+              <div className="trade-ticker-line">
+                <span className="trade-ticker-label">24h volume:</span>
+                <span className="trade-ticker-value">
+                  {volume24h != null ? volume24h.toFixed(2) : '-'} GHX
+                </span>
+              </div>
+              <div className="trade-ticker-line">
+                <span className="trade-ticker-label">24h trades:</span>
+                <span className="trade-ticker-value">
+                  {tradeCount24h != null ? tradeCount24h : '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="trade-balances">
+            <div className="trade-balance-line">
+              <span className="trade-balance-label">GHX:</span>
+              <span className="trade-balance-value">
+                {typeof userBalance === 'number' ? userBalance.toFixed(4) : '-'}
+              </span>
+            </div>
+            <div className="trade-balance-line">
+              <span className="trade-balance-label">USDT:</span>
+              <span className="trade-balance-value">
+                {typeof usdtBalance === 'number' ? usdtBalance.toFixed(2) : '-'}
+              </span>
+            </div>
+          </div>
+
+          <div className="trade-layout">
+            <div className="trade-form">
+              <div className="trade-form-side-toggle">
+                <button
+                  type="button"
+                  className={orderSide === 'BUY' ? 'trade-side-button trade-side-button-buy active' : 'trade-side-button trade-side-button-buy'}
+                  onClick={() => {
+                    setOrderSide('BUY')
+                    setOrderError(null)
+                  }}
+                >
+                  Buy
+                </button>
+                <button
+                  type="button"
+                  className={orderSide === 'SELL' ? 'trade-side-button trade-side-button-sell active' : 'trade-side-button trade-side-button-sell'}
+                  onClick={() => {
+                    setOrderSide('SELL')
+                    setOrderError(null)
+                  }}
+                >
+                  Sell
+                </button>
+              </div>
+
+              <label className="trade-input-label">
+                Price (USDT per GHX)
+                <input
+                  className="trade-input"
+                  type="number"
+                  min="0"
+                  step="0.0001"
+                  value={orderPrice}
+                  onChange={(e) => setOrderPrice(e.target.value)}
+                />
+              </label>
+
+              <label className="trade-input-label">
+                Amount (GHX)
+                <input
+                  className="trade-input"
+                  type="number"
+                  min="0"
+                  step="0.0001"
+                  value={orderAmount}
+                  onChange={(e) => setOrderAmount(e.target.value)}
+                />
+              </label>
+
+              <div className="trade-total-line">
+                <span>Total:</span>
+                <span>
+                  {orderPrice && orderAmount
+                    ? `${(Number(orderPrice) * Number(orderAmount)).toFixed(4)} USDT`
+                    : '-'}
+                </span>
+              </div>
+
+              {orderError && <div className="trade-error">{orderError}</div>}
+
+              <button
+                type="button"
+                className={
+                  orderSide === 'BUY'
+                    ? 'trade-submit-button trade-submit-button-buy'
+                    : 'trade-submit-button trade-submit-button-sell'
+                }
+                disabled={orderSubmitting}
+                onClick={async () => {
+                  setOrderError(null)
+                  const price = Number(orderPrice)
+                  const amount = Number(orderAmount)
+
+                  if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(amount) || amount <= 0) {
+                    setOrderError('Please enter a valid positive price and amount.')
+                    return
+                  }
+
+                  setOrderSubmitting(true)
+                  try {
+                    const res = await fetch(`${apiBase}/api/market/order`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ side: orderSide, price, amount }),
+                    })
+
+                    if (!res.ok) {
+                      const text = await res.text()
+                      setOrderError(text || 'Order failed.')
+                      return
+                    }
+
+                    const data: {
+                      ok?: boolean
+                      error?: string
+                      trade?: { id: string; side: 'BUY' | 'SELL'; price: number; amount: number; timestamp: number }
+                      balances?: { ghx?: number; usdt?: number }
+                    } = await res.json()
+
+                    if (!data.ok) {
+                      setOrderError(data.error || 'Order was not accepted.')
+                      return
+                    }
+
+                    if (data.balances) {
+                      if (typeof data.balances.ghx === 'number') {
+                        setUserBalance(data.balances.ghx)
+                      }
+                      if (typeof data.balances.usdt === 'number') {
+                        setUsdtBalance(data.balances.usdt)
+                      }
+                    }
+
+                    if (data.trade) {
+                      setLastPrice(data.trade.price)
+                      setRecentTrades((prev) => [data.trade!, ...prev].slice(0, 100))
+                    }
+
+                    setOrderPrice('')
+                    setOrderAmount('')
+                  } catch {
+                    setOrderError('Order failed due to a network error.')
+                  } finally {
+                    setOrderSubmitting(false)
+                  }
+                }}
+              >
+                {orderSubmitting ? 'Submitting…' : orderSide === 'BUY' ? 'Buy GHX' : 'Sell GHX'}
+              </button>
+            </div>
+
+            <div className="trade-recent-trades">
+              <div className="trade-recent-title">Recent trades</div>
+              {recentTrades.length === 0 && (
+                <div className="trade-recent-empty">No trades yet.</div>
+              )}
+              {recentTrades.length > 0 && (
+                <div className="trade-recent-list">
+                  {recentTrades.slice(0, 40).map((t) => {
+                    const date = new Date(t.timestamp)
+                    return (
+                      <div
+                        key={t.id}
+                        className={
+                          t.side === 'BUY' ? 'trade-recent-row trade-recent-row-buy' : 'trade-recent-row trade-recent-row-sell'
+                        }
+                      >
+                        <span className="trade-recent-time">
+                          {date.toLocaleTimeString(undefined, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })}
+                        </span>
+                        <span className="trade-recent-side">{t.side}</span>
+                        <span className="trade-recent-price">{t.price.toFixed(4)}</span>
+                        <span className="trade-recent-amount">{t.amount.toFixed(4)} GHX</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {toastMessage && (
         <div
           className={
@@ -584,7 +911,7 @@ function App() {
           {toastMessage}
         </div>
       )}
-      {selectedInfo && (
+      {viewMode === 'MAP' && selectedInfo && (
         <div className="info-panel">
           <div className="info-header">
             <div className="info-title">
