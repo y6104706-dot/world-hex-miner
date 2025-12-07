@@ -86,20 +86,6 @@ type HexCacheEntry = {
 }
 
 function loadHexCache(): Record<string, HexCacheEntry> {
-  try {
-    if (!fs.existsSync(hexCachePath)) {
-      return {}
-    }
-
-    const raw = fs.readFileSync(hexCachePath, 'utf8')
-    const parsed = JSON.parse(raw) as Record<string, HexCacheEntry>
-    if (parsed && typeof parsed === 'object') {
-      return parsed
-    }
-  } catch {
-    // ignore cache load errors
-  }
-
   return {}
 }
 
