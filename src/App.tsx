@@ -140,6 +140,8 @@ function App() {
     map.on('load', () => {
       let features: HexFeature[] = []
       let hasFitToHexes = false
+      let lastLoadCenter: { lat: number; lng: number } | null = null
+      let lastLoadTime = 0
 
       // Create an empty GeoJSON source immediately so layers can safely reference it.
       const initialCollection = {
@@ -185,10 +187,6 @@ function App() {
           return
         }
 
-        // Always refresh owned hexes from the backend before rebuilding features,
-        // so that claimed state is correct after reload or viewport changes.
-        await loadOwnedHexes()
-
         // Instead of using the full viewport bounds (which can cover a large
         // area and trigger many Overpass calls), only consider a small square
         // around the map center. This better matches the gameplay, where the
@@ -197,10 +195,34 @@ function App() {
         const centerLat = center.lat
         const centerLng = center.lng
 
-        // Roughly ~300m radius in degrees (depends on latitude, but good
-        // enough for our purposes).
-        const deltaLat = 0.003
-        const deltaLng = 0.003
+        const now = Date.now()
+        const minIntervalMs = 1500
+
+        if (lastLoadCenter) {
+          const dLat = Math.abs(centerLat - lastLoadCenter.lat)
+          const dLng = Math.abs(centerLng - lastLoadCenter.lng)
+          const movedFarEnough = dLat > 0.0007 || dLng > 0.0007
+          const enoughTimePassed = now - lastLoadTime > minIntervalMs
+
+          // If the map center only moved a tiny amount and not enough time has
+          // passed, skip reloading hexes to avoid spamming the backend.
+          if (!movedFarEnough && !enoughTimePassed) {
+            return
+          }
+        }
+
+        lastLoadCenter = { lat: centerLat, lng: centerLng }
+        lastLoadTime = now
+
+        // Always refresh owned hexes from the backend before rebuilding features,
+        // so that claimed state is correct after reload or viewport changes.
+        await loadOwnedHexes()
+
+        // Roughly ~150m radius in degrees (depends on latitude, but good
+        // enough for our purposes). This keeps the number of hexes per load
+        // relatively small.
+        const deltaLat = 0.0015
+        const deltaLng = 0.0015
 
         const south = centerLat - deltaLat
         const north = centerLat + deltaLat
