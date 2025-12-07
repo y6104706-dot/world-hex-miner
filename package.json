@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start:server": "node server-dist/index.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
