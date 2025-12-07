@@ -99,7 +99,9 @@ function App() {
     const centerLonLat: [number, number] = [34.7818, 32.0853]
     const h3Resolution = 11
 
-    const mapStyleUrl = import.meta.env.VITE_MAP_STYLE_URL ?? 'https://demotiles.maplibre.org/style.json'
+    const mapStyleUrl =
+      import.meta.env.VITE_MAP_STYLE_URL ??
+      'https://api.maptiler.com/maps/dataviz-v4/style.json?key=EAB6uPDrtlRzXsFngjM4'
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
