@@ -375,13 +375,37 @@ function App() {
         type: 'fill',
         source: 'h3-hex',
         paint: {
+          // First priority: claimed / selected. Otherwise color by zoneType so
+          // players can quickly see the difference between urban, sea, coast,
+          // military and other areas.
           'fill-color': [
             'case',
             ['get', 'claimed'],
             '#1f6b40',
             ['get', 'selected'],
             '#ff9900',
-            '#e0e0e0',
+            [
+              'match',
+              ['get', 'zoneType'],
+              'SEA',
+              '#0f172a',
+              'COAST',
+              '#0369a1',
+              'RIVER',
+              '#1d4ed8',
+              'NATURE_RESERVE',
+              '#166534',
+              'MILITARY',
+              '#7f1d1d',
+              'HOSPITAL',
+              '#b91c1c',
+              'CLIFF',
+              '#6b21a8',
+              'MAIN_ROAD',
+              '#4b5563',
+              /* default URBAN / other */
+              '#e0e0e0',
+            ],
           ],
           'fill-opacity': [
             'case',
@@ -668,11 +692,25 @@ function App() {
           return
         }
 
-        const data: { ok?: boolean; balance?: number; reason?: string } = await res.json()
+        const data: { ok?: boolean; balance?: number; reason?: string; zoneType?: ZoneType } =
+          await res.json()
 
         if (!data.ok) {
           if (data.reason === 'ALREADY_MINED') {
             setMineMessage('This hex has already been mined for this user.')
+          } else if (data.reason === 'FORBIDDEN_ZONE') {
+            const zt = data.zoneType ?? selectedHex?.zoneType
+            if (zt === 'MILITARY') {
+              setMineMessage('Mining on this hex is forbidden because it is classified as a military or similarly restricted area.')
+            } else if (zt === 'HOSPITAL') {
+              setMineMessage('Mining on this hex is forbidden because it is near a hospital or medical facility.')
+            } else if (zt === 'CLIFF') {
+              setMineMessage('Mining on this hex is forbidden because it is in or near dangerous cliff terrain.')
+            } else if (zt === 'SEA') {
+              setMineMessage('Mining on this hex is forbidden at this distance from the sea for safety reasons.')
+            } else {
+              setMineMessage('Mining on this hex is forbidden for safety or legal reasons.')
+            }
           } else {
             setMineMessage('Mining was not accepted.')
           }
