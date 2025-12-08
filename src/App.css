@@ -538,7 +538,8 @@
 
 @media (max-width: 768px) {
   .trade-panel,
-  .stats-panel {
+  .stats-panel,
+  .policy-panel {
     inset: 60px 10px 10px;
   }
 

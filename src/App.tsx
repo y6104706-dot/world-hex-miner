@@ -97,7 +97,7 @@ function App() {
   // in the existing container.
   const [mapInstanceSeed, setMapInstanceSeed] = useState(0)
 
-  const [viewMode, setViewMode] = useState<'MAP' | 'TRADE' | 'STATS'>('MAP')
+  const [viewMode, setViewMode] = useState<'MAP' | 'TRADE' | 'STATS' | 'POLICY'>('MAP')
 
   const [usdtBalance, setUsdtBalance] = useState<number | null>(null)
   const [lastPrice, setLastPrice] = useState<number | null>(null)
@@ -820,6 +820,13 @@ function App() {
           >
             Stats
           </button>
+          <button
+            type="button"
+            className={viewMode === 'POLICY' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+            onClick={() => setViewMode('POLICY')}
+          >
+            Policy
+          </button>
         </div>
       </div>
       <div className="map-wrapper">
@@ -1215,6 +1222,107 @@ function App() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {viewMode === 'POLICY' && (
+        <div className="policy-panel">
+          <div className="policy-header">GeoHex Mining &amp; Safety Policy</div>
+          <div className="policy-scroll">
+            <p className="policy-text">
+              GeoHex Miner is a location-based game. Mining GHX depends on your real-world position,
+              the type of terrain you are in, and your movement. Safety and compliance with local
+              law always come before gameplay.
+            </p>
+            <h3 className="policy-section-title">1. Core principles</h3>
+            <ul className="policy-list">
+              <li>
+                <strong>Reality-based supply:</strong> The availability and difficulty of mining GHX
+                are determined by real-world geography (roads, settlements, wilderness and water
+                areas).
+              </li>
+              <li>
+                <strong>Safety first:</strong> Never use the app in a way that distracts you from
+                driving, walking safely, or being aware of your surroundings.
+              </li>
+              <li>
+                <strong>User responsibility:</strong> You are solely responsible for obeying traffic
+                rules, access restrictions and any applicable law where you play.
+              </li>
+            </ul>
+            <h3 className="policy-section-title">2. Mining by zone type</h3>
+            <p className="policy-text">
+              The app classifies hexes into different zone types using map data. Mining rules depend
+              on this classification and on your speed:
+            </p>
+            <ul className="policy-list">
+              <li>
+                <strong>Road zones:</strong> A hex is treated as a road hex if any part of it touches
+                a mapped road. Automatic mining while driving may be allowed in these hexes, subject
+                to speed and safety limits. Manual tapping while driving is restricted.
+              </li>
+              <li>
+                <strong>Urban / settlement zones:</strong> Cities, towns, villages and other built-up
+                areas. Manual mining via the mine button is allowed at low and normal speeds, subject
+                to safety rules.
+              </li>
+              <li>
+                <strong>Rural / wilderness zones:</strong> Farmland, forests, deserts, mountains and
+                other non-urban land, including areas that are far from roads. Mining here is manual
+                only and may require you to move slowly or be on foot.
+              </li>
+              <li>
+                <strong>Marine zones:</strong> Oceans, seas and large lakes. Mining, if enabled, is
+                limited to safe boating speeds and may be further restricted in ports, protected
+                areas or other sensitive locations.
+              </li>
+              <li>
+                <strong>Restricted zones:</strong> Military areas, hospitals, dangerous cliffs and
+                similar locations are not mineable for safety and legal reasons.
+              </li>
+            </ul>
+            <h3 className="policy-section-title">3. Speed and high-risk activities</h3>
+            <ul className="policy-list">
+              <li>
+                Do not actively play GeoHex Miner while driving or operating any vehicle. Where
+                possible, the app will block manual actions at higher speeds, but you must still
+                follow the law and use your judgement.
+              </li>
+              <li>
+                Mining is blocked in flight and may be limited at extremely high speeds (for example
+                in fast trains or high-speed vehicles).
+              </li>
+              <li>
+                Always stop in a safe place before looking at the screen or interacting with the
+                app.
+              </li>
+            </ul>
+            <h3 className="policy-section-title">4. Obeying laws and respecting property</h3>
+            <ul className="policy-list">
+              <li>
+                Obey all traffic rules, local laws and signs. Do not trespass on private property or
+                enter closed or dangerous areas in order to mine a hex.
+              </li>
+              <li>
+                Protected areas (such as military zones or certain nature reserves) may be blocked or
+                limited in the game regardless of their physical accessibility.
+              </li>
+            </ul>
+            <h3 className="policy-section-title">5. Natural scarcity and game economy</h3>
+            <p className="policy-text">
+              The global supply of GHX is tied to the finite number of hexes on Earth. Easy-to-access
+              urban and road-adjacent hexes are likely to be mined first. Over time, remaining supply
+              will naturally shift to harder-to-reach areas such as wilderness and open water. This
+              progression is driven by real-world geography and effort, not by arbitrary reward
+              changes.
+            </p>
+            <h3 className="policy-section-title">6. Limitation of liability</h3>
+            <p className="policy-text">
+              GeoHex Miner is provided as-is. The operators are not responsible for any injury,
+              damage or legal consequence resulting from unsafe or unlawful use of the app. By using
+              GeoHex Miner you agree to play responsibly and at your own risk.
+            </p>
+          </div>
         </div>
       )}
       {toastMessage && (
