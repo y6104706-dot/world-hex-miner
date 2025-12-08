@@ -186,6 +186,12 @@ function App() {
 
         // When zoomed out too far, do not render any hexes to keep performance
         // reasonable. Just clear the source and return.
+        // If this map instance is no longer the active one (for example,
+        // after we reinitialised the map when switching tabs), abort.
+        if (map !== mapRef.current) {
+          return
+        }
+
         if (zoom < 14) {
           features = []
           featuresRef.current = []
@@ -193,9 +199,14 @@ function App() {
             type: 'FeatureCollection' as const,
             features: [] as HexFeature[],
           }
-          const existing = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-          if (existing) {
-            existing.setData(emptyCollection)
+          try {
+            const existing = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+            if (existing) {
+              existing.setData(emptyCollection)
+            }
+          } catch {
+            // If the map style has been destroyed (e.g. old instance), just
+            // ignore; a fresh map instance will set up its own source.
           }
           return
         }
@@ -319,9 +330,15 @@ function App() {
           features,
         }
 
-        const existing = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-        if (existing) {
-          existing.setData(featureCollection)
+        try {
+          const existing = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+          if (existing) {
+            existing.setData(featureCollection)
+          }
+        } catch {
+          // Map style may have been torn down if this is a stale map
+          // instance. In that case we simply skip; the new instance will load
+          // its own data.
         }
 
         if (!hasFitToHexes && features.length > 0) {
