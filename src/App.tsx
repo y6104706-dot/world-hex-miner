@@ -91,6 +91,12 @@ function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error' | null>(null)
 
+  // Used to force a full MapLibre re-initialisation when needed (e.g. when
+  // returning from the Trade/Stats views and the map ends up black). Changing
+  // this seed will re-run the map setup effect and create a fresh map instance
+  // in the existing container.
+  const [mapInstanceSeed, setMapInstanceSeed] = useState(0)
+
   const [viewMode, setViewMode] = useState<'MAP' | 'TRADE' | 'STATS'>('MAP')
 
   const [usdtBalance, setUsdtBalance] = useState<number | null>(null)
@@ -112,6 +118,7 @@ function App() {
   const [orderError, setOrderError] = useState<string | null>(null)
   const featuresRef = useRef<HexFeature[]>([])
   const ownedHexesRef = useRef<Set<string>>(new Set())
+  const mapStyleUrlRef = useRef<string | null>(null)
   const hexInfoCacheRef = useRef<
     Map<
       string,
@@ -131,6 +138,8 @@ function App() {
     const mapStyleUrl =
       import.meta.env.VITE_MAP_STYLE_URL ??
       'https://api.maptiler.com/maps/dataviz-v4/style.json?key=EAB6uPDrtlRzXsFngjM4'
+
+    mapStyleUrlRef.current = mapStyleUrl
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
@@ -455,8 +464,42 @@ function App() {
 
     return () => {
       map.remove()
+      mapRef.current = null
     }
-  }, [])
+  }, [apiBase, mapInstanceSeed])
+
+  // When switching back to the MAP view from another tab, fully tear down the
+  // existing MapLibre instance and create a new one. This is more aggressive
+  // than a simple resize, but avoids cases where the WebGL context or tile
+  // rendering gets stuck and leaves a permanent black screen.
+  useEffect(() => {
+    if (viewMode !== 'MAP') return
+
+    if (mapRef.current) {
+      try {
+        mapRef.current.remove()
+      } catch {
+        // ignore errors during teardown
+      }
+      mapRef.current = null
+    }
+
+    setMapInstanceSeed((prev) => prev + 1)
+  }, [viewMode])
+
+  // Keep a simple resize in place when viewMode changes and a map instance is
+  // already present (e.g. initial transition after mount). The more aggressive
+  // teardown/recreate logic above handles the tricky cases.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    try {
+      map.resize()
+    } catch {
+      // ignore resize errors
+    }
+  }, [viewMode])
 
   // Load demo user balance on mount
   useEffect(() => {
@@ -614,6 +657,23 @@ function App() {
 
         if (typeof data.balance === 'number') {
           setUserBalance(data.balance)
+        }
+
+        // After a successful mine, refresh user info from the backend so that
+        // both balance and owned hex count are fully in sync with the server.
+        try {
+          const userRes = await fetch(`${apiBase}/api/user`)
+          if (userRes.ok) {
+            const userData: { balance?: number; ownedCount?: number } = await userRes.json()
+            if (typeof userData.balance === 'number') {
+              setUserBalance(userData.balance)
+            }
+            if (typeof userData.ownedCount === 'number') {
+              setOwnedCount(userData.ownedCount)
+            }
+          }
+        } catch {
+          // ignore user refresh errors; we still have the optimistic update above
         }
 
         setSelectedOwned(true)
@@ -987,7 +1047,6 @@ function App() {
 
                 const xs = minedStats.map((_, i) => i)
                 const ys = minedStats.map((p) => p.cumulative)
-                const minX = 0
                 const maxX = Math.max(1, xs.length - 1)
                 const minY = 0
                 const maxY = Math.max(1, Math.max(...ys))
