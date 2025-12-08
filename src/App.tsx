@@ -91,7 +91,7 @@ function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error' | null>(null)
 
-  const [viewMode, setViewMode] = useState<'MAP' | 'TRADE'>('MAP')
+  const [viewMode, setViewMode] = useState<'MAP' | 'TRADE' | 'STATS'>('MAP')
 
   const [usdtBalance, setUsdtBalance] = useState<number | null>(null)
   const [lastPrice, setLastPrice] = useState<number | null>(null)
@@ -99,6 +99,10 @@ function App() {
   const [volume24h, setVolume24h] = useState<number | null>(null)
   const [recentTrades, setRecentTrades] = useState<
     { id: string; side: 'BUY' | 'SELL'; price: number; amount: number; timestamp: number }[]
+  >([])
+
+  const [minedStats, setMinedStats] = useState<
+    { day: string; daily: number; cumulative: number }[]
   >([])
 
   const [orderSide, setOrderSide] = useState<'BUY' | 'SELL'>('BUY')
@@ -540,6 +544,24 @@ function App() {
     }
   }, [apiBase])
 
+  useEffect(() => {
+    const loadMinedStats = async () => {
+      try {
+        const res = await fetch(`${apiBase}/api/stats/mined`)
+        if (!res.ok) return
+
+        const data: { points?: { day: string; daily: number; cumulative: number }[] } = await res.json()
+        if (Array.isArray(data.points)) {
+          setMinedStats(data.points)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    void loadMinedStats()
+  }, [apiBase])
+
   const handleMineClick = () => {
     if (!selectedHex) {
       return
@@ -702,6 +724,13 @@ function App() {
             onClick={() => setViewMode('TRADE')}
           >
             Trade
+          </button>
+          <button
+            type="button"
+            className={viewMode === 'STATS' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+            onClick={() => setViewMode('STATS')}
+          >
+            Stats
           </button>
         </div>
       </div>
@@ -940,6 +969,143 @@ function App() {
               )}
             </div>
           </div>
+        </div>
+      )}
+      {viewMode === 'STATS' && (
+        <div className="stats-panel">
+          <div className="stats-header">Mined GHX over time</div>
+          {minedStats.length === 0 && (
+            <div className="stats-empty">No mining data yet.</div>
+          )}
+          {minedStats.length > 0 && (
+            <div className="stats-chart-wrapper">
+              {(() => {
+                const width = 360
+                const height = 180
+                const paddingLeft = 32
+                const paddingRight = 8
+                const paddingTop = 16
+                const paddingBottom = 24
+
+                const xs = minedStats.map((_, i) => i)
+                const ys = minedStats.map((p) => p.cumulative)
+                const minX = 0
+                const maxX = Math.max(1, xs.length - 1)
+                const minY = 0
+                const maxY = Math.max(1, Math.max(...ys))
+
+                const plotWidth = width - paddingLeft - paddingRight
+                const plotHeight = height - paddingTop - paddingBottom
+
+                const scaleX = (i: number) =>
+                  paddingLeft + (plotWidth * (xs.length === 1 ? 0.5 : i / maxX))
+                const scaleY = (v: number) =>
+                  paddingTop + plotHeight - (plotHeight * (maxY === minY ? 0 : (v - minY) / (maxY - minY)))
+
+                const pathD = minedStats
+                  .map((p, i) => {
+                    const x = scaleX(i)
+                    const y = scaleY(p.cumulative)
+                    return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
+                  })
+                  .join(' ')
+
+                const lastPoint = minedStats[minedStats.length - 1]
+
+                return (
+                  <svg
+                    className="stats-chart"
+                    width={width}
+                    height={height}
+                    viewBox={`0 0 ${width} ${height}`}
+                  >
+                    <rect
+                      x={paddingLeft}
+                      y={paddingTop}
+                      width={plotWidth}
+                      height={plotHeight}
+                      fill="#06090f"
+                      stroke="#1f2937"
+                      strokeWidth={1}
+                    />
+                    {minedStats.length > 1 && (
+                      <>
+                        <line
+                          x1={paddingLeft}
+                          y1={scaleY(0)}
+                          x2={paddingLeft + plotWidth}
+                          y2={scaleY(0)}
+                          stroke="#111827"
+                          strokeWidth={1}
+                        />
+                        <line
+                          x1={paddingLeft}
+                          y1={scaleY(maxY)}
+                          x2={paddingLeft + plotWidth}
+                          y2={scaleY(maxY)}
+                          stroke="#111827"
+                          strokeWidth={1}
+                        />
+                      </>
+                    )}
+                    <path d={pathD} fill="none" stroke="#22c55e" strokeWidth={2} />
+                    {minedStats.map((p, i) => {
+                      const x = scaleX(i)
+                      const y = scaleY(p.cumulative)
+                      return (
+                        <circle key={p.day} cx={x} cy={y} r={2.2} fill="#22c55e" />
+                      )
+                    })}
+                    <text
+                      x={paddingLeft}
+                      y={height - 6}
+                      fill="#9ca3af"
+                      fontSize={10}
+                    >
+                      {minedStats[0]?.day}
+                    </text>
+                    <text
+                      x={width - paddingRight}
+                      y={height - 6}
+                      fill="#9ca3af"
+                      fontSize={10}
+                      textAnchor="end"
+                    >
+                      {lastPoint.day}
+                    </text>
+                    <text
+                      x={paddingLeft + 4}
+                      y={paddingTop + 12}
+                      fill="#9ca3af"
+                      fontSize={10}
+                    >
+                      Total: {lastPoint.cumulative}
+                    </text>
+                  </svg>
+                )
+              })()}
+              <div className="stats-legend">
+                <div className="stats-legend-item">
+                  <span className="stats-legend-color" />
+                  <span>Cumulative mined GHX</span>
+                </div>
+              </div>
+              <div className="stats-table">
+                <div className="stats-table-header">
+                  <span>Day</span>
+                  <span>Daily</span>
+                  <span>Cumulative</span>
+                </div>
+                {minedStats.map((p) => (
+                  <div key={p.day} className="stats-table-row">
+                    <span>{p.day}</span>
+                    <span>{p.daily}</span>
+                    <span>{p.cumulative}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
       {toastMessage && (
