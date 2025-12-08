@@ -468,21 +468,14 @@ function App() {
     }
   }, [apiBase, mapInstanceSeed])
 
-  // When switching back to the MAP view from another tab, fully tear down the
-  // existing MapLibre instance and create a new one. This is more aggressive
-  // than a simple resize, but avoids cases where the WebGL context or tile
-  // rendering gets stuck and leaves a permanent black screen.
+  // When switching back to the MAP view from another tab, bump the
+  // mapInstanceSeed so that the map initialisation effect runs again and the
+  // previous MapLibre instance is cleaned up via its standard cleanup logic.
+  // We intentionally avoid calling map.remove() directly here to prevent
+  // double-destroy errors inside MapLibre if React triggers multiple effect
+  // cycles.
   useEffect(() => {
     if (viewMode !== 'MAP') return
-
-    if (mapRef.current) {
-      try {
-        mapRef.current.remove()
-      } catch {
-        // ignore errors during teardown
-      }
-      mapRef.current = null
-    }
 
     setMapInstanceSeed((prev) => prev + 1)
   }, [viewMode])
