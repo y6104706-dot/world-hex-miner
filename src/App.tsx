@@ -103,6 +103,8 @@ function App() {
   const [lastPrice, setLastPrice] = useState<number | null>(null)
   const [tradeCount24h, setTradeCount24h] = useState<number | null>(null)
   const [volume24h, setVolume24h] = useState<number | null>(null)
+  const [vwap24h, setVwap24h] = useState<number | null>(null)
+  const [change24h, setChange24h] = useState<number | null>(null)
   const [recentTrades, setRecentTrades] = useState<
     { id: string; side: 'BUY' | 'SELL'; price: number; amount: number; timestamp: number }[]
   >([])
@@ -554,13 +556,29 @@ function App() {
       try {
         const res = await fetch(`${apiBase}/api/market/ticker`)
         if (!res.ok) return
-        const data: { lastPrice: number | null; volume24h?: number; trades?: number } = await res.json()
+        const data: {
+          lastPrice: number | null
+          volume24h?: number
+          trades?: number
+          vwap24h?: number | null
+          change24h?: number | null
+        } = await res.json()
         setLastPrice(data.lastPrice)
         if (typeof data.volume24h === 'number') {
           setVolume24h(data.volume24h)
         }
         if (typeof data.trades === 'number') {
           setTradeCount24h(data.trades)
+        }
+        if (typeof data.vwap24h === 'number') {
+          setVwap24h(data.vwap24h)
+        } else {
+          setVwap24h(null)
+        }
+        if (typeof data.change24h === 'number') {
+          setChange24h(data.change24h)
+        } else {
+          setChange24h(null)
         }
       } catch {
         // ignore
@@ -851,6 +869,30 @@ function App() {
                 <span className="trade-ticker-label">24h trades:</span>
                 <span className="trade-ticker-value">
                   {tradeCount24h != null ? tradeCount24h : '-'}
+                </span>
+              </div>
+              <div className="trade-ticker-line">
+                <span className="trade-ticker-label">24h VWAP:</span>
+                <span className="trade-ticker-value">
+                  {vwap24h != null ? `${vwap24h.toFixed(4)} USDT` : '-'}
+                </span>
+              </div>
+              <div className="trade-ticker-line">
+                <span className="trade-ticker-label">24h change:</span>
+                <span
+                  className="trade-ticker-value"
+                  style={{
+                    color:
+                      change24h == null
+                        ? undefined
+                        : change24h > 0
+                          ? '#22c55e'
+                          : change24h < 0
+                            ? '#f97316'
+                            : '#e5e7eb',
+                  }}
+                >
+                  {change24h != null ? `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%` : '-'}
                 </span>
               </div>
             </div>

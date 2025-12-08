@@ -138,7 +138,8 @@
 
 @media (max-width: 768px) {
   .info-panel {
-    top: 10px;
+    /* Push the panel below the top bar on mobile so they do not overlap. */
+    top: 64px;
     right: 10px;
     left: 10px;
     max-width: none;

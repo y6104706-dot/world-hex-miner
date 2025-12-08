@@ -425,6 +425,8 @@ app.get('/api/market/ticker', (_req, res) => {
       lastPrice: null,
       volume24h: 0,
       trades: 0,
+      vwap24h: null,
+      change24h: null,
     })
     return
   }
@@ -433,12 +435,26 @@ app.get('/api/market/ticker', (_req, res) => {
   const dayAgo = now - 24 * 60 * 60 * 1000
   let volume24h = 0
   let trades24h = 0
+  let vwapNumerator = 0
+  let vwapDenominator = 0
+  let firstTradeInWindow: Trade | undefined
 
   for (const t of trades) {
     if (t.timestamp >= dayAgo) {
       volume24h += t.amount
       trades24h += 1
+      vwapNumerator += t.price * t.amount
+      vwapDenominator += t.amount
+      if (!firstTradeInWindow || t.timestamp < firstTradeInWindow.timestamp) {
+        firstTradeInWindow = t
+      }
     }
+  }
+
+  const vwap24h = vwapDenominator > 0 ? vwapNumerator / vwapDenominator : null
+  let change24h: number | null = null
+  if (firstTradeInWindow && firstTradeInWindow.price > 0) {
+    change24h = ((last.price - firstTradeInWindow.price) / firstTradeInWindow.price) * 100
   }
 
   res.json({
@@ -446,6 +462,8 @@ app.get('/api/market/ticker', (_req, res) => {
     lastPrice: last.price,
     volume24h,
     trades: trades24h,
+    vwap24h,
+    change24h,
   })
 })
 
