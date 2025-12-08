@@ -734,32 +734,30 @@ function App() {
           </button>
         </div>
       </div>
+      <div className="map-wrapper">
+        <div ref={mapContainerRef} className="map-container" />
+        <button
+          type="button"
+          className="use-location-button"
+          onClick={handleUseMyLocationClick}
+        >
+          Use my location
+        </button>
+      </div>
 
       {viewMode === 'MAP' && (
-        <>
-          <div className="map-wrapper">
-            <div ref={mapContainerRef} className="map-container" />
-            <button
-              type="button"
-              className="use-location-button"
-              onClick={handleUseMyLocationClick}
-            >
-              Use my location
-            </button>
+        <div className="hud-panel">
+          <div className="hud-line">
+            <span className="hud-label">GHX balance:</span>{' '}
+            <span className="hud-value">
+              {typeof userBalance === 'number' ? userBalance : '-'}
+            </span>
           </div>
-          <div className="hud-panel">
-            <div className="hud-line">
-              <span className="hud-label">GHX balance:</span>{' '}
-              <span className="hud-value">
-                {typeof userBalance === 'number' ? userBalance : '-'}
-              </span>
-            </div>
-            <div className="hud-line">
-              <span className="hud-label">Owned hexes:</span>{' '}
-              <span className="hud-value">{typeof ownedCount === 'number' ? ownedCount : '-'}</span>
-            </div>
+          <div className="hud-line">
+            <span className="hud-label">Owned hexes:</span>{' '}
+            <span className="hud-value">{typeof ownedCount === 'number' ? ownedCount : '-'}</span>
           </div>
-        </>
+        </div>
       )}
 
       {viewMode === 'TRADE' && (
