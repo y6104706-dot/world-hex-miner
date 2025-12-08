@@ -168,12 +168,13 @@ type ZoneType =
   | 'RIVER'
 
 function fallbackZoneType(h3Index: string): ZoneType {
-  // To avoid random-looking mixes of categories when Overpass fails or is
-  // rate-limited, we now always fall back to URBAN. Special categories such as
-  // SEA / MILITARY / HOSPITAL / RIVER / COAST / CLIFF are only assigned when
-  // we have a clear signal from OSM/Overpass.
+  // New global default: any hex in the world is treated as SEA unless we have
+  // positive evidence from OSM/Overpass that it is a different type (urban,
+  // road, coast, military, hospital, etc.). This means that when Overpass
+  // fails or provides no useful tags, the hex behaves like open water from a
+  // gameplay and safety perspective.
   void h3Index
-  return 'URBAN'
+  return 'SEA'
 }
 
 type OverpassElement = {
@@ -205,6 +206,12 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
       // Military / safety sensitive
       way["landuse"="military"](${south},${west},${north},${east});
       node["military"](${south},${west},${north},${east});
+
+      // Prisons / secure government facilities
+      node["amenity"="prison"](${south},${west},${north},${east});
+      way["amenity"="prison"](${south},${west},${north},${east});
+      node["building"="government"](${south},${west},${north},${east});
+      way["building"="government"](${south},${west},${north},${east});
 
       // Hospitals
       node["amenity"="hospital"](${south},${west},${north},${east});
@@ -242,6 +249,8 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
 
       // Coastline / cliffs
       way["natural"="coastline"](${south},${west},${north},${east});
+      way["natural"="beach"](${south},${west},${north},${east});
+      way["leisure"="beach"](${south},${west},${north},${east});
       way["natural"="cliff"](${south},${west},${north},${east});
     );
     out body;
@@ -274,7 +283,12 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
   for (const el of elements) {
     const tags = el.tags ?? {}
 
-    if (tags.landuse === 'military' || tags.military) {
+    if (
+      tags.landuse === 'military' ||
+      tags.military ||
+      tags.amenity === 'prison' ||
+      tags.building === 'government'
+    ) {
       hasMilitary = true
     }
 
@@ -290,7 +304,7 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
       hasSea = true
     }
 
-    if (tags.natural === 'coastline') {
+    if (tags.natural === 'coastline' || tags.natural === 'beach' || tags.leisure === 'beach') {
       hasCoast = true
     }
 
@@ -299,7 +313,7 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
     }
   }
 
-  // Priority order: sea (any open water) / military / hospital / river / coast / cliff / urban.
+  // Priority order: sea (any open water) / military / hospital / river / coast / cliff / default.
   // For gameplay purposes, as soon as we detect "sea/water" tags we treat the
   // hex as SEA even if other tags (roads, military etc.) also exist in the same
   // Overpass window.
@@ -328,8 +342,8 @@ async function inferZoneTypeFromOverpass(h3Index: string): Promise<InferredZone>
     return { zoneType: 'CLIFF', debug }
   }
 
-  debug.push('OSM: no special tags found, defaulting to URBAN')
-  return { zoneType: 'URBAN', debug }
+  debug.push('OSM: no special tags found, defaulting to SEA (global default)')
+  return { zoneType: 'SEA', debug }
 }
 
 // Endpoint used for initial map rendering – first tries cached OSM/Overpass-based
@@ -654,6 +668,22 @@ app.post('/api/mine', (req, res) => {
       reason: 'ALREADY_MINED',
       balance: demoUser.balance,
       owned: true,
+    })
+    return
+  }
+
+  // Server-side safety: look up the zone type for this hex and block mining in
+  // restricted areas regardless of what the client does.
+  const cached = hexCache[h3Index]
+  const zoneType: ZoneType = cached?.zoneType ?? fallbackZoneType(h3Index)
+
+  if (zoneType === 'MILITARY' || zoneType === 'HOSPITAL' || zoneType === 'CLIFF' || zoneType === 'SEA') {
+    res.json({
+      ok: false,
+      reason: 'FORBIDDEN_ZONE',
+      zoneType,
+      balance: demoUser.balance,
+      owned: false,
     })
     return
   }
