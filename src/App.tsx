@@ -344,6 +344,40 @@ function App() {
         gpsSelectedHexRef.current = null
       }
 
+      // If the current GPS hex exists in the currently loaded features,
+      // highlight it immediately (orange) without waiting for a reload.
+      if (usingMyLocation) {
+        const gpsHex = gpsSelectedHexRef.current
+        if (gpsHex) {
+          const currentFeatures = featuresRef.current
+          if (currentFeatures && currentFeatures.length > 0) {
+            const hasGpsFeature = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
+            if (hasGpsFeature) {
+              const updatedFeatures: HexFeature[] = currentFeatures.map((f) => ({
+                ...f,
+                properties: {
+                  ...f.properties,
+                  selected: f.properties.h3Index === gpsHex,
+                },
+              }))
+
+              featuresRef.current = updatedFeatures
+
+              const gpsFeature = updatedFeatures.find((f) => f.properties.h3Index === gpsHex)
+              if (gpsFeature) {
+                setSelectedHex({ h3Index: gpsHex, zoneType: gpsFeature.properties.zoneType })
+                setSelectedOwned(ownedHexesRef.current.has(gpsHex))
+              }
+
+              const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+              if (source) {
+                source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+              }
+            }
+          }
+        }
+      }
+
       // Follow mode: keep the map centered on the user while enabled.
       if (followMyLocation) {
         const now = Date.now()
