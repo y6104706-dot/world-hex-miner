@@ -136,7 +136,6 @@ function App() {
       const next = !prev
       driveModeActiveRef.current = next
       if (!next) {
-        setLastDriveHex(null)
         lastDriveHexRef.current = null
         setToastMessage('Drive Mode turned off.')
         setToastType('success')
@@ -220,7 +219,6 @@ function App() {
   const [toastType, setToastType] = useState<'success' | 'error' | null>(null)
   const [driveModeActive, setDriveModeActive] = useState(false)
   const driveModeActiveRef = useRef(false)
-  const [lastDriveHex, setLastDriveHex] = useState<string | null>(null)
   const lastDriveHexRef = useRef<string | null>(null)
   const [showVeins, setShowVeins] = useState(false)
 
@@ -662,7 +660,6 @@ function App() {
 
           if (!currentLastDriveHex) {
             // Start of a drive sequence.
-            setLastDriveHex(h3Index)
             lastDriveHexRef.current = h3Index
             setToastMessage('Drive Mode: starting from this hex. Click another road hex to continue.')
             setToastType('success')
@@ -774,7 +771,6 @@ function App() {
             )
             setToastType('success')
 
-            setLastDriveHex(h3Index)
             lastDriveHexRef.current = h3Index
           } catch {
             setToastMessage('Drive step failed due to a network error.')
