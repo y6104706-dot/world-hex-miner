@@ -1,0 +1,6802 @@
+{
+  "8b3f4dc1ea6dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c696fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb4afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c459fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea61fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c7a5fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1c6b0fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea68fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c691fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb6bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea63fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb4cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c6b2fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea44fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c693fff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dc1c69afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea65fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea6cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c682fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c695fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea60fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb49fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c690fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c6b6fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea6efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c684fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea62fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb4bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c69efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c6b1fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea69fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c692fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c686fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea64fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb4dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c6b3fff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dc1ea45fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c694fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb48fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea66fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c680fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea4efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c69cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb6afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1c6a2fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c6b5fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dd0e401fff": {
+    "zoneType": "RIVER",
+    "debug": [
+      "OSM: river / stream / canal detected"
+    ]
+  },
+  "8b3f4dd0e55cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e473fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e408fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e42efff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18caefff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e550fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dd0e429fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c11fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c05fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e475fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c18fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dd0e55efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ca9fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e552fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18cf5fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c32fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e559fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c00fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e470fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e42bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e40cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c13fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e55bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cf0fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d8dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e472fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c85fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c1afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e42dfff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18cabfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e40efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c02fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c0efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dd0e421fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18c15fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c1cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e543fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cadfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c10fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ce6fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ca1fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e556fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c04fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ca8fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e428fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cf4fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e55dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c1efff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dc18c12fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c06fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e474fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ca3fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c19fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dd0e551fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18caafff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cf6fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e558fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dd0e42afff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dd0e476fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e553fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c33fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dd0e471fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c01fff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dd0e55afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e42cfff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c14fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e54efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ca5fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cf1fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c1bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cacfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e40dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d89fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e542fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c03fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dd0e555fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c16fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c81fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c1dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18425fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1850efff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18502fff": {
+    "zoneType": "CLIFF",
+    "debug": [
+      "OSM: cliff detected"
+    ]
+  },
+  "8b3f4dc18521fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18528fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18509fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18420fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1851cfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18523fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18504fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1852afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18576fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1850bfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1851efff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18cd1fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18506fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18cd4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cdbfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18574fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cc3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cd6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cddfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cd8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18112fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18519fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18566fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18531fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18106fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cc5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18119fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18525fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18943fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc181a3fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cc1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1850dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1810dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc188c5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18424fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1852cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18190fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18969fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c4afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18501fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc188d8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc18024fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1894afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1885afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18508fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dcae351fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181b6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cd3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18184fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cf2fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc188ebfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1851bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1895dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d9dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1856dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae345fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18101fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc188ccfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1852efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18520fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18951fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d98fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cc8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae358fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18108fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18165fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18426fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cc0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cdafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c04fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181aafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae223fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18522fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c12fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c2afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18945fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ceefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae36bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1811bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18809fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188c0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c1efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c89fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181b1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d58fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18503fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c50fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d8cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae372fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18958fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18842fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18026fff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dc18561fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8886fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cc2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c31fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188dafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae34cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8ca3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae340fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8808fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1896bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18114fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18855fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18103fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dca8860fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca884dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8899fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cd5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c06fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88f1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c76fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18529fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c63fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dca881bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ce9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18160fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1885cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18129fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c90fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae353fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c84fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88b3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c19fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1894cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1850afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c44fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181a5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18192fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188cefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188edfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18021fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8873fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cdcfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8841fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c0bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca882efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8cb6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18421fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c33fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dcae225fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dca8caafff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dca8c6afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18940fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18850fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1810afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae366fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1851dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188c2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dca88acfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18186fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ccafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d93fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8848fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dca8c01fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cd0fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dca8854fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88e5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d5afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8cb1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8126fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1895afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dcae35afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18034fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc188e1fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ca2fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc181b3fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dcaeadbfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18511fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188d5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8894fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c8bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c14fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dcae36dfff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dca8b16fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dca888dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181acfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8822fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18865fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18580fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dca8881fff": {
+    "zoneType": "CLIFF",
+    "debug": [
+      "OSM: cliff detected"
+    ]
+  },
+  "8b3f4dca8c2cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18556fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae22cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1858cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18cb5fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cebfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1880bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1811dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae34efff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc188e8fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18570fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18524fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ce3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c71fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e243fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dca88ecfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d9afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2cdfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c1bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dca886efff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1818dfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18515fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca889bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1894efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8803fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c52fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18505fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c83fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dcae361fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18111fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18593fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dcae309fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18194fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc188c9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cc4fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18534fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d8efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d4efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185b2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185a6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181a0fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8b30fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dca8829fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8c2efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c8afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8134fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dca8c0dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca88f3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1859afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc18518fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18bb6fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18942fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dcae374fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18105fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae342fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cdefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cccfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8ca5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e24afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188dcfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc18c9dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c6cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae368fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c73fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8888fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1858efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1852bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1885efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18955fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2c1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88e0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c65fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18181fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8843fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dca8862fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dcae355fff": {
+    "zoneType": "CLIFF",
+    "debug": [
+      "OSM: cliff detected"
+    ]
+  },
+  "8b3f4dca8cacfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c2c0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c86fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18118fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2e0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18a06fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18565fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185adfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cd2fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc188e3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18821fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8883fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cb0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae349fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c08fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dca881dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18956fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185a1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185a9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18852fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18968fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2c8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca880afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18116fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e25dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8875fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8c46fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1850cfff": {
+    "zoneType": "CLIFF",
+    "debug": [
+      "OSM: cliff detected"
+    ]
+  },
+  "8b3f4dca8869fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8c22fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d89fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c2d3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1812bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae35cfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1e20afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc181b5fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18510fff": {
+    "zoneType": "CLIFF",
+    "debug": [
+      "OSM: cliff detected"
+    ]
+  },
+  "8b3f4dc18c8dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18a20fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dca888afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18828fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188c4fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dca8c54fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18970fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185b4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88aefff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c91fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18846fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc181aefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8856fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18536fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18b80fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18949fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8896fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8ca0fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dcad498fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18a19fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18500fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e251fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181a9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae22efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e256fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18a33fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188eafff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18cc6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1856cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18874fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca889dfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dca8ce5fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dcae363fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a96cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c2dafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2eefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88d4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c35fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18860fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d49fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8cb3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c98fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca884afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18aaafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18572fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e258fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca885dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185a8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18023fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e270fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18a14fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e245fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181a2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8805fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18b1cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae350fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc188cbfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dca88b0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c03fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18905fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e26bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1852dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18196fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18a0dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18823fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18582fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dca8c94fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8818fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18964fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18526fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18a01fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c8cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18af6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1851afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2e9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18b9afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2c3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1895cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c60fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c16fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8870fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18873fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18512fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e22bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1810cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18aa5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18badfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c49fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae376fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188defff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8891fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c29fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1892bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e24cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cf3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18560fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dcae36afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18595fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88a9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1882afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18972fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8c41fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8caefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c80fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185a3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8b32fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2cafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18963fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18a1bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18b8efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18808fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c1dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8851fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2e2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18100fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18b10fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8c6efff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18aacfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18113fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc188f1fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dcae344fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca882bfff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18ccefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dca8c0afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1890cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1859cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dcae34bfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18a08fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18876fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dca88f5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18966fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dca8ca2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c93fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185b6fff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dc18854fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18944fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ba1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2ddfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dcad493fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1811afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8885fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e240fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181a4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18584fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18164fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae35efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca880cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc181b0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c30fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8845fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ba8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e20cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18b93fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c56fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18590fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c289fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18953fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d9efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18b82fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18533fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18a2efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca88d6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8d8bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18961fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188e5fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1896afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e25afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ca6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18025fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e253fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c2c2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c4bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18a22fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dca8d4bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8898fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185aafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc188c6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8800fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dca8c70fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dcae371fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e34bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc185b1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1e262fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e2ebfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1e275fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc185a5fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc1e24efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e242fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c96fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18586fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e249fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e359fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e25cfff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e2edfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e264fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e34dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc185a0fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc185b3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc1e341fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e24bfff": {
+    "zoneType": "CLIFF",
+    "debug": [
+      "OSM: cliff detected"
+    ]
+  },
+  "8b3f4dc18594fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2c9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e348fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e25efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cb2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e266fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc185a2fff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dc1e255fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e26dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc185b5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a965fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184a2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e369fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184b5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1c683fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e259fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea42fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18592fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1859efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc18d20fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d33fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e34afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc185b0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea6afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a969fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18581fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18583fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c68afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea49fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc185aefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1c69dfff": {
+    "zoneType": "URBAN",
+    "debug": [
+      "OSM: urban fabric detected"
+    ]
+  },
+  "8b3f4dc18599fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc18596fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc1c698fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e261fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea4dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea46fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185a4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d35fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc184a4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e2cbfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb69fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e35dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18daafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1859dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc18d32fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18591fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1859bfff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc18d22fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e248fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d30fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea41fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c792fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18cb4fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d8bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c68cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc184a6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18585fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e25bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea48fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c799fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea43fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c95fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d36fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d9efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a96dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e36bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d34fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d24fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea6bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb45fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea51fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c68efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e34cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1858afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c699fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18db1fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c681fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c794fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea4cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c90fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d26fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184b4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18d86fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea40fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c79bfff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18cb6fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c68bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c69bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a968fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb6dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d99fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18cb1fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18598fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc18d23fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18ca4fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c783fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e34efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c68dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d81fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18588fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c796fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb61fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c79dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e265fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c92fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e26cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e368fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d04fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e269fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d88fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c6b4fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1c688fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e260fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d9bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c9afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb68fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e349fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d31fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18daefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18514fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c791fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18cb3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c798fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e268fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18da2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c94fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18516fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e36afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1c793fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18db5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e263fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e246fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d83fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c79afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e26afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18da9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e24dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb65fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18530fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d8afff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1eb6cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e241fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18532fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18d9dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c782fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c795fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d91fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e26efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e244fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d85fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c9bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c79cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb41fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d98fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1c790fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18dabfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d8cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb6efff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18d80fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d93fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c4c9fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e36dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1c79efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d9afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb43fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d8efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d82fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d95fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18da8fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18ca0fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18d9cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18da3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d84fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18da5fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18dacfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18da0fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18da6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c36fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d11fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d13fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18dadfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18da4fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18da1fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c30fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18d14fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea5cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d1efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eaebfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e371fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d16fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d12fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18d1bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eaedfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eaccfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e365fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d1dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea4bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d92fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c34fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eac0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e346fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d15fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea4afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea5efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e36cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d18fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eadafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e360fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d10fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea59fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d1afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eacefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18db3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e373fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d06fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e354fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18db0fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e36efff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc18c35fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d94fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea5bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eadcfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eac9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eae8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d19fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e362fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eacdfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eae3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d96fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18db2fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e375fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e343fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea5dfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eaeafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eacbfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e370fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18db4fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e364fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1eadefff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea58fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eae9fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e366fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eac8fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ead9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e345fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18d90fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18db6fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1e361fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1eac1fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e372fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea5afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eacafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e340fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eadbfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e374fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1eaeefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e309fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eac3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e342fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e355fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eaddfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eac5fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1e363fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ead8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e376fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1e344fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18490fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc184b6fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a96afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18484fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a94bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a862fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184b1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a875fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18492fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18486fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a959fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a864fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a94dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184b3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184a0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a941fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18494fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a948fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1858bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a96efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a95bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18496fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a94afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a866fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc184b0fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18491fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a943fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a96bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a861fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a94cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1a95dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc184b2fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a945fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18480fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a958fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18482fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a94efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc184a3fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ab35fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18493fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18412fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18495fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a865fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1849efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18406fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a86efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a949fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a86cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a86dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18433fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184aafff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a860fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18483fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18414fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1849dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ab30fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184a5fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a869fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18485fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18589fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18499fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1841bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18422fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18498fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184acfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1ab26fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1849afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18435fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18403fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18430fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184a1fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18481fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18416fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a86bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18432fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1849cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1849bfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1841dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184aefff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18400fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ab34fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18411fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1858dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a868fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18405fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18434fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ab36fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18418fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ab31fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18402fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc184a9fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18415fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1a86afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18423fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1848efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18413fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18436fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1841afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1841cfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18404fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc184adfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18410fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc18513fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18431fff": {
+    "zoneType": "COAST",
+    "debug": [
+      "OSM: coastline detected"
+    ]
+  },
+  "8b3f4dc184a8fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 504",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc185abfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc184f4fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1841efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: no special tags found, defaulting to SEA (global default)"
+    ]
+  },
+  "8b3f4dc1eb56fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c9efff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc18c82fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea28fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc18c86fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb5dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea74fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb51fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea23fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb58fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea2afff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc1ea76fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc1eb72fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb40fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb53fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea25fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb5afff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea2cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb09fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb42fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb55fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb5cfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea2efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "OSM: water/sea detected (forced SEA for gameplay)"
+    ]
+  },
+  "8b3f4dc1eb50fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea29fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea75fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb5efff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb52fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1eb46fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea70fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea05fff": {
+    "zoneType": "NATURE_RESERVE",
+    "debug": [
+      "OSM: nature reserve / park / forest detected"
+    ]
+  },
+  "8b3f4dc1ea2bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb73fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb54fff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1eb5bfff": {
+    "zoneType": "MAIN_ROAD",
+    "debug": [
+      "OSM: major road detected"
+    ]
+  },
+  "8b3f4dc1ea2dfff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  },
+  "8b3f4dc1ea21fff": {
+    "zoneType": "SEA",
+    "debug": [
+      "Overpass failed in /api/hex: Overpass error: 429",
+      "Using hash-based zoneType fallback for this hex"
+    ]
+  }
+}

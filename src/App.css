@@ -503,7 +503,29 @@
   text-align: right;
 }
 
+.policy-scroll {
+  margin-top: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Stats view */
+
+.policy-panel {
+  position: absolute;
+  inset: 60px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: radial-gradient(circle at top right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.96));
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
+  padding: 14px 16px;
+  color: #e5e7eb;
+}
 
 .stats-panel {
   position: absolute;

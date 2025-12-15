@@ -10,10 +10,40 @@ function App() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('ghxAuthToken')
+    } catch {
+      return null
+    }
+  })
+
+  const setAndPersistAuthToken = (token: string | null) => {
+    setAuthToken(token)
+    try {
+      if (token) {
+        localStorage.setItem('ghxAuthToken', token)
+      } else {
+        localStorage.removeItem('ghxAuthToken')
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  const authedFetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const headers = new Headers(init?.headers)
+    if (authToken) {
+      headers.set('Authorization', `Bearer ${authToken}`)
+    }
+    return fetch(input, { ...init, headers })
+  }
+
   type ZoneType =
     | 'SEA'
     | 'MAIN_ROAD'
     | 'URBAN'
+    | 'INTERURBAN'
     | 'MILITARY'
     | 'HOSPITAL'
     | 'CLIFF'
@@ -26,42 +56,138 @@ function App() {
     description: string
   }
 
+  const handleAuthRegister = () => {
+    const doRegister = async () => {
+      setAuthSubmitting(true)
+      setAuthError(null)
+      try {
+        const res = await fetch(`${apiBase}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: authEmail, password: authPassword }),
+        })
+
+        const data: { ok?: boolean; token?: string; error?: string } = await res.json().catch(() => ({}))
+        if (!res.ok || !data.ok || !data.token) {
+          setAuthError(data.error ?? 'Registration failed.')
+          return
+        }
+
+        setAndPersistAuthToken(data.token)
+        setToastMessage('Registration successful. You are now logged in.')
+        setToastType('success')
+        setAuthPassword('')
+        setViewMode('MAP')
+      } catch {
+        setAuthError('Network error during registration.')
+      } finally {
+        setAuthSubmitting(false)
+      }
+    }
+
+    void doRegister()
+  }
+
+  const handleAuthLogin = () => {
+    const doLogin = async () => {
+      setAuthSubmitting(true)
+      setAuthError(null)
+      try {
+        const res = await fetch(`${apiBase}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: authEmail, password: authPassword }),
+        })
+
+        const data: { ok?: boolean; token?: string; error?: string } = await res.json().catch(() => ({}))
+        if (!res.ok || !data.ok || !data.token) {
+          setAuthError(data.error ?? 'Login failed.')
+          return
+        }
+
+        setAndPersistAuthToken(data.token)
+        setToastMessage('Logged in successfully.')
+        setToastType('success')
+        setAuthPassword('')
+        setViewMode('MAP')
+      } catch {
+        setAuthError('Network error during login.')
+      } finally {
+        setAuthSubmitting(false)
+      }
+    }
+
+    void doLogin()
+  }
+
+  const handleLogout = () => {
+    setAndPersistAuthToken(null)
+    setAccountInfo(null)
+    ownedHexesRef.current = new Set()
+    setUserBalance(null)
+    setOwnedCount(null)
+    setUsdtBalance(null)
+    setToastMessage('Logged out.')
+    setToastType('success')
+  }
+
+  const handleToggleDriveMode = () => {
+    setDriveModeActive((prev) => {
+      const next = !prev
+      driveModeActiveRef.current = next
+      if (!next) {
+        setLastDriveHex(null)
+        lastDriveHexRef.current = null
+        setToastMessage('Drive Mode turned off.')
+        setToastType('success')
+      } else {
+        setToastMessage('Drive Mode turned on. Click road hexes to simulate driving.')
+        setToastType('success')
+      }
+      return next
+    })
+  }
+
   const miningRules: Record<ZoneType, MiningRule> = {
     URBAN: {
       minSpeedKmh: null,
-      description: 'Urban area – mining allowed while standing, walking or driving normally.',
+      description: 'Urban area.',
+    },
+    INTERURBAN: {
+      minSpeedKmh: null,
+      description: 'Interurban area / open land between cities.',
     },
     MAIN_ROAD: {
-      minSpeedKmh: 300,
-      description: 'Main road – mining allowed only above 300 km/h (e.g. flying over the road).',
+      minSpeedKmh: null,
+      description: 'Main road / major traffic corridor.',
     },
     SEA: {
-      minSpeedKmh: 7,
-      description: 'Sea – mining allowed only above 7 km/h (moving on a boat).',
+      minSpeedKmh: null,
+      description: 'Sea / open water.',
     },
     NATURE_RESERVE: {
-      minSpeedKmh: 7,
-      description: 'Nature reserve / forest – mining allowed only in a safe, controlled way (similar to sea, e.g. slow movement such as a guided tour or boat).',
+      minSpeedKmh: null,
+      description: 'Nature reserve / forest / large green area.',
     },
     RIVER: {
-      minSpeedKmh: 7,
-      description: 'River / stream – mining allowed only while moving along the water at low speed (e.g. boat or kayak).',
+      minSpeedKmh: null,
+      description: 'River / stream / canal.',
     },
     MILITARY: {
       minSpeedKmh: null,
-      description: 'Military zone – mining is forbidden for safety and legal reasons.',
+      description: 'Military or similarly sensitive zone.',
     },
     HOSPITAL: {
       minSpeedKmh: null,
-      description: 'Hospital area – mining is forbidden to avoid encouraging risky behavior near hospitals.',
+      description: 'Hospital or medical facility area.',
     },
     CLIFF: {
       minSpeedKmh: null,
-      description: 'Cliff / dangerous terrain – mining is forbidden for safety reasons.',
+      description: 'Cliff / steep or dangerous terrain.',
     },
     COAST: {
       minSpeedKmh: null,
-      description: 'Coastline – mining allowed at walking speed or above, but not in the water.',
+      description: 'Coastline / beach edge.',
     },
   }
 
@@ -72,6 +198,7 @@ function App() {
       zoneType: ZoneType
       claimed: boolean
       selected: boolean
+      canMine: boolean
       debugInfo: string[]
     }
     geometry: {
@@ -86,10 +213,16 @@ function App() {
   const [mineMessage, setMineMessage] = useState<string | null>(null)
   const [mineMessageType, setMineMessageType] = useState<'success' | 'error' | null>(null)
   const [selectedOwned, setSelectedOwned] = useState<boolean | null>(null)
+  const [canSpawnHere, setCanSpawnHere] = useState(false)
   const [userBalance, setUserBalance] = useState<number | null>(null)
   const [ownedCount, setOwnedCount] = useState<number | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error' | null>(null)
+  const [driveModeActive, setDriveModeActive] = useState(false)
+  const driveModeActiveRef = useRef(false)
+  const [lastDriveHex, setLastDriveHex] = useState<string | null>(null)
+  const lastDriveHexRef = useRef<string | null>(null)
+  const [showVeins, setShowVeins] = useState(false)
 
   // Used to force a full MapLibre re-initialisation when needed (e.g. when
   // returning from the Trade/Stats views and the map ends up black). Changing
@@ -97,7 +230,7 @@ function App() {
   // in the existing container.
   const [mapInstanceSeed, setMapInstanceSeed] = useState(0)
 
-  const [viewMode, setViewMode] = useState<'MAP' | 'TRADE' | 'STATS' | 'POLICY'>('MAP')
+  const [viewMode, setViewMode] = useState<'MAP' | 'TRADE' | 'STATS' | 'POLICY' | 'ACCOUNT'>('MAP')
 
   const [usdtBalance, setUsdtBalance] = useState<number | null>(null)
   const [lastPrice, setLastPrice] = useState<number | null>(null)
@@ -130,6 +263,23 @@ function App() {
       }
     >
   >(new Map())
+
+  type AccountInfo = {
+    id: string
+    ghxBalance: number
+    usdtBalance: number
+    ownedCount: number
+    ownedHexes: string[]
+  }
+
+  const [accountInfo, setAccountInfo] = useState<AccountInfo | null>(null)
+  const [accountLoading, setAccountLoading] = useState(false)
+  const [accountError, setAccountError] = useState<string | null>(null)
+
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [authSubmitting, setAuthSubmitting] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -169,9 +319,27 @@ function App() {
         data: initialCollection,
       })
 
+      // Separate source for an optional "veins" overlay that displays all
+      // owned hexes as polygons, independent of the main frontier
+      // rendering. This is populated by a React effect when showVeins is
+      // toggled on.
+      const emptyOwnedCollection = {
+        type: 'FeatureCollection' as const,
+        features: [] as {
+          type: 'Feature'
+          properties: { h3Index: string }
+          geometry: { type: 'Polygon'; coordinates: [number, number][][] }
+        }[],
+      }
+
+      map.addSource('owned-veins', {
+        type: 'geojson',
+        data: emptyOwnedCollection,
+      })
+
       const loadOwnedHexes = async () => {
         try {
-          const res = await fetch(`${apiBase}/api/owned-hexes`)
+          const res = await authedFetch(`${apiBase}/api/owned-hexes`)
           if (res.ok) {
             const data: { hexes?: string[] } = await res.json()
             if (Array.isArray(data.hexes)) {
@@ -284,29 +452,11 @@ function App() {
           if (cached) {
             zoneType = cached.zoneType
             debugInfo = cached.debugInfo
-          } else {
-            try {
-              const res = await fetch(`${apiBase}/api/hex/${hexIndex}`)
-              if (res.ok) {
-                const data: { zoneType?: ZoneType; debug?: string[] } = await res.json()
-                if (data.zoneType) {
-                  zoneType = data.zoneType
-                }
-                if (Array.isArray(data.debug)) {
-                  debugInfo = data.debug
-                }
-              }
-            } catch {
-              // fallback to default URBAN if backend call fails
-            }
-
-            infoCache.set(hexIndex, {
-              zoneType,
-              debugInfo,
-            })
           }
 
           const isOwned = ownedSet.has(hexIndex)
+          const neighbors = h3.gridDisk(hexIndex, 1)
+          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
 
           newFeatures.push({
             type: 'Feature',
@@ -315,6 +465,7 @@ function App() {
               zoneType,
               claimed: isOwned,
               selected: false,
+              canMine,
               debugInfo,
             },
             geometry: {
@@ -375,42 +526,25 @@ function App() {
         type: 'fill',
         source: 'h3-hex',
         paint: {
-          // First priority: claimed / selected. Otherwise color by zoneType so
-          // players can quickly see the difference between urban, sea, coast,
-          // military and other areas.
+          // Frontier visualisation: claimed hexes are highlighted, directly
+          // mineable neighbours are shown as faint candidates, everything else
+          // is almost transparent.
           'fill-color': [
             'case',
             ['get', 'claimed'],
-            '#1f6b40',
+            '#b91c1c',
             ['get', 'selected'],
             '#ff9900',
-            [
-              'match',
-              ['get', 'zoneType'],
-              'SEA',
-              '#0f172a',
-              'COAST',
-              '#0369a1',
-              'RIVER',
-              '#1d4ed8',
-              'NATURE_RESERVE',
-              '#166534',
-              'MILITARY',
-              '#7f1d1d',
-              'HOSPITAL',
-              '#b91c1c',
-              'CLIFF',
-              '#6b21a8',
-              'MAIN_ROAD',
-              '#4b5563',
-              /* default URBAN / other */
-              '#e0e0e0',
-            ],
+            ['get', 'canMine'],
+            '#e5e7eb',
+            '#000000',
           ],
           'fill-opacity': [
             'case',
             ['get', 'claimed'],
             0.65,
+            ['get', 'canMine'],
+            0.15,
             0.2,
           ],
         },
@@ -424,6 +558,20 @@ function App() {
           'line-color': '#555555',
           'line-width': 0.8,
           'line-opacity': 0.7,
+        },
+      })
+
+      // Veins overlay: soft red polygons for all owned hexes.
+      map.addLayer({
+        id: 'owned-veins-layer',
+        type: 'fill',
+        source: 'owned-veins',
+        layout: {
+          visibility: 'none',
+        },
+        paint: {
+          'fill-color': '#b91c1c',
+          'fill-opacity': 0.35,
         },
       })
 
@@ -476,9 +624,11 @@ function App() {
         setSelectedHex({ h3Index, zoneType })
         setMineMessage(null)
         setMineMessageType(null)
+        setCanSpawnHere(false)
 
         const ownedSet = ownedHexesRef.current
-        setSelectedOwned(ownedSet.has(h3Index))
+        const isOwned = ownedSet.has(h3Index)
+        setSelectedOwned(isOwned)
 
         const currentFeatures = featuresRef.current
         if (currentFeatures && currentFeatures.length > 0) {
@@ -502,6 +652,135 @@ function App() {
             source.setData(updatedCollection)
           }
         }
+
+        // If Drive Mode is active, interpret this click as a "drive step". The
+        // first click in Drive Mode just seeds lastDriveHex; subsequent clicks
+        // call the backend /api/drive/step endpoint to mine road hexes along
+        // the corridor between the previous and current hexes.
+        if (driveModeActiveRef.current) {
+          const currentLastDriveHex = lastDriveHexRef.current
+
+          if (!currentLastDriveHex) {
+            // Start of a drive sequence.
+            setLastDriveHex(h3Index)
+            lastDriveHexRef.current = h3Index
+            setToastMessage('Drive Mode: starting from this hex. Click another road hex to continue.')
+            setToastType('success')
+            return
+          }
+
+          const fromH3 = currentLastDriveHex
+          const toH3 = h3Index
+
+          try {
+            const res = await authedFetch(`${apiBase}/api/drive/step`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ fromH3, toH3 }),
+            })
+
+            if (!res.ok) {
+              if (res.status === 401) {
+                setToastMessage('Please log in to use Drive Mode.')
+              } else {
+                setToastMessage('Drive step failed due to a server error.')
+              }
+              setToastType('error')
+              return
+            }
+
+            const data: {
+              ok?: boolean
+              reason?: string
+              minedHexes?: string[]
+              count?: number
+              grossReward?: number
+              fee?: number
+              netDelta?: number
+              newBalance?: number
+            } = await res.json()
+
+            if (!data.ok) {
+              if (data.reason === 'NO_ROAD_HEXES') {
+                setToastMessage('Drive step: no road hexes found between these points.')
+              } else if (data.reason === 'SAME_HEX') {
+                setToastMessage('Drive step: choose a different target hex.')
+              } else {
+                setToastMessage('Drive step was not accepted.')
+              }
+              setToastType('error')
+              if (typeof data.newBalance === 'number') {
+                setUserBalance(data.newBalance)
+              }
+              return
+            }
+
+            if (typeof data.newBalance === 'number') {
+              setUserBalance(data.newBalance)
+            }
+
+            const mined = Array.isArray(data.minedHexes) ? data.minedHexes : []
+            if (mined.length > 0) {
+              const ownedSetInner = ownedHexesRef.current
+              for (const idx of mined) {
+                ownedSetInner.add(idx)
+              }
+
+              const current = featuresRef.current
+              if (current && current.length > 0) {
+                const updated: HexFeature[] = current.map((f) => {
+                  const idx = f.properties.h3Index
+                  const isOwnedHex = ownedSetInner.has(idx)
+                  const neighbors = h3.gridDisk(idx, 1)
+                  const canMineNeighbor = !isOwnedHex && neighbors.some((n) => ownedSetInner.has(n))
+
+                  return {
+                    ...f,
+                    properties: {
+                      ...f.properties,
+                      claimed: isOwnedHex,
+                      canMine: canMineNeighbor,
+                    },
+                  }
+                })
+
+                featuresRef.current = updated
+
+                const collection = {
+                  type: 'FeatureCollection' as const,
+                  features: updated,
+                }
+
+                const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                if (src) {
+                  src.setData(collection)
+                }
+              }
+
+              if (typeof data.count === 'number') {
+                setOwnedCount((prev) =>
+                  typeof prev === 'number' ? prev + data.count! : data.count!,
+                )
+              }
+            }
+
+            const count = data.count ?? 0
+            const fee = data.fee ?? 0
+            const net = data.netDelta ?? count - fee
+            setToastMessage(
+              `Drive step successful: mined ${count} road hexes, fee ${fee} GHX, net +${net} GHX.`,
+            )
+            setToastType('success')
+
+            setLastDriveHex(h3Index)
+            lastDriveHexRef.current = h3Index
+          } catch {
+            setToastMessage('Drive step failed due to a network error.')
+            setToastType('error')
+          }
+        }
       })
     })
 
@@ -523,6 +802,54 @@ function App() {
     setMapInstanceSeed((prev) => prev + 1)
   }, [viewMode])
 
+  // Load combined account + wallet summary when the Account tab is opened.
+  useEffect(() => {
+    if (viewMode !== 'ACCOUNT') return
+
+    const loadAccount = async () => {
+      setAccountLoading(true)
+      setAccountError(null)
+      try {
+        const res = await authedFetch(`${apiBase}/api/me`)
+        if (!res.ok) {
+          if (res.status === 401) {
+            setAccountInfo(null)
+            setAccountError('Please log in to view your account.')
+          } else {
+            setAccountError('Failed to load account information.')
+          }
+          setAccountLoading(false)
+          return
+        }
+
+        const data: Partial<AccountInfo> = await res.json()
+        if (
+          typeof data.id === 'string' &&
+          typeof data.ghxBalance === 'number' &&
+          typeof data.usdtBalance === 'number' &&
+          typeof data.ownedCount === 'number' &&
+          Array.isArray(data.ownedHexes)
+        ) {
+          setAccountInfo({
+            id: data.id,
+            ghxBalance: data.ghxBalance,
+            usdtBalance: data.usdtBalance,
+            ownedCount: data.ownedCount,
+            ownedHexes: data.ownedHexes,
+          })
+        } else {
+          setAccountError('Account response was incomplete.')
+        }
+      } catch {
+        setAccountError('Network error while loading account.')
+      } finally {
+        setAccountLoading(false)
+      }
+    }
+
+    void loadAccount()
+  }, [apiBase, viewMode, authToken])
+
   // Keep a simple resize in place when viewMode changes and a map instance is
   // already present (e.g. initial transition after mount). The more aggressive
   // teardown/recreate logic above handles the tricky cases.
@@ -541,7 +868,7 @@ function App() {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const res = await fetch(`${apiBase}/api/user`)
+        const res = await authedFetch(`${apiBase}/api/user`)
         if (res.ok) {
           const data: { balance?: number; ownedCount?: number } = await res.json()
           if (typeof data.balance === 'number') {
@@ -550,6 +877,9 @@ function App() {
           if (typeof data.ownedCount === 'number') {
             setOwnedCount(data.ownedCount)
           }
+        } else if (res.status === 401) {
+          setUserBalance(null)
+          setOwnedCount(null)
         }
       } catch {
         // ignore load errors for now
@@ -557,12 +887,12 @@ function App() {
     }
 
     void loadUser()
-  }, [])
+  }, [apiBase, authToken])
 
   useEffect(() => {
     const loadBalances = async () => {
       try {
-        const res = await fetch(`${apiBase}/api/market/balance`)
+        const res = await authedFetch(`${apiBase}/api/market/balance`)
         if (!res.ok) return
         const data: { ghx?: number; usdt?: number } = await res.json()
         if (typeof data.ghx === 'number') {
@@ -637,7 +967,60 @@ function App() {
     return () => {
       window.clearInterval(interval)
     }
-  }, [apiBase])
+  }, [apiBase, authToken])
+
+  // Veins overlay: when toggled on, populate the dedicated MapLibre source
+  // with all owned hexes as polygon features, and show the fill layer. When
+  // toggled off, hide the layer. This is intentionally decoupled from the main
+  // frontier rendering to avoid extra work on every viewport change.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const source = map.getSource('owned-veins') as maplibregl.GeoJSONSource | undefined
+    const layerId = 'owned-veins-layer'
+
+    if (!source) return
+
+    if (!showVeins) {
+      // Hide the layer when the overlay is turned off.
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', 'none')
+      }
+      return
+    }
+
+    const ownedSet = ownedHexesRef.current
+
+    const features = Array.from(ownedSet).map((idx) => {
+      const boundary = h3.cellToBoundary(idx, true)
+      const coords = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
+      // Close the polygon ring
+      if (coords.length > 0) {
+        coords.push(coords[0])
+      }
+
+      return {
+        type: 'Feature' as const,
+        properties: { h3Index: idx },
+        geometry: {
+          type: 'Polygon' as const,
+          coordinates: [coords],
+        },
+      }
+    })
+
+    const collection = {
+      type: 'FeatureCollection' as const,
+      features,
+    }
+
+    source.setData(collection)
+
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, 'visibility', 'visible')
+    }
+  }, [showVeins])
 
   useEffect(() => {
     const loadMinedStats = async () => {
@@ -662,23 +1045,11 @@ function App() {
       return
     }
 
-    const { h3Index, zoneType } = selectedHex
-
-    if (zoneType === 'MAIN_ROAD') {
-      setMineMessage('Mining on a main road hex is not allowed in normal mode (only by flying above 300 km/h).')
-      setMineMessageType('error')
-      return
-    }
-
-    if (zoneType === 'MILITARY' || zoneType === 'HOSPITAL' || zoneType === 'CLIFF') {
-      setMineMessage('Mining on this hex is forbidden for safety or legal reasons.')
-      setMineMessageType('error')
-      return
-    }
+    const { h3Index } = selectedHex
 
     const doMine = async () => {
       try {
-        const res = await fetch(`${apiBase}/api/mine`, {
+        const res = await authedFetch(`${apiBase}/api/mine`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -687,7 +1058,11 @@ function App() {
         })
 
         if (!res.ok) {
-          setMineMessage('Mining failed due to a server error.')
+          if (res.status === 401) {
+            setMineMessage('Please log in to mine hexes.')
+          } else {
+            setMineMessage('Mining failed due to a server error.')
+          }
           setMineMessageType('error')
           return
         }
@@ -695,22 +1070,14 @@ function App() {
         const data: { ok?: boolean; balance?: number; reason?: string; zoneType?: ZoneType } =
           await res.json()
 
+        setCanSpawnHere(false)
+
         if (!data.ok) {
           if (data.reason === 'ALREADY_MINED') {
             setMineMessage('This hex has already been mined for this user.')
-          } else if (data.reason === 'FORBIDDEN_ZONE') {
-            const zt = data.zoneType ?? selectedHex?.zoneType
-            if (zt === 'MILITARY') {
-              setMineMessage('Mining on this hex is forbidden because it is classified as a military or similarly restricted area.')
-            } else if (zt === 'HOSPITAL') {
-              setMineMessage('Mining on this hex is forbidden because it is near a hospital or medical facility.')
-            } else if (zt === 'CLIFF') {
-              setMineMessage('Mining on this hex is forbidden because it is in or near dangerous cliff terrain.')
-            } else if (zt === 'SEA') {
-              setMineMessage('Mining on this hex is forbidden at this distance from the sea for safety reasons.')
-            } else {
-              setMineMessage('Mining on this hex is forbidden for safety or legal reasons.')
-            }
+          } else if (data.reason === 'NOT_ADJACENT') {
+            setMineMessage('You can only mine hexes that touch an already mined hex.')
+            setCanSpawnHere(true)
           } else {
             setMineMessage('Mining was not accepted.')
           }
@@ -728,7 +1095,7 @@ function App() {
         // After a successful mine, refresh user info from the backend so that
         // both balance and owned hex count are fully in sync with the server.
         try {
-          const userRes = await fetch(`${apiBase}/api/user`)
+          const userRes = await authedFetch(`${apiBase}/api/user`)
           if (userRes.ok) {
             const userData: { balance?: number; ownedCount?: number } = await userRes.json()
             if (typeof userData.balance === 'number') {
@@ -753,17 +1120,21 @@ function App() {
           return
         }
 
+        const ownedSet = ownedHexesRef.current
         const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
-          if (f.properties.h3Index === h3Index) {
-            return {
-              ...f,
-              properties: {
-                ...f.properties,
-                claimed: true,
-              },
-            }
+          const idx = f.properties.h3Index
+          const isOwned = ownedSet.has(idx)
+          const neighbors = h3.gridDisk(idx, 1)
+          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+
+          return {
+            ...f,
+            properties: {
+              ...f.properties,
+              claimed: isOwned,
+              canMine,
+            },
           }
-          return f
         })
 
         featuresRef.current = updatedFeatures
@@ -790,6 +1161,258 @@ function App() {
     void doMine()
   }
 
+  const handleDriveSimulateClick = () => {
+    const map = mapRef.current
+    if (!map) return
+
+    // Prefer to use the currently selected hex as the centre for Drive Mode,
+    // so that the effect feels local to the road segment שהשחקן רואה. If no
+    // hex is selected, fall back to the map centre H3 index.
+    let centerH3Index: string | null = null
+
+    if (selectedHex) {
+      centerH3Index = selectedHex.h3Index
+    } else {
+      const center = map.getCenter()
+
+      // Use the same H3 resolution as the map grid for Drive Mode simulation.
+      const h3Resolution = 11
+      try {
+        centerH3Index = h3.latLngToCell(center.lat, center.lng, h3Resolution)
+      } catch {
+        setToastMessage('Drive mining failed: could not compute centre hex.')
+        setToastType('error')
+        return
+      }
+    }
+
+    if (!centerH3Index) {
+      setToastMessage('Drive mining failed: no valid centre hex.')
+      setToastType('error')
+      return
+    }
+
+    const doSimulate = async () => {
+      try {
+        const res = await authedFetch(`${apiBase}/api/drive/simulate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ centerH3Index }),
+        })
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            setToastMessage('Please log in to use Drive Mode.')
+          } else {
+            setToastMessage('Drive Mode simulation failed due to a server error.')
+          }
+          setToastType('error')
+          return
+        }
+
+        const data: {
+          ok?: boolean
+          reason?: string
+          addedHexes?: number
+          ghxCost?: number
+          newBalance?: number
+          claimedHexes?: string[]
+        } = await res.json()
+
+        if (!data.ok) {
+          if (data.reason === 'INSUFFICIENT_GHX') {
+            setToastMessage('Not enough GHX to run Drive Mode here.')
+          } else if (data.reason === 'NO_ROAD_HEXES') {
+            setToastMessage('No main road hexes found near the map centre.')
+          } else {
+            setToastMessage('Drive mining was not accepted.')
+          }
+          setToastType('error')
+          if (typeof data.newBalance === 'number') {
+            setUserBalance(data.newBalance)
+          }
+          return
+        }
+
+        if (typeof data.newBalance === 'number') {
+          setUserBalance(data.newBalance)
+        }
+
+        if (typeof data.addedHexes === 'number') {
+          setOwnedCount((prev) => (typeof prev === 'number' ? prev + data.addedHexes! : data.addedHexes!))
+        }
+
+        if (Array.isArray(data.claimedHexes) && data.claimedHexes.length > 0) {
+          const ownedSet = ownedHexesRef.current
+          for (const idx of data.claimedHexes) {
+            ownedSet.add(idx)
+          }
+
+          const currentFeatures = featuresRef.current
+          if (currentFeatures && currentFeatures.length > 0) {
+            const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
+              const idx = f.properties.h3Index
+              const isOwned = ownedSet.has(idx)
+              const neighbors = h3.gridDisk(idx, 1)
+              const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+
+              return {
+                ...f,
+                properties: {
+                  ...f.properties,
+                  claimed: isOwned,
+                  canMine,
+                },
+              }
+            })
+
+            featuresRef.current = updatedFeatures
+
+            const updatedCollection = {
+              type: 'FeatureCollection' as const,
+              features: updatedFeatures,
+            }
+
+            const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+            if (src) {
+              src.setData(updatedCollection)
+            }
+          }
+        }
+
+        const added = data.addedHexes ?? 0
+        const cost = data.ghxCost ?? 0
+        setToastMessage(`Drive mining successful: claimed ${added} road hexes for ${cost} GHX.`)
+        setToastType('success')
+      } catch {
+        setToastMessage('Drive mining failed due to a network error.')
+        setToastType('error')
+      }
+    }
+
+    void doSimulate()
+  }
+
+  const handleSpawnClick = () => {
+    if (!selectedHex) {
+      return
+    }
+
+    const { h3Index } = selectedHex
+
+    const doSpawn = async () => {
+      try {
+        const res = await authedFetch(`${apiBase}/api/spawn`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ h3Index }),
+        })
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            setMineMessage('Please log in to spawn new mining areas.')
+          } else {
+            setMineMessage('Spawn failed due to a server error.')
+          }
+          setMineMessageType('error')
+          return
+        }
+
+        const data: { ok?: boolean; balance?: number; reason?: string; spawnCost?: number } =
+          await res.json()
+
+        if (!data.ok) {
+          if (data.reason === 'ALREADY_OWNED') {
+            setMineMessage('You already own this hex.')
+          } else if (data.reason === 'INSUFFICIENT_GHX') {
+            setMineMessage('You do not have enough GHX to start a new mining area here.')
+          } else {
+            setMineMessage('Spawn was not accepted.')
+          }
+          setMineMessageType('error')
+          if (typeof data.balance === 'number') {
+            setUserBalance(data.balance)
+          }
+          return
+        }
+
+        if (typeof data.balance === 'number') {
+          setUserBalance(data.balance)
+        }
+
+        // Refresh user info so owned hex count stays in sync.
+        try {
+          const userRes = await authedFetch(`${apiBase}/api/user`)
+          if (userRes.ok) {
+            const userData: { balance?: number; ownedCount?: number } = await userRes.json()
+            if (typeof userData.balance === 'number') {
+              setUserBalance(userData.balance)
+            }
+            if (typeof userData.ownedCount === 'number') {
+              setOwnedCount(userData.ownedCount)
+            }
+          }
+        } catch {
+          // ignore user refresh errors
+        }
+
+        setSelectedOwned(true)
+        setCanSpawnHere(false)
+
+        ownedHexesRef.current.add(h3Index)
+
+        const currentFeatures = featuresRef.current
+        if (!currentFeatures || currentFeatures.length === 0 || !mapRef.current) {
+          setMineMessage(`Spawned at ${h3Index}, but map state could not be updated.`)
+          setMineMessageType('error')
+          return
+        }
+
+        const ownedSet = ownedHexesRef.current
+        const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
+          const idx = f.properties.h3Index
+          const isOwned = ownedSet.has(idx)
+          const neighbors = h3.gridDisk(idx, 1)
+          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+
+          return {
+            ...f,
+            properties: {
+              ...f.properties,
+              claimed: isOwned,
+              canMine,
+            },
+          }
+        })
+
+        featuresRef.current = updatedFeatures
+
+        const updatedCollection = {
+          type: 'FeatureCollection' as const,
+          features: updatedFeatures,
+        }
+
+        const map = mapRef.current
+        const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+        if (source) {
+          source.setData(updatedCollection)
+        }
+
+        setMineMessage(`Started a new mining area here (spawn successful).`)
+        setMineMessageType('success')
+      } catch {
+        setMineMessage('Spawn failed due to a network error.')
+        setMineMessageType('error')
+      }
+    }
+
+    void doSpawn()
+  }
+
   const handleCloseInfoPanel = () => {
     setSelectedInfo(null)
     setSelectedHex(null)
@@ -797,6 +1420,7 @@ function App() {
     setSelectedOwned(null)
     setMineMessage(null)
     setMineMessageType(null)
+    setCanSpawnHere(false)
   }
 
   const handleUseMyLocationClick = () => {
@@ -832,10 +1456,106 @@ function App() {
     )
   }
 
+  const handleViewHexOnMapFromAccount = (h3Index: string) => {
+    const map = mapRef.current
+    if (!map) return
+
+    try {
+      const [lat, lng] = h3.cellToLatLng(h3Index)
+      map.flyTo({ center: [lng, lat], zoom: 14 })
+    } catch {
+      // ignore invalid h3 index
+    }
+  }
+
+  const handleOrderSubmit = async () => {
+    if (!orderPrice || !orderAmount) {
+      setOrderError('Please enter both price and amount.')
+      return
+    }
+
+    const price = Number(orderPrice)
+    const amount = Number(orderAmount)
+
+    if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(amount) || amount <= 0) {
+      setOrderError('Please enter a valid positive price and amount.')
+      return
+    }
+
+    setOrderSubmitting(true)
+    try {
+      const res = await authedFetch(`${apiBase}/api/market/order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          side: orderSide,
+          price,
+          amount,
+        }),
+      })
+
+      type MarketTrade = {
+        id: string
+        pair: 'GHX-USDT'
+        side: 'BUY' | 'SELL'
+        price: number
+        amount: number
+        timestamp: number
+      }
+
+      const data: {
+        ok?: boolean
+        error?: string
+        trade?: MarketTrade
+        balances?: { ghx?: number; usdt?: number }
+      } = await res.json()
+
+      if (!res.ok || !data.ok) {
+        if (res.status === 401) {
+          setOrderError('Please log in to place orders.')
+        } else {
+          setOrderError(data.error ?? 'Order failed.')
+        }
+        return
+      }
+
+      if (data.balances) {
+        if (typeof data.balances.ghx === 'number') {
+          setUserBalance(data.balances.ghx)
+        }
+        if (typeof data.balances.usdt === 'number') {
+          setUsdtBalance(data.balances.usdt)
+        }
+      }
+
+      if (data.trade) {
+        const trade = data.trade
+        setLastPrice(trade.price)
+        setRecentTrades((prev) => [trade, ...prev].slice(0, 100))
+      }
+
+      setOrderPrice('')
+      setOrderAmount('')
+    } catch {
+      setOrderError('Order failed due to a network error.')
+    } finally {
+      setOrderSubmitting(false)
+    }
+  }
+
   return (
     <div className="app-root">
       <div className="top-bar">
-        <div className="top-bar-title">GeoHex Miner</div>
+        <div className="top-bar-title">
+          <img
+            src="/ghx-logo.svg"
+            alt="GHX logo"
+            style={{ width: 28, height: 28, marginRight: 8, verticalAlign: 'middle' }}
+          />
+          GeoHex Miner
+        </div>
         <div className="top-bar-tabs">
           <button
             type="button"
@@ -865,6 +1585,13 @@ function App() {
           >
             Policy
           </button>
+          <button
+            type="button"
+            className={viewMode === 'ACCOUNT' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+            onClick={() => setViewMode('ACCOUNT')}
+          >
+            Account
+          </button>
         </div>
       </div>
       <div className="map-wrapper">
@@ -889,6 +1616,160 @@ function App() {
           <div className="hud-line">
             <span className="hud-label">Owned hexes:</span>{' '}
             <span className="hud-value">{typeof ownedCount === 'number' ? ownedCount : '-'}</span>
+          </div>
+          <div className="hud-line">
+            <button
+              type="button"
+              className="drive-button"
+              onClick={handleDriveSimulateClick}
+              disabled={typeof userBalance === 'number' && userBalance < 5}
+            >
+              Simulate Drive Mode mining near map centre (5 GHX)
+            </button>
+          </div>
+          <div className="hud-line">
+            <button
+              type="button"
+              className={driveModeActive ? 'drive-toggle drive-toggle-active' : 'drive-toggle'}
+              onClick={handleToggleDriveMode}
+            >
+              {driveModeActive ? 'Drive Mode: ON (click hexes to drive)' : 'Drive Mode: OFF'}
+            </button>
+          </div>
+          <div className="hud-line">
+            <button
+              type="button"
+              className={showVeins ? 'veins-toggle veins-toggle-active' : 'veins-toggle'}
+              onClick={() => setShowVeins((prev) => !prev)}
+            >
+              {showVeins ? 'Hide mined veins overlay' : 'Show mined veins overlay'}
+            </button>
+          </div>
+        </div>
+      )}
+      {viewMode === 'ACCOUNT' && (
+        <div className="account-panel">
+          <div className="account-header">Account &amp; Wallet</div>
+          <div className="account-content">
+            {!authToken && (
+              <div className="account-section">
+                <div className="account-section-title">Login / Register</div>
+                <div className="account-row">
+                  <span className="account-label">Email:</span>
+                  <input
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="account-input"
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <div className="account-row">
+                  <span className="account-label">Password:</span>
+                  <input
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    className="account-input"
+                    type="password"
+                    placeholder="Minimum 6 characters"
+                  />
+                </div>
+                <div className="account-row">
+                  <button
+                    type="button"
+                    className="account-action"
+                    onClick={handleAuthLogin}
+                    disabled={authSubmitting}
+                  >
+                    Login
+                  </button>
+                  <button
+                    type="button"
+                    className="account-action"
+                    onClick={handleAuthRegister}
+                    disabled={authSubmitting}
+                    style={{ marginLeft: 8 }}
+                  >
+                    Register
+                  </button>
+                </div>
+                {authError && <div className="account-row account-error">{authError}</div>}
+              </div>
+            )}
+            {authToken && (
+              <div className="account-section">
+                <div className="account-section-title">Session</div>
+                <div className="account-row">
+                  <button type="button" className="account-action" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+            {accountLoading && <div className="account-row">Loading account…</div>}
+            {accountError && !accountLoading && (
+              <div className="account-row account-error">{accountError}</div>
+            )}
+            {!accountLoading && !accountError && accountInfo && (
+              <>
+                <div className="account-section">
+                  <div className="account-section-title">User</div>
+                  <div className="account-row">
+                    <span className="account-label">User ID:</span>
+                    <span className="account-value">{accountInfo.id}</span>
+                  </div>
+                </div>
+
+                <div className="account-section">
+                  <div className="account-section-title">Wallet summary</div>
+                  <div className="account-row">
+                    <span className="account-label">GHX balance:</span>
+                    <span className="account-value">{accountInfo.ghxBalance}</span>
+                  </div>
+                  <div className="account-row">
+                    <span className="account-label">USDT balance:</span>
+                    <span className="account-value">{accountInfo.usdtBalance}</span>
+                  </div>
+                  <div className="account-row">
+                    <span className="account-label">Owned hexes:</span>
+                    <span className="account-value">{accountInfo.ownedCount}</span>
+                  </div>
+                </div>
+
+                <div className="account-section">
+                  <div className="account-section-title">My hexes</div>
+                  {accountInfo.ownedHexes.length === 0 && (
+                    <div className="account-row">You do not own any hexes yet.</div>
+                  )}
+                  {accountInfo.ownedHexes.length > 0 && (
+                    <div className="account-hex-list">
+                      {accountInfo.ownedHexes.map((hex) => (
+                        <div key={hex} className="account-hex-row">
+                          <span className="account-hex-id">{hex}</span>
+                          <button
+                            type="button"
+                            className="account-hex-button"
+                            onClick={() => handleViewHexOnMapFromAccount(hex)}
+                          >
+                            View on map
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="account-section">
+                  <div className="account-section-title">Notes</div>
+                  <p className="account-notes">
+                    Your hex ownership and GHX balance are currently stored as in-game assets for this
+                    demo user. They are not real-world money, not a bank account and not a crypto
+                    wallet. Future versions of GeoHex Miner may introduce optional migration paths
+                    towards external wallets or tokens, but there is no promise of value or
+                    convertibility at this stage.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -1026,66 +1907,7 @@ function App() {
                     : 'trade-submit-button trade-submit-button-sell'
                 }
                 disabled={orderSubmitting}
-                onClick={async () => {
-                  setOrderError(null)
-                  const price = Number(orderPrice)
-                  const amount = Number(orderAmount)
-
-                  if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(amount) || amount <= 0) {
-                    setOrderError('Please enter a valid positive price and amount.')
-                    return
-                  }
-
-                  setOrderSubmitting(true)
-                  try {
-                    const res = await fetch(`${apiBase}/api/market/order`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ side: orderSide, price, amount }),
-                    })
-
-                    if (!res.ok) {
-                      const text = await res.text()
-                      setOrderError(text || 'Order failed.')
-                      return
-                    }
-
-                    const data: {
-                      ok?: boolean
-                      error?: string
-                      trade?: { id: string; side: 'BUY' | 'SELL'; price: number; amount: number; timestamp: number }
-                      balances?: { ghx?: number; usdt?: number }
-                    } = await res.json()
-
-                    if (!data.ok) {
-                      setOrderError(data.error || 'Order was not accepted.')
-                      return
-                    }
-
-                    if (data.balances) {
-                      if (typeof data.balances.ghx === 'number') {
-                        setUserBalance(data.balances.ghx)
-                      }
-                      if (typeof data.balances.usdt === 'number') {
-                        setUsdtBalance(data.balances.usdt)
-                      }
-                    }
-
-                    if (data.trade) {
-                      setLastPrice(data.trade.price)
-                      setRecentTrades((prev) => [data.trade!, ...prev].slice(0, 100))
-                    }
-
-                    setOrderPrice('')
-                    setOrderAmount('')
-                  } catch {
-                    setOrderError('Order failed due to a network error.')
-                  } finally {
-                    setOrderSubmitting(false)
-                  }
-                }}
+                onClick={handleOrderSubmit}
               >
                 {orderSubmitting ? 'Submitting…' : orderSide === 'BUY' ? 'Buy GHX' : 'Sell GHX'}
               </button>
@@ -1412,6 +2234,11 @@ function App() {
           {selectedHex && (
             <button type="button" className="mine-button" onClick={handleMineClick}>
               Mine this hex
+            </button>
+          )}
+          {selectedHex && canSpawnHere && (
+            <button type="button" className="mine-button" onClick={handleSpawnClick}>
+              Start a new mining area here (Spawn for 5 GHX)
             </button>
           )}
           {mineMessage && (
