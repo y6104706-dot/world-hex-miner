@@ -20,6 +20,8 @@ function App() {
   const lastAutoMineHexRef = useRef<string | null>(null)
   const lastAutoMineAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
+  const usingMyLocationRef = useRef(false)
+  const authTokenRef = useRef<string | null>(null)
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -234,6 +236,14 @@ function App() {
   const driveModeActiveRef = useRef(false)
   const lastDriveHexRef = useRef<string | null>(null)
 
+  useEffect(() => {
+    usingMyLocationRef.current = usingMyLocation
+  }, [usingMyLocation])
+
+  useEffect(() => {
+    authTokenRef.current = authToken
+  }, [authToken])
+
   const buildCirclePolygon = (lon: number, lat: number, radiusM: number) => {
     const steps = 60
     const earthRadiusM = 6378137
@@ -346,7 +356,7 @@ function App() {
 
       // If the current GPS hex exists in the currently loaded features,
       // highlight it immediately (orange) without waiting for a reload.
-      if (usingMyLocation) {
+      if (usingMyLocationRef.current) {
         const gpsHex = gpsSelectedHexRef.current
         if (gpsHex) {
           const currentFeatures = featuresRef.current
@@ -436,7 +446,7 @@ function App() {
             // Auto-mine road hexes while Drive Mode is active.
             const shouldAutoMine =
               driveModeActiveRef.current &&
-              authToken &&
+              authTokenRef.current &&
               zoneType === 'MAIN_ROAD' &&
               !ownedHexesRef.current.has(currentHex) &&
               currentHex !== lastAutoMineHexRef.current
@@ -830,7 +840,7 @@ function App() {
 
         const hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
 
-        const gpsHex = usingMyLocation ? gpsSelectedHexRef.current : null
+        const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
         if (gpsHex && !hexIndexes.includes(gpsHex)) {
           hexIndexes.push(gpsHex)
         }
