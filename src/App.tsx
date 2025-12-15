@@ -811,27 +811,6 @@ function App() {
         },
       })
 
-      map.addLayer({
-        id: 'gps-selected-hex-fill',
-        type: 'fill',
-        source: 'gps-selected-hex',
-        paint: {
-          'fill-color': '#ff9900',
-          'fill-opacity': 0.35,
-        },
-      })
-
-      map.addLayer({
-        id: 'gps-selected-hex-outline',
-        type: 'line',
-        source: 'gps-selected-hex',
-        paint: {
-          'line-color': '#ffb74d',
-          'line-width': 3,
-          'line-opacity': 0.9,
-        },
-      })
-
       const pendingCoords = lastGeoCoordsRef.current
       if (pendingCoords) {
         setMapUserLocation(pendingCoords)
@@ -1087,6 +1066,27 @@ function App() {
           'line-color': '#555555',
           'line-width': 0.8,
           'line-opacity': 0.7,
+        },
+      })
+
+      map.addLayer({
+        id: 'gps-selected-hex-fill',
+        type: 'fill',
+        source: 'gps-selected-hex',
+        paint: {
+          'fill-color': '#ff9900',
+          'fill-opacity': 0.35,
+        },
+      })
+
+      map.addLayer({
+        id: 'gps-selected-hex-outline',
+        type: 'line',
+        source: 'gps-selected-hex',
+        paint: {
+          'line-color': '#ffb74d',
+          'line-width': 3,
+          'line-opacity': 0.9,
         },
       })
 
@@ -2192,14 +2192,16 @@ function App() {
             <span className="hud-value">{typeof ownedCount === 'number' ? ownedCount : '-'}</span>
           </div>
           <div className="hud-line">
-            <button
-              type="button"
-              className="drive-button"
-              onClick={handleDriveSimulateClick}
-              disabled={typeof userBalance === 'number' && userBalance < 5}
-            >
-              Simulate Drive Mode mining near map centre (5 GHX)
-            </button>
+            {import.meta.env.DEV && (
+              <button
+                type="button"
+                className="drive-button"
+                onClick={handleDriveSimulateClick}
+                disabled={typeof userBalance === 'number' && userBalance < 5}
+              >
+                Simulate Drive Mode mining near map centre (5 GHX)
+              </button>
+            )}
           </div>
           <div className="hud-line">
             <button
