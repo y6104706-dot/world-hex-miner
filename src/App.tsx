@@ -381,6 +381,38 @@ function App() {
         gpsSelectedHexRef.current = null
       }
 
+      // Always update the dedicated GPS highlight layer so the current hex
+      // is visibly orange even if it is not part of the loaded frontier.
+      try {
+        const gpsSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
+        const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
+
+        if (gpsSource) {
+          if (gpsHex) {
+            const boundary = h3.cellToBoundary(gpsHex, true)
+            const coordsLngLat = boundary.map(([lat, lng]) => [lng, lat])
+            coordsLngLat.push(coordsLngLat[0])
+            gpsSource.setData({
+              type: 'FeatureCollection' as const,
+              features: [
+                {
+                  type: 'Feature' as const,
+                  properties: { h3Index: gpsHex },
+                  geometry: {
+                    type: 'Polygon' as const,
+                    coordinates: [coordsLngLat],
+                  },
+                },
+              ],
+            })
+          } else {
+            gpsSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+          }
+        }
+      } catch {
+        // ignore if sources not ready yet
+      }
+
       // When using "Use my location", ensure the surrounding hex features refresh
       // so GPS selection can behave like a click (orange) even while moving.
       if (usingMyLocationRef.current && gpsSelectedHexRef.current) {
@@ -510,7 +542,7 @@ function App() {
         const now = Date.now()
         if (now - lastFollowAtRef.current > 350) {
           lastFollowAtRef.current = now
-          const desiredZoom = driveModeActiveRef.current ? 16.5 : 15.8
+          const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
           const bearing = typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg) ? coords.headingDeg : undefined
           map.easeTo({
             center: [coords.lon, coords.lat],
@@ -1978,7 +2010,8 @@ function App() {
         const map = mapRef.current
         if (!map) return
 
-        map.flyTo({ center: [longitude, latitude], zoom: 14 })
+        const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
+        map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
 
         setToastMessage(
           `Moved to location: lat ${latitude.toFixed(5)}, lon ${longitude.toFixed(5)}`,
