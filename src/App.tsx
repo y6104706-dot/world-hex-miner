@@ -354,6 +354,35 @@ function App() {
         gpsSelectedHexRef.current = null
       }
 
+      // Dedicated GPS-hex highlight layer: draw the current H3 polygon in orange.
+      if (usingMyLocationRef.current) {
+        const gpsHex = gpsSelectedHexRef.current
+        const gpsHexSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
+        if (gpsHexSource) {
+          if (gpsHex) {
+            try {
+              const boundary = h3.cellToBoundary(gpsHex, true)
+              const ring = boundary.map(([lat, lng]) => [lng, lat])
+              ring.push(ring[0])
+              gpsHexSource.setData({
+                type: 'FeatureCollection' as const,
+                features: [
+                  {
+                    type: 'Feature' as const,
+                    properties: {},
+                    geometry: { type: 'Polygon' as const, coordinates: [ring] },
+                  },
+                ],
+              })
+            } catch {
+              gpsHexSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+            }
+          } else {
+            gpsHexSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+          }
+        }
+      }
+
       // If the current GPS hex exists in the currently loaded features,
       // highlight it immediately (orange) without waiting for a reload.
       if (usingMyLocationRef.current) {
@@ -674,6 +703,11 @@ function App() {
         data: { type: 'FeatureCollection' as const, features: [] as any[] },
       })
 
+      map.addSource('gps-selected-hex', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection' as const, features: [] as any[] },
+      })
+
       map.addLayer({
         id: 'user-accuracy-fill',
         type: 'fill',
@@ -724,6 +758,27 @@ function App() {
           'circle-radius': 6,
           'circle-color': '#3b82f6',
           'circle-opacity': 0.95,
+        },
+      })
+
+      map.addLayer({
+        id: 'gps-selected-hex-fill',
+        type: 'fill',
+        source: 'gps-selected-hex',
+        paint: {
+          'fill-color': '#ff9900',
+          'fill-opacity': 0.35,
+        },
+      })
+
+      map.addLayer({
+        id: 'gps-selected-hex-outline',
+        type: 'line',
+        source: 'gps-selected-hex',
+        paint: {
+          'line-color': '#ffb74d',
+          'line-width': 3,
+          'line-opacity': 0.9,
         },
       })
 
