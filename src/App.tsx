@@ -15,6 +15,7 @@ function App() {
   const lastGeoCoordsRef = useRef<{ lon: number; lat: number; accuracyM: number; headingDeg: number | null } | null>(
     null,
   )
+  const gpsSelectedHexRef = useRef<string | null>(null)
   const lastAutoSelectHexRef = useRef<string | null>(null)
   const lastAutoMineHexRef = useRef<string | null>(null)
   const lastAutoMineAtRef = useRef<number>(0)
@@ -332,6 +333,14 @@ function App() {
         } else {
           headingSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
         }
+      }
+
+      // Track current GPS hex whenever we have a location.
+      // This is used to force highlight even if the hex wasn't loaded yet.
+      try {
+        gpsSelectedHexRef.current = h3.latLngToCell(coords.lat, coords.lon, 11)
+      } catch {
+        gpsSelectedHexRef.current = null
       }
 
       // Follow mode: keep the map centered on the user while enabled.
@@ -786,6 +795,11 @@ function App() {
 
         const hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
 
+        const gpsHex = followMyLocation ? gpsSelectedHexRef.current : null
+        if (gpsHex && !hexIndexes.includes(gpsHex)) {
+          hexIndexes.push(gpsHex)
+        }
+
         const ownedSet = ownedHexesRef.current
         const infoCache = hexInfoCacheRef.current
 
@@ -815,7 +829,7 @@ function App() {
               h3Index: hexIndex,
               zoneType,
               claimed: isOwned,
-              selected: false,
+              selected: gpsHex ? hexIndex === gpsHex : false,
               canMine,
               debugInfo,
             },
@@ -828,6 +842,14 @@ function App() {
 
         features = newFeatures
         featuresRef.current = newFeatures
+
+        if (gpsHex) {
+          const gpsFeature = newFeatures.find((f) => f.properties.h3Index === gpsHex)
+          if (gpsFeature) {
+            setSelectedHex({ h3Index: gpsHex, zoneType: gpsFeature.properties.zoneType })
+            setSelectedOwned(ownedSet.has(gpsHex))
+          }
+        }
 
         const featureCollection = {
           type: 'FeatureCollection' as const,
