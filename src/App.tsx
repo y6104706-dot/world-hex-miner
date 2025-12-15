@@ -336,6 +336,10 @@ function App() {
       })
 
       const loadOwnedHexes = async () => {
+        if (!authToken) {
+          ownedHexesRef.current = new Set()
+          return
+        }
         try {
           const res = await authedFetch(`${apiBase}/api/owned-hexes`)
           if (res.ok) {
@@ -801,6 +805,12 @@ function App() {
   // Load combined account + wallet summary when the Account tab is opened.
   useEffect(() => {
     if (viewMode !== 'ACCOUNT') return
+    if (!authToken) {
+      setAccountInfo(null)
+      setAccountError('Please log in to view your account.')
+      setAccountLoading(false)
+      return
+    }
 
     const loadAccount = async () => {
       setAccountLoading(true)
@@ -863,6 +873,11 @@ function App() {
   // Load demo user balance on mount
   useEffect(() => {
     const loadUser = async () => {
+      if (!authToken) {
+        setUserBalance(null)
+        setOwnedCount(null)
+        return
+      }
       try {
         const res = await authedFetch(`${apiBase}/api/user`)
         if (res.ok) {
@@ -886,10 +901,20 @@ function App() {
   }, [apiBase, authToken])
 
   useEffect(() => {
+    if (!authToken) {
+      setUsdtBalance(null)
+      return
+    }
+
     const loadBalances = async () => {
       try {
         const res = await authedFetch(`${apiBase}/api/market/balance`)
-        if (!res.ok) return
+        if (!res.ok) {
+          if (res.status === 401) {
+            setUsdtBalance(null)
+          }
+          return
+        }
         const data: { ghx?: number; usdt?: number } = await res.json()
         if (typeof data.ghx === 'number') {
           setUserBalance(data.ghx)
