@@ -22,6 +22,8 @@ function App() {
   const lastFollowAtRef = useRef<number>(0)
   const usingMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
+  const loadHexesForCurrentViewRef = useRef<(() => void) | null>(null)
+  const lastGpsHexRefreshAtRef = useRef<number>(0)
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -67,6 +69,47 @@ function App() {
   type MiningRule = {
     minSpeedKmh: number | null
     description: string
+  }
+
+  type HexFeature = {
+    type: 'Feature'
+    properties: {
+      h3Index: string
+      zoneType: ZoneType
+      claimed: boolean
+      selected: boolean
+      canMine: boolean
+      debugInfo: string[]
+    }
+    geometry: {
+      type: 'Polygon'
+      coordinates: number[][][]
+    }
+  }
+
+  const applyHexSelection = (map: maplibregl.Map, h3Index: string, zoneType: ZoneType) => {
+    setSelectedHex({ h3Index, zoneType })
+    setSelectedOwned(ownedHexesRef.current.has(h3Index))
+    setMineMessage(null)
+    setMineMessageType(null)
+    setCanSpawnHere(false)
+
+    const currentFeatures = featuresRef.current
+    if (!currentFeatures || currentFeatures.length === 0) return
+
+    const updatedFeatures: HexFeature[] = currentFeatures.map((f) => ({
+      ...f,
+      properties: {
+        ...f.properties,
+        selected: f.properties.h3Index === h3Index,
+      },
+    }))
+
+    featuresRef.current = updatedFeatures
+    const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+    if (source) {
+      source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+    }
   }
 
   const handleAuthRegister = () => {
@@ -201,22 +244,6 @@ function App() {
       minSpeedKmh: null,
       description: 'Coastline / beach edge.',
     },
-  }
-
-  type HexFeature = {
-    type: 'Feature'
-    properties: {
-      h3Index: string
-      zoneType: ZoneType
-      claimed: boolean
-      selected: boolean
-      canMine: boolean
-      debugInfo: string[]
-    }
-    geometry: {
-      type: 'Polygon'
-      coordinates: number[][][]
-    }
   }
 
   const [selectedInfo, setSelectedInfo] = useState<string | null>(null)
@@ -354,31 +381,92 @@ function App() {
         gpsSelectedHexRef.current = null
       }
 
-      // Dedicated GPS-hex highlight layer: draw the current H3 polygon in orange.
-      if (usingMyLocationRef.current) {
-        const gpsHex = gpsSelectedHexRef.current
-        const gpsHexSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
-        if (gpsHexSource) {
-          if (gpsHex) {
-            try {
-              const boundary = h3.cellToBoundary(gpsHex, true)
-              const ring = boundary.map(([lat, lng]) => [lng, lat])
-              ring.push(ring[0])
-              gpsHexSource.setData({
-                type: 'FeatureCollection' as const,
-                features: [
-                  {
-                    type: 'Feature' as const,
-                    properties: {},
-                    geometry: { type: 'Polygon' as const, coordinates: [ring] },
-                  },
-                ],
-              })
-            } catch {
-              gpsHexSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+      // When using "Use my location", ensure the surrounding hex features refresh
+      // so GPS selection can behave like a click (orange) even while moving.
+      if (usingMyLocationRef.current && gpsSelectedHexRef.current) {
+        const now = Date.now()
+        const minRefreshMs = 900
+        if (now - lastGpsHexRefreshAtRef.current > minRefreshMs) {
+          lastGpsHexRefreshAtRef.current = now
+          loadHexesForCurrentViewRef.current?.()
+        }
+
+        // If this GPS hex is already present in features, select it immediately.
+        const currentHex = gpsSelectedHexRef.current
+        const currentFeatures = featuresRef.current
+        const feature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
+        if (feature) {
+          applyHexSelection(map, currentHex, feature.properties.zoneType)
+
+          // Auto-mine only when Drive Mode is active and the hex is MAIN_ROAD.
+          const shouldAutoMine =
+            driveModeActiveRef.current &&
+            authTokenRef.current &&
+            feature.properties.zoneType === 'MAIN_ROAD' &&
+            !ownedHexesRef.current.has(currentHex) &&
+            currentHex !== lastAutoMineHexRef.current
+
+          if (shouldAutoMine) {
+            const now = Date.now()
+            const minIntervalMs = 1200
+            if (now - lastAutoMineAtRef.current >= minIntervalMs) {
+              lastAutoMineAtRef.current = now
+              lastAutoMineHexRef.current = currentHex
+
+              void (async () => {
+                try {
+                  const res = await authedFetch(`${apiBase}/api/mine`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ h3Index: currentHex }),
+                  })
+
+                  if (!res.ok) {
+                    return
+                  }
+
+                  const data: { ok?: boolean; balance?: number } = await res.json().catch(() => ({}))
+                  if (!data.ok) {
+                    return
+                  }
+
+                  if (typeof data.balance === 'number') {
+                    setUserBalance(data.balance)
+                  }
+
+                  setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : prev))
+                  ownedHexesRef.current.add(currentHex)
+                  setSelectedOwned(true)
+
+                  const ownedSet = ownedHexesRef.current
+                  const refreshedFeatures = featuresRef.current
+                  const nextFeatures: HexFeature[] = refreshedFeatures.map((f) => {
+                    const idx = f.properties.h3Index
+                    const isOwned = ownedSet.has(idx)
+                    const neighbors = h3.gridDisk(idx, 1)
+                    const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+                    return {
+                      ...f,
+                      properties: {
+                        ...f.properties,
+                        claimed: isOwned,
+                        canMine,
+                      },
+                    }
+                  })
+
+                  featuresRef.current = nextFeatures
+                  const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                  if (source) {
+                    source.setData({ type: 'FeatureCollection' as const, features: nextFeatures })
+                  }
+                } catch {
+                  // ignore
+                }
+              })()
             }
-          } else {
-            gpsHexSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
           }
         }
       }
@@ -472,76 +560,6 @@ function App() {
               source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
             }
 
-            // Auto-mine road hexes while Drive Mode is active.
-            const shouldAutoMine =
-              driveModeActiveRef.current &&
-              authTokenRef.current &&
-              zoneType === 'MAIN_ROAD' &&
-              !ownedHexesRef.current.has(currentHex) &&
-              currentHex !== lastAutoMineHexRef.current
-
-            if (shouldAutoMine) {
-              const now = Date.now()
-              const minIntervalMs = 1200
-              if (now - lastAutoMineAtRef.current >= minIntervalMs) {
-                lastAutoMineAtRef.current = now
-                lastAutoMineHexRef.current = currentHex
-
-                void (async () => {
-                  try {
-                    const res = await authedFetch(`${apiBase}/api/mine`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ h3Index: currentHex }),
-                    })
-
-                    if (!res.ok) {
-                      return
-                    }
-
-                    const data: { ok?: boolean; balance?: number; reason?: string } = await res.json().catch(() => ({}))
-                    if (!data.ok) {
-                      return
-                    }
-
-                    if (typeof data.balance === 'number') {
-                      setUserBalance(data.balance)
-                    }
-
-                    setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : prev))
-                    ownedHexesRef.current.add(currentHex)
-                    setSelectedOwned(true)
-
-                    const ownedSet = ownedHexesRef.current
-                    const refreshedFeatures = featuresRef.current
-                    const nextFeatures: HexFeature[] = refreshedFeatures.map((f) => {
-                      const idx = f.properties.h3Index
-                      const isOwned = ownedSet.has(idx)
-                      const neighbors = h3.gridDisk(idx, 1)
-                      const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
-                      return {
-                        ...f,
-                        properties: {
-                          ...f.properties,
-                          claimed: isOwned,
-                          canMine,
-                        },
-                      }
-                    })
-
-                    featuresRef.current = nextFeatures
-                    const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-                    if (source) {
-                      source.setData({ type: 'FeatureCollection' as const, features: nextFeatures })
-                    }
-                  } catch {
-                    // ignore network errors
-                  }
-                })()
-              }
-            }
           }
         }
       }
@@ -986,6 +1004,10 @@ function App() {
 
           hasFitToHexes = true
         }
+      }
+
+      loadHexesForCurrentViewRef.current = () => {
+        void loadHexesForCurrentView()
       }
 
       void loadHexesForCurrentView()
