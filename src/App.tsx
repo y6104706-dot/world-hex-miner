@@ -11,6 +11,14 @@ function App() {
   const mapRef = useRef<maplibregl.Map | null>(null)
 
   const toastTimerRef = useRef<number | null>(null)
+  const geoWatchIdRef = useRef<number | null>(null)
+  const lastGeoCoordsRef = useRef<{ lon: number; lat: number; accuracyM: number; headingDeg: number | null } | null>(
+    null,
+  )
+  const lastAutoSelectHexRef = useRef<string | null>(null)
+  const lastAutoMineHexRef = useRef<string | null>(null)
+  const lastAutoMineAtRef = useRef<number>(0)
+  const lastFollowAtRef = useRef<number>(0)
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -219,9 +227,245 @@ function App() {
   const [ownedCount, setOwnedCount] = useState<number | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error' | null>(null)
+  const [followMyLocation, setFollowMyLocation] = useState(false)
   const [driveModeActive, setDriveModeActive] = useState(false)
   const driveModeActiveRef = useRef(false)
   const lastDriveHexRef = useRef<string | null>(null)
+
+  const buildCirclePolygon = (lon: number, lat: number, radiusM: number) => {
+    const steps = 60
+    const earthRadiusM = 6378137
+    const latRad = (lat * Math.PI) / 180
+    const coords: [number, number][] = []
+
+    for (let i = 0; i <= steps; i++) {
+      const angle = (i / steps) * 2 * Math.PI
+      const dx = Math.cos(angle) * radiusM
+      const dy = Math.sin(angle) * radiusM
+
+      const dLat = (dy / earthRadiusM) * (180 / Math.PI)
+      const dLon = (dx / (earthRadiusM * Math.cos(latRad))) * (180 / Math.PI)
+      coords.push([lon + dLon, lat + dLat])
+    }
+
+    return {
+      type: 'FeatureCollection' as const,
+      features: [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [coords],
+          },
+        },
+      ],
+    }
+  }
+
+  const buildHeadingConePolygon = (lon: number, lat: number, headingDeg: number, lengthM: number) => {
+    const earthRadiusM = 6378137
+    const latRad = (lat * Math.PI) / 180
+    const headingRad = (headingDeg * Math.PI) / 180
+    const halfAngleRad = (26 * Math.PI) / 180
+    const steps = 18
+
+    const coords: [number, number][] = []
+    coords.push([lon, lat])
+
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps
+      const a = headingRad - halfAngleRad + t * (2 * halfAngleRad)
+      const dx = Math.sin(a) * lengthM
+      const dy = Math.cos(a) * lengthM
+      const dLat = (dy / earthRadiusM) * (180 / Math.PI)
+      const dLon = (dx / (earthRadiusM * Math.cos(latRad))) * (180 / Math.PI)
+      coords.push([lon + dLon, lat + dLat])
+    }
+
+    coords.push([lon, lat])
+
+    return {
+      type: 'FeatureCollection' as const,
+      features: [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [coords],
+          },
+        },
+      ],
+    }
+  }
+
+  const setMapUserLocation = (coords: { lon: number; lat: number; accuracyM: number; headingDeg: number | null }) => {
+    lastGeoCoordsRef.current = coords
+    const map = mapRef.current
+    if (!map) return
+
+    try {
+      const pointSource = map.getSource('user-location') as maplibregl.GeoJSONSource | undefined
+      if (pointSource) {
+        pointSource.setData({
+          type: 'FeatureCollection' as const,
+          features: [
+            {
+              type: 'Feature' as const,
+              properties: { heading: coords.headingDeg },
+              geometry: { type: 'Point' as const, coordinates: [coords.lon, coords.lat] },
+            },
+          ],
+        })
+      }
+
+      const accuracySource = map.getSource('user-accuracy') as maplibregl.GeoJSONSource | undefined
+      if (accuracySource) {
+        accuracySource.setData(buildCirclePolygon(coords.lon, coords.lat, Math.max(6, coords.accuracyM)))
+      }
+
+      const headingSource = map.getSource('user-heading') as maplibregl.GeoJSONSource | undefined
+      if (headingSource) {
+        if (typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)) {
+          headingSource.setData(buildHeadingConePolygon(coords.lon, coords.lat, coords.headingDeg, Math.max(40, coords.accuracyM * 1.6)))
+        } else {
+          headingSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+        }
+      }
+
+      // Follow mode: keep the map centered on the user while enabled.
+      if (followMyLocation) {
+        const now = Date.now()
+        if (now - lastFollowAtRef.current > 350) {
+          lastFollowAtRef.current = now
+          const desiredZoom = driveModeActiveRef.current ? 16.5 : 15.8
+          const bearing = typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg) ? coords.headingDeg : undefined
+          map.easeTo({
+            center: [coords.lon, coords.lat],
+            zoom: desiredZoom,
+            bearing,
+            duration: 650,
+          })
+        }
+      }
+
+      // Auto-select current hex (orange highlight) when accuracy is good enough.
+      // We do not open the info panel; we only update selection state.
+      const autoSelectAccuracyThresholdM = 35
+      if (coords.accuracyM <= autoSelectAccuracyThresholdM) {
+        const h3Resolution = 11
+        let currentHex: string | null = null
+        try {
+          currentHex = h3.latLngToCell(coords.lat, coords.lon, h3Resolution)
+        } catch {
+          currentHex = null
+        }
+
+        if (currentHex && currentHex !== lastAutoSelectHexRef.current) {
+          lastAutoSelectHexRef.current = currentHex
+
+          const currentFeatures = featuresRef.current
+          const selectedFeature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
+          if (selectedFeature) {
+            const zoneType = selectedFeature.properties.zoneType
+            setSelectedHex({ h3Index: currentHex, zoneType })
+            setSelectedOwned(ownedHexesRef.current.has(currentHex))
+            setMineMessage(null)
+            setMineMessageType(null)
+            setCanSpawnHere(false)
+
+            const updatedFeatures: HexFeature[] = currentFeatures.map((f) => ({
+              ...f,
+              properties: {
+                ...f.properties,
+                selected: f.properties.h3Index === currentHex,
+              },
+            }))
+
+            featuresRef.current = updatedFeatures
+            const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+            if (source) {
+              source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+            }
+
+            // Auto-mine road hexes while Drive Mode is active.
+            const shouldAutoMine =
+              driveModeActiveRef.current &&
+              authToken &&
+              zoneType === 'MAIN_ROAD' &&
+              !ownedHexesRef.current.has(currentHex) &&
+              currentHex !== lastAutoMineHexRef.current
+
+            if (shouldAutoMine) {
+              const now = Date.now()
+              const minIntervalMs = 1200
+              if (now - lastAutoMineAtRef.current >= minIntervalMs) {
+                lastAutoMineAtRef.current = now
+                lastAutoMineHexRef.current = currentHex
+
+                void (async () => {
+                  try {
+                    const res = await authedFetch(`${apiBase}/api/mine`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ h3Index: currentHex }),
+                    })
+
+                    if (!res.ok) {
+                      return
+                    }
+
+                    const data: { ok?: boolean; balance?: number; reason?: string } = await res.json().catch(() => ({}))
+                    if (!data.ok) {
+                      return
+                    }
+
+                    if (typeof data.balance === 'number') {
+                      setUserBalance(data.balance)
+                    }
+
+                    setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : prev))
+                    ownedHexesRef.current.add(currentHex)
+                    setSelectedOwned(true)
+
+                    const ownedSet = ownedHexesRef.current
+                    const refreshedFeatures = featuresRef.current
+                    const nextFeatures: HexFeature[] = refreshedFeatures.map((f) => {
+                      const idx = f.properties.h3Index
+                      const isOwned = ownedSet.has(idx)
+                      const neighbors = h3.gridDisk(idx, 1)
+                      const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+                      return {
+                        ...f,
+                        properties: {
+                          ...f.properties,
+                          claimed: isOwned,
+                          canMine,
+                        },
+                      }
+                    })
+
+                    featuresRef.current = nextFeatures
+                    const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                    if (source) {
+                      source.setData({ type: 'FeatureCollection' as const, features: nextFeatures })
+                    }
+                  } catch {
+                    // ignore network errors
+                  }
+                })()
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore if map was destroyed or sources not ready
+    }
+  }
 
   useEffect(() => {
     if (toastTimerRef.current !== null) {
@@ -359,6 +603,85 @@ function App() {
       map.addSource('owned-veins', {
         type: 'geojson',
         data: emptyOwnedCollection,
+      })
+
+      map.addSource('user-location', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection' as const, features: [] as any[] },
+      })
+
+      map.addSource('user-accuracy', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection' as const, features: [] as any[] },
+      })
+
+      map.addSource('user-heading', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection' as const, features: [] as any[] },
+      })
+
+      map.addLayer({
+        id: 'user-accuracy-fill',
+        type: 'fill',
+        source: 'user-accuracy',
+        paint: {
+          'fill-color': '#3b82f6',
+          'fill-opacity': 0.12,
+        },
+      })
+
+      map.addLayer({
+        id: 'user-accuracy-outline',
+        type: 'line',
+        source: 'user-accuracy',
+        paint: {
+          'line-color': '#60a5fa',
+          'line-width': 2,
+          'line-opacity': 0.5,
+        },
+      })
+
+      map.addLayer({
+        id: 'user-heading-cone',
+        type: 'fill',
+        source: 'user-heading',
+        paint: {
+          'fill-color': '#3b82f6',
+          'fill-opacity': 0.14,
+        },
+      })
+
+      map.addLayer({
+        id: 'user-location-dot-outline',
+        type: 'circle',
+        source: 'user-location',
+        paint: {
+          'circle-radius': 9,
+          'circle-color': '#ffffff',
+          'circle-opacity': 0.95,
+        },
+      })
+
+      map.addLayer({
+        id: 'user-location-dot',
+        type: 'circle',
+        source: 'user-location',
+        paint: {
+          'circle-radius': 6,
+          'circle-color': '#3b82f6',
+          'circle-opacity': 0.95,
+        },
+      })
+
+      const pendingCoords = lastGeoCoordsRef.current
+      if (pendingCoords) {
+        setMapUserLocation(pendingCoords)
+      }
+
+      // If the user manually drags the map, disable follow mode so the UI
+      // does not fight user input.
+      map.on('dragstart', () => {
+        setFollowMyLocation(false)
       })
 
       const loadOwnedHexes = async () => {
@@ -1476,6 +1799,30 @@ function App() {
       setToastMessage('Geolocation is not supported by this browser.')
       setToastType('error')
       return
+    }
+
+    setFollowMyLocation(true)
+
+    if (geoWatchIdRef.current === null) {
+      geoWatchIdRef.current = navigator.geolocation.watchPosition(
+        (pos) => {
+          const heading =
+            typeof pos.coords.heading === 'number' && Number.isFinite(pos.coords.heading)
+              ? pos.coords.heading
+              : null
+          setMapUserLocation({
+            lon: pos.coords.longitude,
+            lat: pos.coords.latitude,
+            accuracyM: typeof pos.coords.accuracy === 'number' ? pos.coords.accuracy : 30,
+            headingDeg: heading,
+          })
+        },
+        (error) => {
+          setToastMessage(error.message || 'Failed to get current location.')
+          setToastType('error')
+        },
+        { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
+      )
     }
 
     navigator.geolocation.getCurrentPosition(
