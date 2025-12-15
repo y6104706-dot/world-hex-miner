@@ -228,6 +228,7 @@ function App() {
   const [ownedCount, setOwnedCount] = useState<number | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error' | null>(null)
+  const [usingMyLocation, setUsingMyLocation] = useState(false)
   const [followMyLocation, setFollowMyLocation] = useState(false)
   const [driveModeActive, setDriveModeActive] = useState(false)
   const driveModeActiveRef = useRef(false)
@@ -795,7 +796,7 @@ function App() {
 
         const hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
 
-        const gpsHex = followMyLocation ? gpsSelectedHexRef.current : null
+        const gpsHex = usingMyLocation ? gpsSelectedHexRef.current : null
         if (gpsHex && !hexIndexes.includes(gpsHex)) {
           hexIndexes.push(gpsHex)
         }
@@ -904,16 +905,18 @@ function App() {
           // is almost transparent.
           'fill-color': [
             'case',
-            ['get', 'claimed'],
-            '#b91c1c',
             ['get', 'selected'],
             '#ff9900',
+            ['get', 'claimed'],
+            '#b91c1c',
             ['get', 'canMine'],
             '#e5e7eb',
             '#000000',
           ],
           'fill-opacity': [
             'case',
+            ['get', 'selected'],
+            0.6,
             ['get', 'claimed'],
             0.65,
             ['get', 'canMine'],
@@ -1823,6 +1826,7 @@ function App() {
       return
     }
 
+    setUsingMyLocation(true)
     setFollowMyLocation(true)
 
     if (geoWatchIdRef.current === null) {
