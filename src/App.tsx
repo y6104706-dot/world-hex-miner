@@ -10,6 +10,8 @@ function App() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
+  const toastTimerRef = useRef<number | null>(null)
+
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
       return localStorage.getItem('ghxAuthToken')
@@ -220,6 +222,30 @@ function App() {
   const [driveModeActive, setDriveModeActive] = useState(false)
   const driveModeActiveRef = useRef(false)
   const lastDriveHexRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current)
+      toastTimerRef.current = null
+    }
+
+    if (!toastMessage) {
+      return
+    }
+
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastMessage(null)
+      setToastType(null)
+      toastTimerRef.current = null
+    }, 3200)
+
+    return () => {
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current)
+        toastTimerRef.current = null
+      }
+    }
+  }, [toastMessage])
   const [showVeins, setShowVeins] = useState(false)
 
   // Used to force a full MapLibre re-initialisation when needed (e.g. when
@@ -2215,6 +2241,10 @@ function App() {
                 ? 'toast toast-error'
                 : 'toast'
           }
+          onClick={() => {
+            setToastMessage(null)
+            setToastType(null)
+          }}
         >
           {toastMessage}
         </div>
