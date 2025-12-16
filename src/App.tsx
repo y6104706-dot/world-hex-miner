@@ -554,15 +554,26 @@ function App() {
         if (now - lastFollowAtRef.current > 500) {
           lastFollowAtRef.current = now
           const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
-          const bearing = typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg) ? coords.headingDeg : undefined
-          map.stop()
-          map.easeTo({
-            center: [coords.lon, coords.lat],
-            zoom: desiredZoom,
-            bearing,
-            duration: 450,
-            essential: true,
-          })
+
+          const container = map.getContainer()
+          if (container && container.clientWidth > 0 && container.clientHeight > 0 && !map.isMoving()) {
+            const bearing =
+              typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)
+                ? coords.headingDeg
+                : undefined
+
+            try {
+              map.easeTo({
+                center: [coords.lon, coords.lat],
+                zoom: desiredZoom,
+                bearing,
+                duration: 450,
+                essential: true,
+              })
+            } catch {
+              // ignore transient map render errors during resize/visibility changes
+            }
+          }
         }
       }
 
