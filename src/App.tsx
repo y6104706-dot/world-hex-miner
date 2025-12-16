@@ -2091,30 +2091,43 @@ function App() {
       )
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        const map = mapRef.current
-        if (!map) return
+    const doInitialFix = (options: PositionOptions) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          const map = mapRef.current
+          if (!map) return
 
-        const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
-        map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
+          const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
+          map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
 
-        setToastMessage(
-          `Moved to location: lat ${latitude.toFixed(5)}, lon ${longitude.toFixed(5)}`,
-        )
-        setToastType('success')
-      },
-      (error) => {
-        const map = mapRef.current
-        // If permission denied or other error, we surface a simple toast message.
-        setToastMessage(error.message || 'Failed to get current location.')
-        setToastType('error')
+          setToastMessage(
+            `Moved to location: lat ${latitude.toFixed(5)}, lon ${longitude.toFixed(5)}`,
+          )
+          setToastType('success')
+        },
+        (error) => {
+          const map = mapRef.current
+          // If permission denied or other error, we surface a simple toast message.
+          if (error.code === 3) {
+            setToastMessage('Timed out while getting location. Retrying…')
+            setToastType('error')
+            window.setTimeout(() => {
+              doInitialFix({ enableHighAccuracy: false, maximumAge: 60_000, timeout: 20_000 })
+            }, 350)
+          } else {
+            setToastMessage(error.message || 'Failed to get current location.')
+            setToastType('error')
+          }
 
-        // Optionally we could fall back to keeping the current view; do nothing.
-        if (!map) return
-      },
-    )
+          // Optionally we could fall back to keeping the current view; do nothing.
+          if (!map) return
+        },
+        options,
+      )
+    }
+
+    doInitialFix({ enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 })
   }
 
   const handleViewHexOnMapFromAccount = (h3Index: string) => {
