@@ -79,6 +79,9 @@ const DRIVE_COST_GHX = 5
 // candidate hexes.
 const DRIVE_DISK_K = 3
 
+const GPS_MINE_ACCURACY_THRESHOLD_M = 35
+const GPS_MINE_MAX_AGE_MS = 15_000
+
 type StoredUsersFile = {
   users: StoredUser[]
 }
@@ -1586,10 +1589,64 @@ app.post('/api/spawn', requireAuth, (req, res) => {
     return
   }
 
-  const { h3Index } = req.body as { h3Index?: string }
+  const { h3Index, lat, lon, accuracyM, gpsAt } = req.body as {
+    h3Index?: string
+    lat?: number
+    lon?: number
+    accuracyM?: number
+    gpsAt?: number
+  }
 
   if (!h3Index || typeof h3Index !== 'string') {
     res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' })
+    return
+  }
+
+  if (
+    typeof lat !== 'number' ||
+    typeof lon !== 'number' ||
+    typeof accuracyM !== 'number' ||
+    typeof gpsAt !== 'number' ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lon) ||
+    !Number.isFinite(accuracyM) ||
+    !Number.isFinite(gpsAt)
+  ) {
+    res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false })
+    return
+  }
+
+  const now = Date.now()
+  if (now - gpsAt > GPS_MINE_MAX_AGE_MS) {
+    res.json({ ok: false, reason: 'GPS_STALE', balance: user.balance, owned: false })
+    return
+  }
+
+  if (accuracyM > GPS_MINE_ACCURACY_THRESHOLD_M) {
+    res.json({
+      ok: false,
+      reason: 'GPS_ACCURACY_LOW',
+      balance: user.balance,
+      owned: false,
+      thresholdM: GPS_MINE_ACCURACY_THRESHOLD_M,
+    })
+    return
+  }
+
+  let gpsHex: string | null = null
+  try {
+    gpsHex = h3.latLngToCell(lat, lon, 11)
+  } catch {
+    gpsHex = null
+  }
+
+  if (!gpsHex) {
+    res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false })
+    return
+  }
+
+  if (gpsHex !== h3Index) {
+    res.json({ ok: false, reason: 'GPS_MISMATCH', balance: user.balance, owned: false })
     return
   }
 
@@ -1645,10 +1702,64 @@ app.post('/api/mine', requireAuth, (req, res) => {
     return
   }
 
-  const { h3Index } = req.body as { h3Index?: string }
+  const { h3Index, lat, lon, accuracyM, gpsAt } = req.body as {
+    h3Index?: string
+    lat?: number
+    lon?: number
+    accuracyM?: number
+    gpsAt?: number
+  }
 
   if (!h3Index || typeof h3Index !== 'string') {
     res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' })
+    return
+  }
+
+  if (
+    typeof lat !== 'number' ||
+    typeof lon !== 'number' ||
+    typeof accuracyM !== 'number' ||
+    typeof gpsAt !== 'number' ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lon) ||
+    !Number.isFinite(accuracyM) ||
+    !Number.isFinite(gpsAt)
+  ) {
+    res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false })
+    return
+  }
+
+  const now = Date.now()
+  if (now - gpsAt > GPS_MINE_MAX_AGE_MS) {
+    res.json({ ok: false, reason: 'GPS_STALE', balance: user.balance, owned: false })
+    return
+  }
+
+  if (accuracyM > GPS_MINE_ACCURACY_THRESHOLD_M) {
+    res.json({
+      ok: false,
+      reason: 'GPS_ACCURACY_LOW',
+      balance: user.balance,
+      owned: false,
+      thresholdM: GPS_MINE_ACCURACY_THRESHOLD_M,
+    })
+    return
+  }
+
+  let gpsHex: string | null = null
+  try {
+    gpsHex = h3.latLngToCell(lat, lon, 11)
+  } catch {
+    gpsHex = null
+  }
+
+  if (!gpsHex) {
+    res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false })
+    return
+  }
+
+  if (gpsHex !== h3Index) {
+    res.json({ ok: false, reason: 'GPS_MISMATCH', balance: user.balance, owned: false })
     return
   }
 
