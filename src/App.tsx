@@ -960,6 +960,18 @@ function App() {
             return
           }
         }
+
+        lastLoadCenter = { lat: centerLat, lng: centerLng }
+        lastLoadTime = now
+
+        // Always refresh owned hexes from the backend before rebuilding features,
+        // so that claimed state is correct after reload or viewport changes.
+        await loadOwnedHexes()
+
+        // Roughly ~150m radius in degrees (depends on latitude, but good
+        // enough for our purposes). This keeps the number of hexes per load
+        // relatively small.
+        const deltaLat = 0.0015
         const deltaLng = 0.0015
 
         const south = centerLat - deltaLat
