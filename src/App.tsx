@@ -29,6 +29,7 @@ function App() {
   const loadHexesForCurrentViewRef = useRef<(() => void) | null>(null)
   const lastGpsHexRefreshAtRef = useRef<number>(0)
   const manualSelectUntilRef = useRef<number>(0)
+  const manualSelectedHexRef = useRef<string | null>(null)
   const globalOwnedHexesRef = useRef<Set<string>>(new Set())
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
@@ -362,6 +363,9 @@ function App() {
     try {
       const now = Date.now()
       const isManualSelectLocked = now < manualSelectUntilRef.current
+      if (!isManualSelectLocked && manualSelectedHexRef.current) {
+        manualSelectedHexRef.current = null
+      }
       const minLayerUpdateMs = 250
       const shouldUpdateLayers =
         now - lastLocationLayerUpdateAtRef.current >= minLayerUpdateMs || !lastLocationLayerUpdateAtRef.current
@@ -956,18 +960,6 @@ function App() {
             return
           }
         }
-
-        lastLoadCenter = { lat: centerLat, lng: centerLng }
-        lastLoadTime = now
-
-        // Always refresh owned hexes from the backend before rebuilding features,
-        // so that claimed state is correct after reload or viewport changes.
-        await loadOwnedHexes()
-
-        // Roughly ~150m radius in degrees (depends on latitude, but good
-        // enough for our purposes). This keeps the number of hexes per load
-        // relatively small.
-        const deltaLat = 0.0015
         const deltaLng = 0.0015
 
         const south = centerLat - deltaLat
@@ -1001,7 +993,8 @@ function App() {
 
         const newFeatures: HexFeature[] = []
 
-        const manualSelectedHex = Date.now() < manualSelectUntilRef.current ? selectedHex?.h3Index ?? null : null
+        const manualSelectedHex =
+          Date.now() < manualSelectUntilRef.current ? manualSelectedHexRef.current : null
 
         for (const hexIndex of hexIndexes) {
           const boundary = h3.cellToBoundary(hexIndex, true)
@@ -1188,6 +1181,8 @@ function App() {
 
       map.on('click', 'h3-hex-fill', async (event) => {
         manualSelectUntilRef.current = Date.now() + 4000
+        setFollowMyLocation(false)
+        followMyLocationRef.current = false
 
         const feature = event.features?.[0] as maplibregl.MapGeoJSONFeature | undefined
         if (!feature) return
@@ -1197,6 +1192,8 @@ function App() {
         let rawDebug = feature.properties?.debugInfo as unknown
 
         if (!h3Index || !zoneType) return
+
+        manualSelectedHexRef.current = h3Index
 
         // On click, try to refine the zoneType using OSM/Overpass for this
         // specific hex only, to avoid rate limiting.
@@ -1615,6 +1612,8 @@ function App() {
     const othersSource = map.getSource('others-veins') as maplibregl.GeoJSONSource | undefined
     const othersLayerId = 'others-veins-layer'
 
+    const mainLayerId = 'h3-hex-fill'
+
     if (!source || !othersSource) return
 
     if (!showVeins) {
@@ -1625,7 +1624,43 @@ function App() {
       if (map.getLayer(othersLayerId)) {
         map.setLayoutProperty(othersLayerId, 'visibility', 'none')
       }
+
+      if (map.getLayer(mainLayerId)) {
+        map.setPaintProperty(mainLayerId, 'fill-color', [
+          'case',
+          ['get', 'selected'],
+          '#ff9900',
+          ['get', 'claimed'],
+          '#b91c1c',
+          ['get', 'canMine'],
+          '#e5e7eb',
+          '#000000',
+        ])
+        map.setPaintProperty(mainLayerId, 'fill-opacity', [
+          'case',
+          ['get', 'selected'],
+          0.6,
+          ['get', 'claimed'],
+          0.65,
+          ['get', 'canMine'],
+          0.15,
+          0.2,
+        ])
+      }
       return
+    }
+
+    if (map.getLayer(mainLayerId)) {
+      map.setPaintProperty(mainLayerId, 'fill-opacity', [
+        'case',
+        ['get', 'selected'],
+        0.6,
+        ['get', 'claimed'],
+        0,
+        ['get', 'canMine'],
+        0.08,
+        0.08,
+      ])
     }
 
     const toPolygonFeatures = (hexes: string[]) => {
