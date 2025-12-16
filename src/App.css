@@ -27,12 +27,12 @@
   border: 1px solid rgba(148, 163, 184, 0.25);
   background: rgba(10, 12, 20, 0.65);
   color: #e5e7eb;
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
   margin-right: 10px;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   line-height: 1;
   backdrop-filter: blur(8px);
 }
@@ -40,7 +40,7 @@
 .mobile-drawer-overlay {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 6000;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
@@ -49,14 +49,15 @@
 }
 
 .mobile-drawer {
-  margin-top: 56px;
-  margin-left: 10px;
-  width: min(290px, calc(100% - 20px));
-  border-radius: 14px;
+  margin-top: 0;
+  margin-left: 0;
+  width: min(310px, calc(100% - 40px));
+  height: 100%;
+  border-radius: 0 14px 14px 0;
   background: rgba(10, 12, 20, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
-  padding: 10px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 12px 14px 12px;
 }
 
 .mobile-drawer-close {
@@ -375,8 +376,8 @@
     top: 64px;
     right: 10px;
     left: auto;
-    width: min(320px, calc(100% - 20px));
-    max-width: 320px;
+    width: min(220px, calc(100% - 20px));
+    max-width: 220px;
     padding: 7px 9px;
     font-size: 0.78rem;
     max-height: 42vh;
@@ -390,8 +391,8 @@
   }
 
   .info-panel-collapsed-mobile {
-    max-height: 124px;
-    overflow: hidden;
+    max-height: none;
+    overflow: visible;
   }
 
   .info-panel-expanded-mobile {
@@ -504,6 +505,19 @@
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .top-bar-title {
+    font-size: 0.95rem;
+    max-width: 72vw;
+  }
 }
 
 .top-bar-tabs {

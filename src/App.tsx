@@ -681,6 +681,10 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [infoExpandedMobile, setInfoExpandedMobile] = useState(false)
 
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
+  )
+
   const [usdtBalance, setUsdtBalance] = useState<number | null>(null)
   const [lastPrice, setLastPrice] = useState<number | null>(null)
   const [tradeCount24h, setTradeCount24h] = useState<number | null>(null)
@@ -2153,6 +2157,19 @@ function App() {
     }
   }, [selectedInfo])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const onResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   const handleUseMyLocationClick = () => {
     if (!navigator.geolocation) {
       // Browser does not support geolocation
@@ -2360,14 +2377,16 @@ function App() {
     <div className="app-root">
       <div className="top-bar">
         <div className="top-bar-title">
-          <button
-            type="button"
-            className="mobile-hamburger-button"
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            ≡
-          </button>
+          {isMobile && (
+            <button
+              type="button"
+              className="mobile-hamburger-button"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              ≡
+            </button>
+          )}
           <img
             src="/ghx-logo.svg"
             alt="GHX logo"
@@ -2375,46 +2394,48 @@ function App() {
           />
           GeoHex Miner
         </div>
-        <div className="top-bar-tabs">
-          <button
-            type="button"
-            className={viewMode === 'MAP' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
-            onClick={() => setViewMode('MAP')}
-          >
-            Map
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'TRADE' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
-            onClick={() => setViewMode('TRADE')}
-          >
-            Trade
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'STATS' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
-            onClick={() => setViewMode('STATS')}
-          >
-            Stats
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'POLICY' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
-            onClick={() => setViewMode('POLICY')}
-          >
-            Policy
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'ACCOUNT' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
-            onClick={() => setViewMode('ACCOUNT')}
-          >
-            Account
-          </button>
-        </div>
+        {!isMobile && (
+          <div className="top-bar-tabs">
+            <button
+              type="button"
+              className={viewMode === 'MAP' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={() => setViewMode('MAP')}
+            >
+              Map
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'TRADE' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={() => setViewMode('TRADE')}
+            >
+              Trade
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'STATS' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={() => setViewMode('STATS')}
+            >
+              Stats
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'POLICY' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={() => setViewMode('POLICY')}
+            >
+              Policy
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'ACCOUNT' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={() => setViewMode('ACCOUNT')}
+            >
+              Account
+            </button>
+          </div>
+        )}
       </div>
 
-      {mobileMenuOpen && (
+      {isMobile && mobileMenuOpen && (
         <div
           className="mobile-drawer-overlay"
           onClick={() => setMobileMenuOpen(false)}
@@ -3133,14 +3154,16 @@ function App() {
                 </span>
               )}
             </div>
-            <button
-              type="button"
-              className="info-expand-button"
-              onClick={() => setInfoExpandedMobile((prev) => !prev)}
-              aria-label="Toggle hex details size"
-            >
-              {infoExpandedMobile ? '–' : '+'}
-            </button>
+            {isMobile && (
+              <button
+                type="button"
+                className="info-expand-button"
+                onClick={() => setInfoExpandedMobile((prev) => !prev)}
+                aria-label="Toggle hex details size"
+              >
+                {infoExpandedMobile ? '–' : '+'}
+              </button>
+            )}
             <button
               type="button"
               className="info-close-button"
@@ -3151,11 +3174,17 @@ function App() {
             </button>
           </div>
           <div className="info-lines">
-            {selectedInfo.split('\n').map((line) => (
+            {(isMobile && !infoExpandedMobile
+              ? selectedInfo.split('\n').slice(0, 3)
+              : selectedInfo.split('\n')
+            ).map((line) => (
               <div key={line} className="info-line">
                 {line}
               </div>
             ))}
+            {isMobile && !infoExpandedMobile && selectedInfo.split('\n').length > 3 && (
+              <div className="info-line">…</div>
+            )}
           </div>
           {selectedHex && (
             <div className="info-line">
