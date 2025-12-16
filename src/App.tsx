@@ -24,6 +24,7 @@ function App() {
   const authTokenRef = useRef<string | null>(null)
   const loadHexesForCurrentViewRef = useRef<(() => void) | null>(null)
   const lastGpsHexRefreshAtRef = useRef<number>(0)
+  const manualSelectUntilRef = useRef<number>(0)
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -344,6 +345,8 @@ function App() {
     const map = mapRef.current
     if (!map) return
 
+    const isManualSelectLocked = Date.now() < manualSelectUntilRef.current
+
     try {
       const pointSource = map.getSource('user-location') as maplibregl.GeoJSONSource | undefined
       if (pointSource) {
@@ -415,7 +418,7 @@ function App() {
 
       // When using "Use my location", ensure the surrounding hex features refresh
       // so GPS selection can behave like a click (orange) even while moving.
-      if (usingMyLocationRef.current && gpsSelectedHexRef.current) {
+      if (!isManualSelectLocked && usingMyLocationRef.current && gpsSelectedHexRef.current) {
         const now = Date.now()
         const minRefreshMs = 900
         if (now - lastGpsHexRefreshAtRef.current > minRefreshMs) {
@@ -505,7 +508,7 @@ function App() {
 
       // If the current GPS hex exists in the currently loaded features,
       // highlight it immediately (orange) without waiting for a reload.
-      if (usingMyLocationRef.current) {
+      if (!isManualSelectLocked && usingMyLocationRef.current) {
         const gpsHex = gpsSelectedHexRef.current
         if (gpsHex) {
           const currentFeatures = featuresRef.current
@@ -556,7 +559,7 @@ function App() {
       // Auto-select current hex (orange highlight) when accuracy is good enough.
       // We do not open the info panel; we only update selection state.
       const autoSelectAccuracyThresholdM = 35
-      if (coords.accuracyM <= autoSelectAccuracyThresholdM) {
+      if (!isManualSelectLocked && coords.accuracyM <= autoSelectAccuracyThresholdM) {
         const h3Resolution = 11
         let currentHex: string | null = null
         try {
@@ -924,7 +927,10 @@ function App() {
 
         const hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
 
-        const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
+        const gpsHex =
+          usingMyLocationRef.current && Date.now() >= manualSelectUntilRef.current
+            ? gpsSelectedHexRef.current
+            : null
         if (gpsHex && !hexIndexes.includes(gpsHex)) {
           hexIndexes.push(gpsHex)
         }
@@ -952,13 +958,15 @@ function App() {
           const neighbors = h3.gridDisk(hexIndex, 1)
           const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
 
+          const manualSelectedHex = Date.now() < manualSelectUntilRef.current ? selectedHex?.h3Index ?? null : null
+
           newFeatures.push({
             type: 'Feature',
             properties: {
               h3Index: hexIndex,
               zoneType,
               claimed: isOwned,
-              selected: gpsHex ? hexIndex === gpsHex : false,
+              selected: manualSelectedHex ? hexIndex === manualSelectedHex : gpsHex ? hexIndex === gpsHex : false,
               canMine,
               debugInfo,
             },
@@ -972,7 +980,7 @@ function App() {
         features = newFeatures
         featuresRef.current = newFeatures
 
-        if (gpsHex) {
+        if (!manualSelectedHex && gpsHex) {
           const gpsFeature = newFeatures.find((f) => f.properties.h3Index === gpsHex)
           if (gpsFeature) {
             setSelectedHex({ h3Index: gpsHex, zoneType: gpsFeature.properties.zoneType })
@@ -1105,6 +1113,8 @@ function App() {
       })
 
       map.on('click', 'h3-hex-fill', async (event) => {
+        manualSelectUntilRef.current = Date.now() + 4000
+
         const feature = event.features?.[0] as maplibregl.MapGeoJSONFeature | undefined
         if (!feature) return
 
