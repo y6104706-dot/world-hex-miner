@@ -28,7 +28,7 @@ function App() {
   const usingMyLocationRef = useRef(false)
   const followMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
-  const loadHexesForCurrentViewRef = useRef<(() => void) | null>(null)
+  const loadHexesForCurrentViewRef = useRef<((force?: boolean) => void) | null>(null)
   const lastGpsHexRefreshAtRef = useRef<number>(0)
   const manualSelectUntilRef = useRef<number>(0)
   const manualSelectedHexRef = useRef<string | null>(null)
@@ -462,7 +462,7 @@ function App() {
           if (now - lastGpsHexRefreshAtRef.current > minRefreshMs || currentHex !== lastGpsReloadHexRef.current) {
             lastGpsHexRefreshAtRef.current = now
             lastGpsReloadHexRef.current = currentHex
-            loadHexesForCurrentViewRef.current?.()
+            loadHexesForCurrentViewRef.current?.(true)
           }
         }
 
@@ -565,7 +565,7 @@ function App() {
 
                   const reload = loadHexesForCurrentViewRef.current
                   if (reload) {
-                    reload()
+                    reload(true)
                   }
                 } catch {
                   // ignore
@@ -972,7 +972,7 @@ function App() {
         }
       }
 
-      const loadHexesForCurrentView = async () => {
+      const loadHexesForCurrentView = async (force?: boolean) => {
         const zoom = map.getZoom()
 
         // When zoomed out too far, do not render any hexes to keep performance
@@ -1013,7 +1013,7 @@ function App() {
         const now = Date.now()
         const minIntervalMs = 1500
 
-        if (lastLoadCenter) {
+        if (lastLoadCenter && !force) {
           const dLat = Math.abs(centerLat - lastLoadCenter.lat)
           const dLng = Math.abs(centerLng - lastLoadCenter.lng)
           const movedFarEnough = dLat > 0.0007 || dLng > 0.0007
@@ -1156,8 +1156,8 @@ function App() {
         }
       }
 
-      loadHexesForCurrentViewRef.current = () => {
-        void loadHexesForCurrentView()
+      loadHexesForCurrentViewRef.current = (force?: boolean) => {
+        void loadHexesForCurrentView(force)
       }
 
       void loadHexesForCurrentView()
@@ -1601,7 +1601,7 @@ function App() {
 
     const reload = loadHexesForCurrentViewRef.current
     if (reload) {
-      reload()
+      reload(true)
     }
   }, [authToken, viewMode])
 
@@ -1991,7 +1991,7 @@ function App() {
 
         const reload = loadHexesForCurrentViewRef.current
         if (reload) {
-          reload()
+          reload(true)
         }
 
         setMineMessage(`Hex ${h3Index} mined successfully.`)
