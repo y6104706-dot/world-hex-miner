@@ -58,8 +58,9 @@ function App() {
 
   const authedFetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers)
-    if (authToken) {
-      headers.set('Authorization', `Bearer ${authToken}`)
+    const token = authTokenRef.current ?? authToken
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`)
     }
     return fetch(input, { ...init, headers })
   }
@@ -922,7 +923,7 @@ function App() {
       })
 
       const loadOwnedHexes = async () => {
-        if (!authToken) {
+        if (!authTokenRef.current) {
           ownedHexesRef.current = new Set()
           globalOwnedHexesRef.current = new Set()
           return
