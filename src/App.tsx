@@ -741,6 +741,11 @@ function App() {
         data: emptyOwnedCollection,
       })
 
+      map.addSource('others-veins', {
+        type: 'geojson',
+        data: emptyOwnedCollection,
+      })
+
       map.addSource('user-location', {
         type: 'geojson',
         data: { type: 'FeatureCollection' as const, features: [] as any[] },
@@ -1107,8 +1112,21 @@ function App() {
           visibility: 'none',
         },
         paint: {
-          'fill-color': '#b91c1c',
-          'fill-opacity': 0.35,
+          'fill-color': '#f59e0b',
+          'fill-opacity': 0.45,
+        },
+      })
+
+      map.addLayer({
+        id: 'others-veins-layer',
+        type: 'fill',
+        source: 'others-veins',
+        layout: {
+          visibility: 'none',
+        },
+        paint: {
+          'fill-color': '#a855f7',
+          'fill-opacity': 0.28,
         },
       })
 
@@ -1538,47 +1556,72 @@ function App() {
     const source = map.getSource('owned-veins') as maplibregl.GeoJSONSource | undefined
     const layerId = 'owned-veins-layer'
 
-    if (!source) return
+    const othersSource = map.getSource('others-veins') as maplibregl.GeoJSONSource | undefined
+    const othersLayerId = 'others-veins-layer'
+
+    if (!source || !othersSource) return
 
     if (!showVeins) {
       // Hide the layer when the overlay is turned off.
       if (map.getLayer(layerId)) {
         map.setLayoutProperty(layerId, 'visibility', 'none')
       }
+      if (map.getLayer(othersLayerId)) {
+        map.setLayoutProperty(othersLayerId, 'visibility', 'none')
+      }
       return
     }
 
-    const ownedSet = ownedHexesRef.current
-
-    const features = Array.from(ownedSet).map((idx) => {
-      const boundary = h3.cellToBoundary(idx, true)
-      const coords = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
-      // Close the polygon ring
-      if (coords.length > 0) {
-        coords.push(coords[0])
-      }
-
-      return {
-        type: 'Feature' as const,
-        properties: { h3Index: idx },
-        geometry: {
-          type: 'Polygon' as const,
-          coordinates: [coords],
-        },
-      }
-    })
-
-    const collection = {
-      type: 'FeatureCollection' as const,
-      features,
+    const toPolygonFeatures = (hexes: string[]) => {
+      return hexes.map((idx) => {
+        const boundary = h3.cellToBoundary(idx, true)
+        const coords = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
+        if (coords.length > 0) {
+          coords.push(coords[0])
+        }
+        return {
+          type: 'Feature' as const,
+          properties: { h3Index: idx },
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [coords],
+          },
+        }
+      })
     }
 
-    source.setData(collection)
+    void (async () => {
+      try {
+        const res = await authedFetch(`${apiBase}/api/owned-hexes/global`)
+        if (!res.ok) {
+          return
+        }
+        const data: { mine?: string[]; others?: string[] } = await res.json().catch(() => ({}))
 
-    if (map.getLayer(layerId)) {
-      map.setLayoutProperty(layerId, 'visibility', 'visible')
-    }
-  }, [showVeins])
+        const mineHexes = Array.isArray(data.mine) ? data.mine : []
+        const othersHexes = Array.isArray(data.others) ? data.others : []
+
+        source.setData({
+          type: 'FeatureCollection' as const,
+          features: toPolygonFeatures(mineHexes),
+        })
+
+        othersSource.setData({
+          type: 'FeatureCollection' as const,
+          features: toPolygonFeatures(othersHexes),
+        })
+
+        if (map.getLayer(othersLayerId)) {
+          map.setLayoutProperty(othersLayerId, 'visibility', 'visible')
+        }
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, 'visibility', 'visible')
+        }
+      } catch {
+        // ignore
+      }
+    })()
+  }, [showVeins, apiBase, authToken])
 
   useEffect(() => {
     const loadMinedStats = async () => {

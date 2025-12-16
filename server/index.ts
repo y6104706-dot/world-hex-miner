@@ -1199,6 +1199,27 @@ app.get('/api/owned-hexes', requireAuth, (req, res) => {
   res.json({ hexes: Array.from(user.ownedHexes) })
 })
 
+app.get('/api/owned-hexes/global', requireAuth, (req, res) => {
+  const user = (req as express.Request & { user: User }).user
+
+  const mine = Array.from(user.ownedHexes)
+  const mineSet = new Set(mine)
+
+  const othersSet = new Set<string>()
+  for (const other of usersById.values()) {
+    if (other.id === user.id) {
+      continue
+    }
+    for (const idx of other.ownedHexes) {
+      if (!mineSet.has(idx)) {
+        othersSet.add(idx)
+      }
+    }
+  }
+
+  res.json({ mine, others: Array.from(othersSet) })
+})
+
 // Drive Mode simulation endpoint: given a centre H3 index, look at nearby
 // hexes within DRIVE_DISK_K rings, classify them via the centroid-based OSM
 // classifier and claim those that are MAIN_ROAD for the demo user in exchange
