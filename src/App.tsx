@@ -562,6 +562,11 @@ function App() {
                   if (source) {
                     source.setData({ type: 'FeatureCollection' as const, features: nextFeatures })
                   }
+
+                  const reload = loadHexesForCurrentViewRef.current
+                  if (reload) {
+                    reload()
+                  }
                 } catch {
                   // ignore
                 }
@@ -941,8 +946,12 @@ function App() {
             const mine = Array.isArray(data.mine) ? data.mine : []
             const others = Array.isArray(data.others) ? data.others : []
 
-            ownedHexesRef.current = new Set(mine)
-            globalOwnedHexesRef.current = new Set([...mine, ...others])
+            const existingMine = ownedHexesRef.current
+            const existingGlobal = globalOwnedHexesRef.current
+            const mergedMine = new Set<string>([...existingMine, ...mine])
+            const mergedGlobal = new Set<string>([...existingGlobal, ...mine, ...others])
+            ownedHexesRef.current = mergedMine
+            globalOwnedHexesRef.current = mergedGlobal
             return
           }
         } catch {
@@ -1950,11 +1959,12 @@ function App() {
         }
 
         const ownedSet = ownedHexesRef.current
+        const globalOwnedSet = globalOwnedHexesRef.current
         const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
           const idx = f.properties.h3Index
           const isOwned = ownedSet.has(idx)
           const neighbors = h3.gridDisk(idx, 1)
-          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+          const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
 
           return {
             ...f,
@@ -1977,6 +1987,11 @@ function App() {
         const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
         if (source) {
           source.setData(updatedCollection)
+        }
+
+        const reload = loadHexesForCurrentViewRef.current
+        if (reload) {
+          reload()
         }
 
         setMineMessage(`Hex ${h3Index} mined successfully.`)
