@@ -21,6 +21,7 @@ function App() {
   const lastAutoMineAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
   const usingMyLocationRef = useRef(false)
+  const followMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
   const loadHexesForCurrentViewRef = useRef<(() => void) | null>(null)
   const lastGpsHexRefreshAtRef = useRef<number>(0)
@@ -267,6 +268,10 @@ function App() {
   useEffect(() => {
     usingMyLocationRef.current = usingMyLocation
   }, [usingMyLocation])
+
+  useEffect(() => {
+    followMyLocationRef.current = followMyLocation
+  }, [followMyLocation])
 
   useEffect(() => {
     authTokenRef.current = authToken
@@ -541,7 +546,7 @@ function App() {
       }
 
       // Follow mode: keep the map centered on the user while enabled.
-      if (followMyLocation) {
+      if (followMyLocationRef.current) {
         const now = Date.now()
         if (now - lastFollowAtRef.current > 350) {
           lastFollowAtRef.current = now
@@ -828,6 +833,7 @@ function App() {
       // does not fight user input.
       map.on('dragstart', () => {
         setFollowMyLocation(false)
+        followMyLocationRef.current = false
       })
 
       const loadOwnedHexes = async () => {
