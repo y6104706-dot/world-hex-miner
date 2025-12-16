@@ -218,6 +218,39 @@ type HexCacheEntry = {
   debug: string[]
 }
 
+function applyCoastBufferFromCache(
+  h3Index: string,
+  base: { zoneType: ZoneType; debug: string[]; hasRoad?: boolean; roadClass?: string },
+): { zoneType: ZoneType; debug: string[]; hasRoad?: boolean; roadClass?: string } {
+  // Expand COAST to a small buffer zone around cached coastline hexes.
+  // IMPORTANT: do NOT write this derived result back into hexCache, otherwise
+  // the buffer would recursively grow.
+  const COAST_BUFFER_K = 3
+
+  // Do not override high-priority safety / infrastructure zones.
+  const nonOverridable = new Set<ZoneType>(['MILITARY', 'PRISON', 'HOSPITAL', 'MAIN_ROAD', 'CLIFF'])
+  if (nonOverridable.has(base.zoneType)) {
+    return base
+  }
+
+  try {
+    const disk = h3.gridDisk(h3Index, COAST_BUFFER_K)
+    for (const idx of disk) {
+      if (hexCache[idx]?.zoneType === 'COAST') {
+        return {
+          ...base,
+          zoneType: 'COAST',
+          debug: [...base.debug, `Coast buffer: within ${COAST_BUFFER_K} hexes of cached coastline`],
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return base
+}
+
 function loadHexCache(): Record<string, HexCacheEntry> {
   try {
     if (!fs.existsSync(hexCachePath)) {
@@ -831,10 +864,12 @@ app.get('/api/hex/:h3Index', async (req, res) => {
     }
   }
 
+  const coastAware = applyCoastBufferFromCache(h3Index, { zoneType: entry.zoneType, debug: entry.debug })
+
   const result = {
     h3Index,
-    zoneType: entry.zoneType,
-    debug: entry.debug,
+    zoneType: coastAware.zoneType,
+    debug: coastAware.debug,
   }
 
   res.json(result)
@@ -1542,6 +1577,25 @@ app.post('/api/mine', requireAuth, (req, res) => {
     return
   }
 
+  // Safety rule: mining on COAST is forbidden.
+  // Use cache-first classification so we don't spam Overpass on mining.
+  const cached = hexCache[h3Index]
+  const baseZone: { zoneType: ZoneType; debug: string[] } = cached
+    ? { zoneType: cached.zoneType, debug: cached.debug }
+    : { zoneType: fallbackZoneType(h3Index), debug: ['No cached zoneType for mine; using fallback'] }
+
+  const coastAware = applyCoastBufferFromCache(h3Index, baseZone)
+  if (coastAware.zoneType === 'COAST') {
+    res.json({
+      ok: false,
+      reason: 'FORBIDDEN_ZONE',
+      zoneType: 'COAST',
+      balance: user.balance,
+      owned: false,
+    })
+    return
+  }
+
   // Frontier rule: you can only mine hexes that are adjacent (distance 1) to at
   // least one already owned hex. The very first owned hex is seeded separately.
   if (user.ownedHexes.size > 0) {
@@ -1589,8 +1643,9 @@ app.get('/api/hex/:h3Index/osm', async (req, res) => {
 
   try {
     const inferred = await inferZoneTypeFromOverpass(h3Index)
-    zoneType = inferred.zoneType
-    debug = inferred.debug
+    const coastAware = applyCoastBufferFromCache(h3Index, inferred)
+    zoneType = coastAware.zoneType
+    debug = coastAware.debug
     hasRoad = inferred.hasRoad
     roadClass = inferred.roadClass
   } catch (err) {

@@ -1682,6 +1682,12 @@ function App() {
         if (!data.ok) {
           if (data.reason === 'ALREADY_MINED') {
             setMineMessage('This hex has already been mined for this user.')
+          } else if (data.reason === 'FORBIDDEN_ZONE') {
+            if (data.zoneType === 'COAST') {
+              setMineMessage('Mining is forbidden on COAST hexes due to danger.')
+            } else {
+              setMineMessage('Mining is forbidden in this zone.')
+            }
           } else if (data.reason === 'NOT_ADJACENT') {
             setMineMessage('You can only mine hexes that touch an already mined hex.')
             setCanSpawnHere(true)
