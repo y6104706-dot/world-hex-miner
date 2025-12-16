@@ -457,6 +457,17 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
 
+.mine-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.mine-button:disabled:hover {
+  background: linear-gradient(135deg, #ffb347, #ff7b00);
+}
+
 .mine-button:hover {
   background: linear-gradient(135deg, #ffd35c, #ff9b2b);
 }

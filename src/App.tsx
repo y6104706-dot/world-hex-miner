@@ -3305,6 +3305,30 @@ function App() {
               Mine this hex
             </button>
           )}
+          {selectedHex && (() => {
+            const gpsMineAccuracyThresholdM = 35
+            const gpsMineMaxAgeMs = 15_000
+            const lastCoords = lastGeoCoordsRef.current
+            const gpsHex = gpsSelectedHexRef.current
+            const geoAgeMs = Date.now() - lastGeoAtRef.current
+
+            if (!authTokenRef.current) {
+              return <div className="mine-message mine-message-error">Log in to mine.</div>
+            }
+            if (!usingMyLocationRef.current) {
+              return <div className="mine-message mine-message-error">Enable GPS (Use my location) to mine.</div>
+            }
+            if (!lastCoords || !gpsHex || geoAgeMs > gpsMineMaxAgeMs) {
+              return <div className="mine-message">Waiting for a fresh GPS fix…</div>
+            }
+            if (lastCoords.accuracyM > gpsMineAccuracyThresholdM) {
+              return <div className="mine-message">GPS accuracy too low to mine (need ≤ {gpsMineAccuracyThresholdM}m).</div>
+            }
+            if (gpsHex !== selectedHex.h3Index) {
+              return <div className="mine-message">Select your current GPS hex to mine.</div>
+            }
+            return null
+          })()}
           {selectedHex && canSpawnHere && (
             <button type="button" className="mine-button" onClick={handleSpawnClick}>
               Start a new mining area here (Spawn for 5 GHX)
