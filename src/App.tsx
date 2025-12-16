@@ -24,6 +24,7 @@ function App() {
   const lastGpsReloadHexRef = useRef<string | null>(null)
   const lastLocationLayerUpdateAtRef = useRef<number>(0)
   const lastGeoAtRef = useRef<number>(0)
+  const lastGpsInfoHexRef = useRef<string | null>(null)
   const usingMyLocationRef = useRef(false)
   const followMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
@@ -470,6 +471,21 @@ function App() {
         if (feature && hexChanged) {
           applyHexSelection(map, currentHex, feature.properties.zoneType)
 
+          // Auto-open the hex details panel when we enter a new GPS hex (if accuracy is good).
+          // This makes mining a simple "enter hex -> press Mine" flow.
+          const gpsInfoAccuracyThresholdM = 35
+          if (coords.accuracyM <= gpsInfoAccuracyThresholdM && lastGpsInfoHexRef.current !== currentHex) {
+            lastGpsInfoHexRef.current = currentHex
+            const zoneType = feature.properties.zoneType
+            const rule = miningRules[zoneType]
+            const speedText =
+              rule.minSpeedKmh === null
+                ? 'No special speed requirement.'
+                : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
+            setSelectedInfo(`Hex: ${currentHex}\nZone type: ${zoneType}\n${rule.description}\n${speedText}`)
+            setSelectedDebug(null)
+          }
+
           // Auto-mine only when Drive Mode is active and the hex is MAIN_ROAD.
           const gpsMineAccuracyThresholdM = 35
           const shouldAutoMine =
@@ -553,6 +569,8 @@ function App() {
       if (!isManualSelectLocked && usingMyLocationRef.current) {
         const gpsHex = gpsSelectedHexRef.current
         if (gpsHex) {
+          const gpsInfoAccuracyThresholdM = 35
+          const lastCoords = lastGeoCoordsRef.current
           const currentFeatures = featuresRef.current
           if (currentFeatures && currentFeatures.length > 0) {
             const hasGpsFeature = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
@@ -571,6 +589,24 @@ function App() {
               if (gpsFeature) {
                 setSelectedHex({ h3Index: gpsHex, zoneType: gpsFeature.properties.zoneType })
                 setSelectedOwned(ownedHexesRef.current.has(gpsHex))
+
+                // If we already have the GPS hex in the loaded features, also open
+                // the details panel once (when the GPS hex changes and accuracy is good).
+                if (
+                  lastGpsInfoHexRef.current !== gpsHex &&
+                  lastCoords &&
+                  lastCoords.accuracyM <= gpsInfoAccuracyThresholdM
+                ) {
+                  lastGpsInfoHexRef.current = gpsHex
+                  const zoneType = gpsFeature.properties.zoneType
+                  const rule = miningRules[zoneType]
+                  const speedText =
+                    rule.minSpeedKmh === null
+                      ? 'No special speed requirement.'
+                      : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
+                  setSelectedInfo(`Hex: ${gpsHex}\nZone type: ${zoneType}\n${rule.description}\n${speedText}`)
+                  setSelectedDebug(null)
+                }
               }
 
               const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
