@@ -23,17 +23,6 @@ function App() {
   const lastGpsSelectedHexRef = useRef<string | null>(null)
   const lastGpsReloadHexRef = useRef<string | null>(null)
   const lastLocationLayerUpdateAtRef = useRef<number>(0)
-  const followCameraRafPendingRef = useRef(false)
-  const pendingFollowCameraRef = useRef<
-    | {
-        center: [number, number]
-        zoom: number
-        bearing?: number
-        duration: number
-        essential: boolean
-      }
-    | null
-  >(null)
   const usingMyLocationRef = useRef(false)
   const followMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
@@ -588,46 +577,18 @@ function App() {
         if (now - lastFollowAtRef.current > 500) {
           lastFollowAtRef.current = now
           const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
-          const bearing =
-            typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)
-              ? coords.headingDeg
-              : undefined
 
-          pendingFollowCameraRef.current = {
-            center: [coords.lon, coords.lat],
-            zoom: desiredZoom,
-            bearing,
-            duration: 450,
-            essential: true,
+          const container = map.getContainer()
+          if (!container || container.clientWidth <= 0 || container.clientHeight <= 0) {
+            return
           }
 
-          if (!followCameraRafPendingRef.current) {
-            followCameraRafPendingRef.current = true
-            window.requestAnimationFrame(() => {
-              followCameraRafPendingRef.current = false
-              const cam = pendingFollowCameraRef.current
-              pendingFollowCameraRef.current = null
-              if (!cam) return
-
-              const currentMap = mapRef.current
-              if (!currentMap) return
-
-              const container = currentMap.getContainer()
-              if (!container || container.clientWidth <= 0 || container.clientHeight <= 0) {
-                return
-              }
-
-              // Avoid stacking camera updates while the map is already moving.
-              if (currentMap.isMoving()) {
-                return
-              }
-
-              try {
-                currentMap.easeTo(cam)
-              } catch {
-                // ignore transient map render errors during resize/visibility changes
-              }
-            })
+          // Keep follow mode extremely stable on mobile by avoiding camera animations.
+          // This prevents render-loop stalls that can freeze the map while UI keeps responding.
+          try {
+            map.jumpTo({ center: [coords.lon, coords.lat], zoom: desiredZoom })
+          } catch {
+            // ignore transient map render errors during resize/visibility changes
           }
         }
       }
