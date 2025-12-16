@@ -443,6 +443,57 @@ type OverpassElement = {
   tags?: Record<string, string>
 }
 
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.nchc.org.tw/api/interpreter',
+]
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function overpassFetch(query: string): Promise<{ elements: OverpassElement[] }> {
+  const maxAttempts = 4
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const endpoint = OVERPASS_ENDPOINTS[attempt % OVERPASS_ENDPOINTS.length]
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: query,
+      })
+
+      if (response.ok) {
+        const data = (await response.json()) as { elements?: OverpassElement[] }
+        return { elements: data.elements ?? [] }
+      }
+
+      // Retry on rate limits and transient server errors.
+      if (response.status === 429 || (response.status >= 500 && response.status <= 599)) {
+        const backoffMs = 400 * Math.pow(2, attempt)
+        await sleep(backoffMs)
+        continue
+      }
+
+      throw new Error(`Overpass error: ${response.status}`)
+    } catch (err) {
+      // Network errors: retry with backoff.
+      if (attempt < maxAttempts - 1) {
+        const backoffMs = 400 * Math.pow(2, attempt)
+        await sleep(backoffMs)
+        continue
+      }
+      throw err
+    }
+  }
+
+  throw new Error('Overpass error: exhausted retries')
+}
+
 type InferredZone = {
   zoneType: ZoneType
   debug: string[]
@@ -532,21 +583,7 @@ export async function inferZoneTypeFromOverpass(h3Index: string): Promise<Inferr
     out body;
   `
 
-  const response = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-    // Overpass expects the raw query string in the body
-    body: overpassQuery,
-  })
-
-  if (!response.ok) {
-    throw new Error(`Overpass error: ${response.status}`)
-  }
-
-  const data = (await response.json()) as { elements?: OverpassElement[] }
-  const elements = data.elements ?? []
+  const elements = (await overpassFetch(overpassQuery)).elements
 
   const debug: string[] = []
 
@@ -748,20 +785,7 @@ export async function inferZoneTypeAtCentroid(h3Index: string): Promise<Inferred
     out body;
   `
 
-  const response = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-    body: overpassQuery,
-  })
-
-  if (!response.ok) {
-    throw new Error(`Overpass error: ${response.status}`)
-  }
-
-  const data = (await response.json()) as { elements?: OverpassElement[] }
-  const elements = data.elements ?? []
+  const elements = (await overpassFetch(overpassQuery)).elements
 
   const debug: string[] = []
 
