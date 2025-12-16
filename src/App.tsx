@@ -945,6 +945,8 @@ function App() {
 
         const newFeatures: HexFeature[] = []
 
+        const manualSelectedHex = Date.now() < manualSelectUntilRef.current ? selectedHex?.h3Index ?? null : null
+
         for (const hexIndex of hexIndexes) {
           const boundary = h3.cellToBoundary(hexIndex, true)
           const coords = boundary.map(([lat, lng]) => [lng, lat])
@@ -962,8 +964,6 @@ function App() {
           const isOwned = ownedSet.has(hexIndex)
           const neighbors = h3.gridDisk(hexIndex, 1)
           const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
-
-          const manualSelectedHex = Date.now() < manualSelectUntilRef.current ? selectedHex?.h3Index ?? null : null
 
           newFeatures.push({
             type: 'Feature',
