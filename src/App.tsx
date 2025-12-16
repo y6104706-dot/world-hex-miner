@@ -372,6 +372,7 @@ function App() {
 
     try {
       const now = Date.now()
+      const isManualSelectLocked = now < manualSelectUntilRef.current
       const minLayerUpdateMs = 250
       const shouldUpdateLayers =
         now - lastLocationLayerUpdateAtRef.current >= minLayerUpdateMs || !lastLocationLayerUpdateAtRef.current
@@ -452,7 +453,6 @@ function App() {
       // so GPS selection can behave like a click (orange) even while moving.
       if (!isManualSelectLocked && usingMyLocationRef.current && gpsSelectedHexRef.current) {
         const currentHex = gpsSelectedHexRef.current
-        const now = Date.now()
 
         // Only do heavy work (reload + selection) when the GPS hex actually changes.
         const hexChanged = currentHex !== lastGpsSelectedHexRef.current
