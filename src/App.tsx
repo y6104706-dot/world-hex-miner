@@ -20,6 +20,20 @@ function App() {
   const lastAutoMineHexRef = useRef<string | null>(null)
   const lastAutoMineAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
+  const lastGpsSelectedHexRef = useRef<string | null>(null)
+  const lastGpsReloadHexRef = useRef<string | null>(null)
+  const lastLocationLayerUpdateAtRef = useRef<number>(0)
+  const followCameraRafPendingRef = useRef(false)
+  const pendingFollowCameraRef = useRef<
+    | {
+        center: [number, number]
+        zoom: number
+        bearing?: number
+        duration: number
+        essential: boolean
+      }
+    | null
+  >(null)
   const usingMyLocationRef = useRef(false)
   const followMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
@@ -346,22 +360,30 @@ function App() {
     }
   }
 
-  const setMapUserLocation = (coords: { lon: number; lat: number; accuracyM: number; headingDeg: number | null }) => {
+  const setMapUserLocation = (coords: {
+    lon: number
+    lat: number
+    accuracyM: number
+    headingDeg: number | null
+  }) => {
     lastGeoCoordsRef.current = coords
     const map = mapRef.current
     if (!map) return
 
-    const isManualSelectLocked = Date.now() < manualSelectUntilRef.current
-
     try {
-      const pointSource = map.getSource('user-location') as maplibregl.GeoJSONSource | undefined
-      if (pointSource) {
-        pointSource.setData({
+      const now = Date.now()
+      const minLayerUpdateMs = 250
+      const shouldUpdateLayers =
+        now - lastLocationLayerUpdateAtRef.current >= minLayerUpdateMs || !lastLocationLayerUpdateAtRef.current
+
+      const locationSource = map.getSource('user-location') as maplibregl.GeoJSONSource | undefined
+      if (locationSource && shouldUpdateLayers) {
+        locationSource.setData({
           type: 'FeatureCollection' as const,
           features: [
             {
               type: 'Feature' as const,
-              properties: { heading: coords.headingDeg },
+              properties: {},
               geometry: { type: 'Point' as const, coordinates: [coords.lon, coords.lat] },
             },
           ],
@@ -369,12 +391,12 @@ function App() {
       }
 
       const accuracySource = map.getSource('user-accuracy') as maplibregl.GeoJSONSource | undefined
-      if (accuracySource) {
+      if (accuracySource && shouldUpdateLayers) {
         accuracySource.setData(buildCirclePolygon(coords.lon, coords.lat, Math.max(6, coords.accuracyM)))
       }
 
       const headingSource = map.getSource('user-heading') as maplibregl.GeoJSONSource | undefined
-      if (headingSource) {
+      if (headingSource && shouldUpdateLayers) {
         if (typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)) {
           headingSource.setData(buildHeadingConePolygon(coords.lon, coords.lat, coords.headingDeg, Math.max(40, coords.accuracyM * 1.6)))
         } else {
@@ -396,7 +418,7 @@ function App() {
         const gpsSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
         const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
 
-        if (gpsSource) {
+        if (gpsSource && shouldUpdateLayers) {
           if (gpsHex) {
             const boundary = h3.cellToBoundary(gpsHex, true)
             const coordsLngLat = boundary.map(([lat, lng]) => [lng, lat])
@@ -422,21 +444,34 @@ function App() {
         // ignore if sources not ready yet
       }
 
+      if (shouldUpdateLayers) {
+        lastLocationLayerUpdateAtRef.current = now
+      }
+
       // When using "Use my location", ensure the surrounding hex features refresh
       // so GPS selection can behave like a click (orange) even while moving.
       if (!isManualSelectLocked && usingMyLocationRef.current && gpsSelectedHexRef.current) {
+        const currentHex = gpsSelectedHexRef.current
         const now = Date.now()
-        const minRefreshMs = 900
-        if (now - lastGpsHexRefreshAtRef.current > minRefreshMs) {
-          lastGpsHexRefreshAtRef.current = now
-          loadHexesForCurrentViewRef.current?.()
+
+        // Only do heavy work (reload + selection) when the GPS hex actually changes.
+        const hexChanged = currentHex !== lastGpsSelectedHexRef.current
+        if (hexChanged) {
+          lastGpsSelectedHexRef.current = currentHex
+
+          // Throttle the heavy reload; on mobile this can otherwise stall the render loop.
+          const minRefreshMs = 1800
+          if (now - lastGpsHexRefreshAtRef.current > minRefreshMs || currentHex !== lastGpsReloadHexRef.current) {
+            lastGpsHexRefreshAtRef.current = now
+            lastGpsReloadHexRef.current = currentHex
+            loadHexesForCurrentViewRef.current?.()
+          }
         }
 
-        // If this GPS hex is already present in features, select it immediately.
-        const currentHex = gpsSelectedHexRef.current
+        // If this GPS hex is already present in features, select it (but only on hex change).
         const currentFeatures = featuresRef.current
         const feature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
-        if (feature) {
+        if (feature && hexChanged) {
           applyHexSelection(map, currentHex, feature.properties.zoneType)
 
           // Auto-mine only when Drive Mode is active and the hex is MAIN_ROAD.
@@ -550,29 +585,49 @@ function App() {
 
       // Follow mode: keep the map centered on the user while enabled.
       if (followMyLocationRef.current) {
-        const now = Date.now()
         if (now - lastFollowAtRef.current > 500) {
           lastFollowAtRef.current = now
           const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
+          const bearing =
+            typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)
+              ? coords.headingDeg
+              : undefined
 
-          const container = map.getContainer()
-          if (container && container.clientWidth > 0 && container.clientHeight > 0 && !map.isMoving()) {
-            const bearing =
-              typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)
-                ? coords.headingDeg
-                : undefined
+          pendingFollowCameraRef.current = {
+            center: [coords.lon, coords.lat],
+            zoom: desiredZoom,
+            bearing,
+            duration: 450,
+            essential: true,
+          }
 
-            try {
-              map.easeTo({
-                center: [coords.lon, coords.lat],
-                zoom: desiredZoom,
-                bearing,
-                duration: 450,
-                essential: true,
-              })
-            } catch {
-              // ignore transient map render errors during resize/visibility changes
-            }
+          if (!followCameraRafPendingRef.current) {
+            followCameraRafPendingRef.current = true
+            window.requestAnimationFrame(() => {
+              followCameraRafPendingRef.current = false
+              const cam = pendingFollowCameraRef.current
+              pendingFollowCameraRef.current = null
+              if (!cam) return
+
+              const currentMap = mapRef.current
+              if (!currentMap) return
+
+              const container = currentMap.getContainer()
+              if (!container || container.clientWidth <= 0 || container.clientHeight <= 0) {
+                return
+              }
+
+              // Avoid stacking camera updates while the map is already moving.
+              if (currentMap.isMoving()) {
+                return
+              }
+
+              try {
+                currentMap.easeTo(cam)
+              } catch {
+                // ignore transient map render errors during resize/visibility changes
+              }
+            })
           }
         }
       }
