@@ -678,6 +678,9 @@ function App() {
 
   const [viewMode, setViewMode] = useState<'MAP' | 'TRADE' | 'STATS' | 'POLICY' | 'ACCOUNT'>('MAP')
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [infoExpandedMobile, setInfoExpandedMobile] = useState(false)
+
   const [usdtBalance, setUsdtBalance] = useState<number | null>(null)
   const [lastPrice, setLastPrice] = useState<number | null>(null)
   const [tradeCount24h, setTradeCount24h] = useState<number | null>(null)
@@ -2138,7 +2141,17 @@ function App() {
     setMineMessage(null)
     setMineMessageType(null)
     setCanSpawnHere(false)
+    setInfoExpandedMobile(false)
   }
+
+  useEffect(() => {
+    if (!selectedInfo) {
+      return
+    }
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setInfoExpandedMobile(false)
+    }
+  }, [selectedInfo])
 
   const handleUseMyLocationClick = () => {
     if (!navigator.geolocation) {
@@ -2347,6 +2360,14 @@ function App() {
     <div className="app-root">
       <div className="top-bar">
         <div className="top-bar-title">
+          <button
+            type="button"
+            className="mobile-hamburger-button"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            ≡
+          </button>
           <img
             src="/ghx-logo.svg"
             alt="GHX logo"
@@ -2392,6 +2413,78 @@ function App() {
           </button>
         </div>
       </div>
+
+      {mobileMenuOpen && (
+        <div
+          className="mobile-drawer-overlay"
+          onClick={() => setMobileMenuOpen(false)}
+          role="button"
+          tabIndex={-1}
+        >
+          <div className="mobile-drawer" onClick={(e) => e.stopPropagation()} role="presentation">
+            <button
+              type="button"
+              className="mobile-drawer-close"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close menu"
+            >
+              ×
+            </button>
+            <div className="mobile-drawer-items">
+              <button
+                type="button"
+                className={viewMode === 'MAP' ? 'mobile-drawer-item mobile-drawer-item-active' : 'mobile-drawer-item'}
+                onClick={() => {
+                  setViewMode('MAP')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                Map
+              </button>
+              <button
+                type="button"
+                className={viewMode === 'TRADE' ? 'mobile-drawer-item mobile-drawer-item-active' : 'mobile-drawer-item'}
+                onClick={() => {
+                  setViewMode('TRADE')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                Trade
+              </button>
+              <button
+                type="button"
+                className={viewMode === 'STATS' ? 'mobile-drawer-item mobile-drawer-item-active' : 'mobile-drawer-item'}
+                onClick={() => {
+                  setViewMode('STATS')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                Stats
+              </button>
+              <button
+                type="button"
+                className={viewMode === 'POLICY' ? 'mobile-drawer-item mobile-drawer-item-active' : 'mobile-drawer-item'}
+                onClick={() => {
+                  setViewMode('POLICY')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                Policy
+              </button>
+              <button
+                type="button"
+                className={viewMode === 'ACCOUNT' ? 'mobile-drawer-item mobile-drawer-item-active' : 'mobile-drawer-item'}
+                onClick={() => {
+                  setViewMode('ACCOUNT')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="map-wrapper">
         <div ref={mapContainerRef} className="map-container" />
         <div className="mobile-fab-controls">
@@ -3026,7 +3119,11 @@ function App() {
         </div>
       )}
       {viewMode === 'MAP' && selectedInfo && (
-        <div className="info-panel">
+        <div
+          className={
+            infoExpandedMobile ? 'info-panel info-panel-expanded-mobile' : 'info-panel info-panel-collapsed-mobile'
+          }
+        >
           <div className="info-header">
             <div className="info-title">
               Hex details
@@ -3036,6 +3133,14 @@ function App() {
                 </span>
               )}
             </div>
+            <button
+              type="button"
+              className="info-expand-button"
+              onClick={() => setInfoExpandedMobile((prev) => !prev)}
+              aria-label="Toggle hex details size"
+            >
+              {infoExpandedMobile ? '–' : '+'}
+            </button>
             <button
               type="button"
               className="info-close-button"

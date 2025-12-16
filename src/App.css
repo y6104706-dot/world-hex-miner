@@ -22,6 +22,76 @@
   color: #e5e7eb;
 }
 
+.mobile-hamburger-button {
+  display: none;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(10, 12, 20, 0.65);
+  color: #e5e7eb;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+}
+
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.mobile-drawer {
+  margin-top: 56px;
+  margin-left: 10px;
+  width: min(290px, calc(100% - 20px));
+  border-radius: 14px;
+  background: rgba(10, 12, 20, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+  padding: 10px;
+}
+
+.mobile-drawer-close {
+  border: none;
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 1.2rem;
+  float: right;
+}
+
+.mobile-drawer-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.mobile-drawer-item {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  padding: 10px 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mobile-drawer-item-active {
+  border-color: rgba(56, 189, 248, 0.55);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.35), rgba(29, 78, 216, 0.25));
+}
+
 @supports (height: 100dvh) {
   .app-root {
     height: 100dvh;
@@ -264,6 +334,19 @@
   padding: 0 4px;
 }
 
+.info-expand-button {
+  display: none;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  margin-right: 8px;
+}
+
 .info-close-button:hover {
   color: #ffb347;
 }
@@ -277,6 +360,16 @@
 }
 
 @media (max-width: 768px) {
+  .top-bar-tabs {
+    display: none;
+  }
+
+  .mobile-hamburger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .info-panel {
     /* Push the panel below the top bar on mobile so they do not overlap. */
     top: 64px;
@@ -286,7 +379,23 @@
     max-width: 320px;
     padding: 7px 9px;
     font-size: 0.78rem;
-    max-height: 38vh;
+    max-height: 42vh;
+    overflow-y: auto;
+  }
+
+  .info-expand-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .info-panel-collapsed-mobile {
+    max-height: 124px;
+    overflow: hidden;
+  }
+
+  .info-panel-expanded-mobile {
+    max-height: 55vh;
     overflow-y: auto;
   }
 
