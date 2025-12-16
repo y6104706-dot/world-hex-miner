@@ -1582,6 +1582,21 @@ function App() {
   }, [apiBase, authToken])
 
   useEffect(() => {
+    if (viewMode !== 'MAP') {
+      return
+    }
+
+    if (!mapRef.current) {
+      return
+    }
+
+    const reload = loadHexesForCurrentViewRef.current
+    if (reload) {
+      reload()
+    }
+  }, [authToken, viewMode])
+
+  useEffect(() => {
     if (!authToken) {
       setUsdtBalance(null)
       return

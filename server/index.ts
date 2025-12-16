@@ -50,7 +50,7 @@ type StoredUser = {
   ownedHexes: string[]
 }
 
-const dataDir = path.join(__dirname, '..', 'data')
+const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, '..', 'data')
 const legacyDemoUserDataPath = path.join(dataDir, 'demoUser.json')
 const usersDataPath = path.join(dataDir, 'users.json')
 const hexCachePath = path.join(dataDir, 'hexCache.json')
