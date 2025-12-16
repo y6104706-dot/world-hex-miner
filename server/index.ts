@@ -44,6 +44,7 @@ const dataDir = path.join(__dirname, '..', 'data')
 const legacyDemoUserDataPath = path.join(dataDir, 'demoUser.json')
 const usersDataPath = path.join(dataDir, 'users.json')
 const hexCachePath = path.join(dataDir, 'hexCache.json')
+const coastBufferPath = path.join(dataDir, 'coastBuffer.json')
 const tradesDataPath = path.join(dataDir, 'marketTrades.json')
 const miningEventsPath = path.join(dataDir, 'miningEvents.json')
 const treasuryDataPath = path.join(dataDir, 'treasury.json')
@@ -282,6 +283,55 @@ function saveHexCache(cache: Record<string, HexCacheEntry>): void {
 }
 
 const hexCache: Record<string, HexCacheEntry> = loadHexCache()
+
+function loadCoastBuffer(): Set<string> {
+  try {
+    if (!fs.existsSync(coastBufferPath)) {
+      return new Set()
+    }
+    const raw = fs.readFileSync(coastBufferPath, 'utf8')
+    const parsed = JSON.parse(raw) as { hexes?: unknown }
+    const hexes = (parsed && typeof parsed === 'object' ? (parsed as any).hexes : null) as unknown
+    if (Array.isArray(hexes)) {
+      return new Set(hexes.filter((x) => typeof x === 'string') as string[])
+    }
+  } catch {
+    // ignore
+  }
+  return new Set()
+}
+
+function saveCoastBuffer(set: Set<string>): void {
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true })
+    }
+    fs.writeFileSync(coastBufferPath, JSON.stringify({ hexes: Array.from(set) }, null, 2), 'utf8')
+  } catch {
+    // ignore
+  }
+}
+
+const coastBufferHexes: Set<string> = loadCoastBuffer()
+
+function markCoastAndBuffer(h3Index: string): void {
+  const COAST_BUFFER_K = 3
+  try {
+    const disk = h3.gridDisk(h3Index, COAST_BUFFER_K)
+    let changed = false
+    for (const idx of disk) {
+      if (!coastBufferHexes.has(idx)) {
+        coastBufferHexes.add(idx)
+        changed = true
+      }
+    }
+    if (changed) {
+      saveCoastBuffer(coastBufferHexes)
+    }
+  } catch {
+    // ignore
+  }
+}
 
 type MiningEvent = {
   timestamp: number
@@ -624,6 +674,9 @@ export async function inferZoneTypeFromOverpass(h3Index: string): Promise<Inferr
 
   if (hasCoast) {
     debug.push('OSM: coastline/beach tag detected')
+    // Persist a safety buffer around detected coastline so mining can be
+    // forbidden near coasts even if nearby hexes are not classified as COAST.
+    markCoastAndBuffer(h3Index)
     return { zoneType: 'COAST', debug, hasRoad, roadClass }
   }
 
@@ -1577,15 +1630,9 @@ app.post('/api/mine', requireAuth, (req, res) => {
     return
   }
 
-  // Safety rule: mining on COAST is forbidden.
-  // Use cache-first classification so we don't spam Overpass on mining.
-  const cached = hexCache[h3Index]
-  const baseZone: { zoneType: ZoneType; debug: string[] } = cached
-    ? { zoneType: cached.zoneType, debug: cached.debug }
-    : { zoneType: fallbackZoneType(h3Index), debug: ['No cached zoneType for mine; using fallback'] }
-
-  const coastAware = applyCoastBufferFromCache(h3Index, baseZone)
-  if (coastAware.zoneType === 'COAST') {
+  // Safety rule: forbid mining on COAST and in a persisted buffer around
+  // detected coastlines (legal/safety protection).
+  if (coastBufferHexes.has(h3Index)) {
     res.json({
       ok: false,
       reason: 'FORBIDDEN_ZONE',
