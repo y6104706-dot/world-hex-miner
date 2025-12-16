@@ -2349,13 +2349,36 @@ function App() {
       </div>
       <div className="map-wrapper">
         <div ref={mapContainerRef} className="map-container" />
-        <button
-          type="button"
-          className="use-location-button"
-          onClick={handleUseMyLocationClick}
-        >
-          Use my location
-        </button>
+        <div className="mobile-fab-controls">
+          <button
+            type="button"
+            className="mobile-fab mobile-fab-location"
+            onClick={handleUseMyLocationClick}
+            aria-label="Use my location"
+          >
+            GPS
+          </button>
+          <button
+            type="button"
+            className={
+              driveModeActive
+                ? 'mobile-fab mobile-fab-drive mobile-fab-drive-active'
+                : 'mobile-fab mobile-fab-drive'
+            }
+            onClick={handleToggleDriveMode}
+            aria-label="Toggle Drive Mode"
+          >
+            {driveModeActive ? 'DRIVE' : 'Drive'}
+          </button>
+          <button
+            type="button"
+            className={showVeins ? 'mobile-fab mobile-fab-veins mobile-fab-veins-active' : 'mobile-fab mobile-fab-veins'}
+            onClick={() => setShowVeins((prev) => !prev)}
+            aria-label="Toggle mined veins overlay"
+          >
+            Veins
+          </button>
+        </div>
       </div>
 
       {viewMode === 'MAP' && (

@@ -58,6 +58,10 @@
   background: rgba(0, 0, 0, 0.8);
 }
 
+.mobile-fab-controls {
+  display: none;
+}
+
 .hud-panel {
   position: absolute;
   bottom: 20px;
@@ -153,6 +157,58 @@
 
 @media (max-width: 768px) {
   .hud-panel {
+    display: none;
+  }
+
+  .mobile-fab-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: absolute;
+    left: 12px;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    z-index: 3;
+    pointer-events: auto;
+  }
+
+  .mobile-fab {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: rgba(10, 12, 20, 0.86);
+    color: #e5e7eb;
+    font-weight: 750;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    box-shadow:
+      0 12px 26px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+  }
+
+  .mobile-fab:active {
+    transform: translateY(1px);
+  }
+
+  .mobile-fab-location {
+    border-color: rgba(59, 130, 246, 0.45);
+  }
+
+  .mobile-fab-drive-active {
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.95), rgba(16, 185, 129, 0.9));
+    border-color: rgba(34, 197, 94, 0.6);
+    color: #071017;
+  }
+
+  .mobile-fab-veins-active {
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.95), rgba(29, 78, 216, 0.9));
+    border-color: rgba(56, 189, 248, 0.55);
+    color: #071017;
+  }
+
+  .hud-panel {
     bottom: calc(16px + max(env(safe-area-inset-bottom, 0px), 56px));
     left: 14px;
     right: 14px;
@@ -227,9 +283,9 @@
     right: 10px;
     left: 10px;
     max-width: none;
-    padding: 8px 10px;
-    font-size: 0.8rem;
-    max-height: 45vh;
+    padding: 7px 9px;
+    font-size: 0.78rem;
+    max-height: 38vh;
     overflow-y: auto;
   }
 
