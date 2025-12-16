@@ -23,6 +23,7 @@ function App() {
   const lastGpsSelectedHexRef = useRef<string | null>(null)
   const lastGpsReloadHexRef = useRef<string | null>(null)
   const lastLocationLayerUpdateAtRef = useRef<number>(0)
+  const lastGeoAtRef = useRef<number>(0)
   const usingMyLocationRef = useRef(false)
   const followMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
@@ -358,6 +359,7 @@ function App() {
     headingDeg: number | null
   }) => {
     lastGeoCoordsRef.current = coords
+    lastGeoAtRef.current = Date.now()
     const map = mapRef.current
     if (!map) return
 
@@ -469,9 +471,12 @@ function App() {
           applyHexSelection(map, currentHex, feature.properties.zoneType)
 
           // Auto-mine only when Drive Mode is active and the hex is MAIN_ROAD.
+          const gpsMineAccuracyThresholdM = 35
           const shouldAutoMine =
             driveModeActiveRef.current &&
             authTokenRef.current &&
+            usingMyLocationRef.current &&
+            coords.accuracyM <= gpsMineAccuracyThresholdM &&
             feature.properties.zoneType === 'MAIN_ROAD' &&
             !ownedHexesRef.current.has(currentHex) &&
             currentHex !== lastAutoMineHexRef.current
@@ -1763,6 +1768,42 @@ function App() {
     }
 
     const { h3Index } = selectedHex
+
+    const gpsMineAccuracyThresholdM = 35
+    const gpsMineMaxAgeMs = 15_000
+    const lastCoords = lastGeoCoordsRef.current
+    const gpsHex = gpsSelectedHexRef.current
+    const geoAgeMs = Date.now() - lastGeoAtRef.current
+
+    if (!authTokenRef.current) {
+      setMineMessage('Please log in to mine hexes.')
+      setMineMessageType('error')
+      return
+    }
+
+    if (!usingMyLocationRef.current) {
+      setMineMessage('Enable GPS (Use my location) to mine hexes.')
+      setMineMessageType('error')
+      return
+    }
+
+    if (!lastCoords || !gpsHex || geoAgeMs > gpsMineMaxAgeMs) {
+      setMineMessage('Waiting for a fresh GPS fix…')
+      setMineMessageType('error')
+      return
+    }
+
+    if (lastCoords.accuracyM > gpsMineAccuracyThresholdM) {
+      setMineMessage('GPS accuracy is too low to mine. Move outdoors or wait for a better fix.')
+      setMineMessageType('error')
+      return
+    }
+
+    if (gpsHex !== h3Index) {
+      setMineMessage('You can only mine the hex you are currently standing in (GPS).')
+      setMineMessageType('error')
+      return
+    }
 
     const doMine = async () => {
       try {
@@ -3241,7 +3282,26 @@ function App() {
             </div>
           )}
           {selectedHex && (
-            <button type="button" className="mine-button" onClick={handleMineClick}>
+            <button
+              type="button"
+              className="mine-button"
+              onClick={handleMineClick}
+              disabled={(() => {
+                const gpsMineAccuracyThresholdM = 35
+                const gpsMineMaxAgeMs = 15_000
+                const lastCoords = lastGeoCoordsRef.current
+                const gpsHex = gpsSelectedHexRef.current
+                const geoAgeMs = Date.now() - lastGeoAtRef.current
+
+                if (!authTokenRef.current) return true
+                if (!usingMyLocationRef.current) return true
+                if (!lastCoords || !gpsHex) return true
+                if (geoAgeMs > gpsMineMaxAgeMs) return true
+                if (lastCoords.accuracyM > gpsMineAccuracyThresholdM) return true
+                if (gpsHex !== selectedHex.h3Index) return true
+                return false
+              })()}
+            >
               Mine this hex
             </button>
           )}
