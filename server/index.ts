@@ -474,6 +474,8 @@ export async function inferZoneTypeFromOverpass(h3Index: string): Promise<Inferr
   let hasMilitary = false
   let hasHospital = false
   let hasPrisonOrGovernment = false
+  let hasCoast = false
+  let hasCliff = false
   let hasRoad = false
   let roadClass: string | undefined
 
@@ -527,6 +529,14 @@ export async function inferZoneTypeFromOverpass(h3Index: string): Promise<Inferr
       hasSea = true
     }
 
+    if (tags.natural === 'coastline' || tags.natural === 'beach' || tags.leisure === 'beach') {
+      hasCoast = true
+    }
+
+    if (tags.natural === 'cliff') {
+      hasCliff = true
+    }
+
     // NATURE_RESERVE: park / forest / wood
     if (tags.leisure === 'park' || tags.landuse === 'forest' || tags.natural === 'wood') {
       hasNature = true
@@ -550,9 +560,10 @@ export async function inferZoneTypeFromOverpass(h3Index: string): Promise<Inferr
   // 1) MILITARY / PRISON / GOVERNMENT
   // 2) HOSPITAL
   // 3) MAIN_ROAD – real intercity / high-speed roads (motorway/trunk)
-  // 4) URBAN – buildings, residential/commercial/industrial landuse, settlements
-  // 5) SEA – strong water/sea signal when there is no road/urban fabric
-  // 6) NATURE_RESERVE – parks / forests / woods away from dense urban fabric
+  // 4) CLIFF / COAST
+  // 5) URBAN – buildings, residential/commercial/industrial landuse, settlements
+  // 6) SEA – strong water/sea signal when there is no road/urban fabric
+  // 7) NATURE_RESERVE – parks / forests / woods away from dense urban fabric
   if (hasMilitary || hasPrisonOrGovernment) {
     if (hasMilitary) {
       debug.push('OSM: military tag detected')
@@ -571,6 +582,16 @@ export async function inferZoneTypeFromOverpass(h3Index: string): Promise<Inferr
   if (hasMainRoad) {
     debug.push('OSM: main road detected (motorway/trunk)')
     return { zoneType: 'MAIN_ROAD', debug, hasRoad, roadClass }
+  }
+
+  if (hasCliff) {
+    debug.push('OSM: cliff tag detected')
+    return { zoneType: 'CLIFF', debug, hasRoad, roadClass }
+  }
+
+  if (hasCoast) {
+    debug.push('OSM: coastline/beach tag detected')
+    return { zoneType: 'COAST', debug, hasRoad, roadClass }
   }
 
   if (hasUrban) {
