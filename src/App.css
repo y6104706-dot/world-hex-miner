@@ -281,8 +281,9 @@
     /* Push the panel below the top bar on mobile so they do not overlap. */
     top: 64px;
     right: 10px;
-    left: 10px;
-    max-width: none;
+    left: auto;
+    width: min(320px, calc(100% - 20px));
+    max-width: 320px;
     padding: 7px 9px;
     font-size: 0.78rem;
     max-height: 38vh;

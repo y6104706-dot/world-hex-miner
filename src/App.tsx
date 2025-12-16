@@ -31,6 +31,7 @@ function App() {
   const manualSelectUntilRef = useRef<number>(0)
   const manualSelectedHexRef = useRef<string | null>(null)
   const globalOwnedHexesRef = useRef<Set<string>>(new Set())
+  const autoStartedLocationRef = useRef(false)
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -2208,6 +2209,45 @@ function App() {
 
     doInitialFix({ enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 })
   }
+
+  useEffect(() => {
+    if (autoStartedLocationRef.current) {
+      return
+    }
+
+    if (viewMode !== 'MAP') {
+      return
+    }
+
+    // Only do this on mobile-sized viewports.
+    if (typeof window !== 'undefined' && window.innerWidth > 768) {
+      return
+    }
+
+    if (!navigator.geolocation || !mapRef.current) {
+      return
+    }
+
+    const permissions = (navigator as any).permissions as
+      | { query: (p: { name: string }) => Promise<{ state: string }> }
+      | undefined
+
+    if (!permissions?.query) {
+      return
+    }
+
+    void permissions
+      .query({ name: 'geolocation' })
+      .then((status) => {
+        if (status.state === 'granted' && !autoStartedLocationRef.current) {
+          autoStartedLocationRef.current = true
+          handleUseMyLocationClick()
+        }
+      })
+      .catch(() => {
+        // ignore
+      })
+  }, [viewMode])
 
   const handleViewHexOnMapFromAccount = (h3Index: string) => {
     const map = mapRef.current
