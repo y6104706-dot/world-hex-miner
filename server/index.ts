@@ -315,7 +315,7 @@ function saveCoastBuffer(set: Set<string>): void {
 const coastBufferHexes: Set<string> = loadCoastBuffer()
 
 function markCoastAndBuffer(h3Index: string): void {
-  const COAST_BUFFER_K = 3
+  const COAST_BUFFER_K = 4
   try {
     const disk = h3.gridDisk(h3Index, COAST_BUFFER_K)
     let changed = false
