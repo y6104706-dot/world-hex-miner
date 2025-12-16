@@ -581,7 +581,7 @@ function App() {
       if (followMyLocationRef.current) {
         if (now - lastFollowAtRef.current > 500) {
           lastFollowAtRef.current = now
-          const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
+          const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
 
           const container = map.getContainer()
           if (!container || container.clientWidth <= 0 || container.clientHeight <= 0) {
@@ -2213,7 +2213,7 @@ function App() {
           const map = mapRef.current
           if (!map) return
 
-          const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
+          const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
           map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
 
           setToastMessage(
@@ -2394,6 +2394,41 @@ function App() {
           />
           GeoHex Miner
         </div>
+        <div className="top-bar-actions">
+          <button
+            type="button"
+            className={authToken ? 'top-bar-profile-button top-bar-profile-button-authed' : 'top-bar-profile-button'}
+            onClick={() => {
+              setViewMode('ACCOUNT')
+              setMobileMenuOpen(false)
+            }}
+            aria-label={authToken ? 'Account' : 'Login or Register'}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M20 21a8 8 0 1 0-16 0"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
         {!isMobile && (
           <div className="top-bar-tabs">
             <button
@@ -2538,6 +2573,19 @@ function App() {
             Veins
           </button>
         </div>
+        {viewMode === 'MAP' && (
+          <div className="mobile-status-pill" aria-label="Wallet status">
+            <span className="mobile-status-item">
+              GHX:{' '}
+              <strong>{typeof userBalance === 'number' ? userBalance : '-'}</strong>
+            </span>
+            <span className="mobile-status-sep">|</span>
+            <span className="mobile-status-item">
+              Hexes:{' '}
+              <strong>{typeof ownedCount === 'number' ? ownedCount : '-'}</strong>
+            </span>
+          </div>
+        )}
       </div>
 
       {viewMode === 'MAP' && (
