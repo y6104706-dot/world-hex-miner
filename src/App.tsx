@@ -1193,9 +1193,14 @@ function App() {
       })
 
       map.on('click', 'h3-hex-fill', async (event) => {
-        manualSelectUntilRef.current = Date.now() + 4000
+        // Manual selection should temporarily override GPS-driven selection.
+        // Keep the location dot updating, but pause the GPS selection/refresh
+        // so the clicked hex doesn't immediately revert.
+        manualSelectUntilRef.current = Date.now() + 60_000
         setFollowMyLocation(false)
         followMyLocationRef.current = false
+        setUsingMyLocation(false)
+        usingMyLocationRef.current = false
 
         const feature = event.features?.[0] as maplibregl.MapGeoJSONFeature | undefined
         if (!feature) return
