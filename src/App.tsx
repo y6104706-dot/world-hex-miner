@@ -512,7 +512,13 @@ function App() {
                     headers: {
                       'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ h3Index: currentHex }),
+                    body: JSON.stringify({
+                      h3Index: currentHex,
+                      lat: coords.lat,
+                      lon: coords.lon,
+                      accuracyM: coords.accuracyM,
+                      gpsAt: lastGeoAtRef.current,
+                    }),
                   })
 
                   if (!res.ok) {
@@ -1163,9 +1169,9 @@ function App() {
             'case',
             ['get', 'selected'],
             '#ff9900',
-            ['get', 'claimed'],
+            ['to-boolean', ['get', 'claimed']],
             '#b91c1c',
-            ['get', 'canMine'],
+            ['to-boolean', ['get', 'canMine']],
             '#e5e7eb',
             '#000000',
           ],
@@ -1173,9 +1179,9 @@ function App() {
             'case',
             ['get', 'selected'],
             0.6,
-            ['get', 'claimed'],
+            ['to-boolean', ['get', 'claimed']],
             0.65,
-            ['get', 'canMine'],
+            ['to-boolean', ['get', 'canMine']],
             0.15,
             0.2,
           ],
@@ -1849,7 +1855,13 @@ function App() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ h3Index }),
+          body: JSON.stringify({
+            h3Index,
+            lat: lastCoords.lat,
+            lon: lastCoords.lon,
+            accuracyM: lastCoords.accuracyM,
+            gpsAt: lastGeoAtRef.current,
+          }),
         })
 
         if (!res.ok) {
@@ -2104,6 +2116,13 @@ function App() {
 
     const { h3Index } = selectedHex
 
+    const lastCoords = lastGeoCoordsRef.current
+    if (!lastCoords) {
+      setMineMessage('Enable GPS (Use my location) to spawn new mining areas.')
+      setMineMessageType('error')
+      return
+    }
+
     const doSpawn = async () => {
       try {
         const res = await authedFetch(`${apiBase}/api/spawn`, {
@@ -2111,7 +2130,13 @@ function App() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ h3Index }),
+          body: JSON.stringify({
+            h3Index,
+            lat: lastCoords.lat,
+            lon: lastCoords.lon,
+            accuracyM: lastCoords.accuracyM,
+            gpsAt: lastGeoAtRef.current,
+          }),
         })
 
         if (!res.ok) {
