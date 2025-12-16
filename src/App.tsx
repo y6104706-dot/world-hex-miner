@@ -26,6 +26,7 @@ function App() {
   const loadHexesForCurrentViewRef = useRef<(() => void) | null>(null)
   const lastGpsHexRefreshAtRef = useRef<number>(0)
   const manualSelectUntilRef = useRef<number>(0)
+  const globalOwnedHexesRef = useRef<Set<string>>(new Set())
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -478,15 +479,17 @@ function App() {
 
                   setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : prev))
                   ownedHexesRef.current.add(currentHex)
+                  globalOwnedHexesRef.current.add(currentHex)
                   setSelectedOwned(true)
 
                   const ownedSet = ownedHexesRef.current
+                  const globalOwnedSet = globalOwnedHexesRef.current
                   const refreshedFeatures = featuresRef.current
                   const nextFeatures: HexFeature[] = refreshedFeatures.map((f) => {
                     const idx = f.properties.h3Index
                     const isOwned = ownedSet.has(idx)
                     const neighbors = h3.gridDisk(idx, 1)
-                    const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+                    const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
                     return {
                       ...f,
                       properties: {
@@ -839,18 +842,35 @@ function App() {
       const loadOwnedHexes = async () => {
         if (!authToken) {
           ownedHexesRef.current = new Set()
+          globalOwnedHexesRef.current = new Set()
           return
         }
         try {
-          const res = await authedFetch(`${apiBase}/api/owned-hexes`)
+          const res = await authedFetch(`${apiBase}/api/owned-hexes/global`)
           if (res.ok) {
-            const data: { hexes?: string[] } = await res.json()
-            if (Array.isArray(data.hexes)) {
-              ownedHexesRef.current = new Set(data.hexes)
-            }
+            const data: { mine?: string[]; others?: string[] } = await res.json().catch(() => ({}))
+            const mine = Array.isArray(data.mine) ? data.mine : []
+            const others = Array.isArray(data.others) ? data.others : []
+
+            ownedHexesRef.current = new Set(mine)
+            globalOwnedHexesRef.current = new Set([...mine, ...others])
+            return
           }
         } catch {
           // ignore load errors for now
+        }
+
+        // Fallback: at least load my owned hexes.
+        try {
+          const res = await authedFetch(`${apiBase}/api/owned-hexes`)
+          if (res.ok) {
+            const data: { hexes?: string[] } = await res.json().catch(() => ({}))
+            const mine = Array.isArray(data.hexes) ? data.hexes : []
+            ownedHexesRef.current = new Set(mine)
+            globalOwnedHexesRef.current = new Set(mine)
+          }
+        } catch {
+          // ignore
         }
       }
 
@@ -947,6 +967,7 @@ function App() {
         }
 
         const ownedSet = ownedHexesRef.current
+        const globalOwnedSet = globalOwnedHexesRef.current
         const infoCache = hexInfoCacheRef.current
 
         const newFeatures: HexFeature[] = []
@@ -969,7 +990,7 @@ function App() {
 
           const isOwned = ownedSet.has(hexIndex)
           const neighbors = h3.gridDisk(hexIndex, 1)
-          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+          const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
 
           newFeatures.push({
             type: 'Feature',
@@ -1725,6 +1746,7 @@ function App() {
         setSelectedOwned(true)
 
         ownedHexesRef.current.add(h3Index)
+        globalOwnedHexesRef.current.add(h3Index)
 
         const currentFeatures = featuresRef.current
         if (!currentFeatures || currentFeatures.length === 0 || !mapRef.current) {

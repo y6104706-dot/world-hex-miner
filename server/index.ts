@@ -31,6 +31,16 @@ type User = {
   ownedHexes: Set<string>
 }
 
+function buildGlobalOwnedHexesSet(): Set<string> {
+  const all = new Set<string>()
+  for (const u of usersById.values()) {
+    for (const idx of u.ownedHexes) {
+      all.add(idx)
+    }
+  }
+  return all
+}
+
 type StoredUser = {
   id: string
   email: string
@@ -1667,11 +1677,13 @@ app.post('/api/mine', requireAuth, (req, res) => {
     return
   }
 
-  // Frontier rule: you can only mine hexes that are adjacent (distance 1) to at
-  // least one already owned hex. The very first owned hex is seeded separately.
-  if (user.ownedHexes.size > 0) {
+  // Frontier rule (global): you can only mine hexes that are adjacent (distance
+  // 1) to at least one mined hex by ANY user. This makes the world frontier
+  // shared rather than per-user.
+  const globalOwned = buildGlobalOwnedHexesSet()
+  if (globalOwned.size > 0) {
     const neighbors = h3.gridDisk(h3Index, 1)
-    const hasAdjacentOwned = neighbors.some((n) => user.ownedHexes.has(n))
+    const hasAdjacentOwned = neighbors.some((n) => globalOwned.has(n))
     if (!hasAdjacentOwned) {
       res.json({
         ok: false,
