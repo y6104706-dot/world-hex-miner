@@ -551,15 +551,17 @@ function App() {
       // Follow mode: keep the map centered on the user while enabled.
       if (followMyLocationRef.current) {
         const now = Date.now()
-        if (now - lastFollowAtRef.current > 350) {
+        if (now - lastFollowAtRef.current > 500) {
           lastFollowAtRef.current = now
           const desiredZoom = driveModeActiveRef.current ? 17.3 : 16.8
           const bearing = typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg) ? coords.headingDeg : undefined
+          map.stop()
           map.easeTo({
             center: [coords.lon, coords.lat],
             zoom: desiredZoom,
             bearing,
-            duration: 650,
+            duration: 450,
+            essential: true,
           })
         }
       }
@@ -2068,6 +2070,9 @@ function App() {
 
     setUsingMyLocation(true)
     setFollowMyLocation(true)
+    usingMyLocationRef.current = true
+    followMyLocationRef.current = true
+    lastFollowAtRef.current = 0
 
     if (geoWatchIdRef.current === null) {
       geoWatchIdRef.current = navigator.geolocation.watchPosition(
