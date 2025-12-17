@@ -420,7 +420,7 @@ function App() {
             const boundary = h3.cellToBoundary(gpsHex, true)
             const coordsLngLat = boundary.map(([lat, lng]) => [lng, lat])
             coordsLngLat.push(coordsLngLat[0])
-            gpsSource.setData({
+            const gpsData = {
               type: 'FeatureCollection' as const,
               features: [
                 {
@@ -432,13 +432,16 @@ function App() {
                   },
                 },
               ],
-            })
+            }
+            gpsSource.setData(gpsData)
+            console.log('[GPS DEBUG] Updated gps-selected-hex layer with data:', gpsData)
           } else {
             gpsSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+            console.log('[GPS DEBUG] Cleared gps-selected-hex layer (no GPS hex)')
           }
         }
-      } catch {
-        // ignore if sources not ready yet
+      } catch (err) {
+        console.log('[GPS DEBUG] Error updating gps-selected-hex layer:', err)
       }
 
       if (shouldUpdateLayers) {
