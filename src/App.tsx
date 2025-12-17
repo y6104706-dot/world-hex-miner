@@ -17,6 +17,8 @@ function App() {
   )
   const gpsSelectedHexRef = useRef<string | null>(null)
   const lastAutoSelectHexRef = useRef<string | null>(null)
+  const lastAutoMineHexRef = useRef<string | null>(null)
+  const lastAutoMineAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
   const pendingGpsSelectionRef = useRef<{ h3Index: string; zoneType: ZoneType } | null>(null)
   const lastGpsSelectedHexRef = useRef<string | null>(null)
@@ -461,25 +463,39 @@ function App() {
           }
         }
 
-        // If this GPS hex is already present in features, select it like a click (but only on hex change).
-        const currentFeatures = featuresRef.current
-        const feature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
-        if (feature && hexChanged) {
-          applyHexSelection(map, currentHex, feature.properties.zoneType)
-          pendingGpsSelectionRef.current = null
+        // When GPS hex changes, immediately select it (like a click) even if not yet loaded in features
+        if (hexChanged) {
+          const currentFeatures = featuresRef.current
+          const feature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
+          
+          if (feature) {
+            // Hex is already loaded - use its actual zoneType
+            applyHexSelection(map, currentHex, feature.properties.zoneType)
+            pendingGpsSelectionRef.current = null
 
-          // Open info panel for GPS hex (like a click would)
-          const rule = miningRules[feature.properties.zoneType]
-          const speedText =
-            rule.minSpeedKmh === null
-              ? 'No special speed requirement.'
-              : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
-          setSelectedInfo(
-            `Hex: ${currentHex}\nZone type: ${feature.properties.zoneType}\n${rule.description}\n${speedText}`,
-          )
-        } else if (hexChanged && !feature) {
-          // Hex not loaded yet - store pending selection to apply after next reload
-          pendingGpsSelectionRef.current = { h3Index: currentHex, zoneType: 'INTERURBAN' }
+            const rule = miningRules[feature.properties.zoneType]
+            const speedText =
+              rule.minSpeedKmh === null
+                ? 'No special speed requirement.'
+                : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
+            setSelectedInfo(
+              `Hex: ${currentHex}\nZone type: ${feature.properties.zoneType}\n${rule.description}\n${speedText}`,
+            )
+          } else {
+            // Hex not loaded yet - select with fallback zoneType and mark as pending
+            const fallbackZoneType: ZoneType = 'INTERURBAN'
+            applyHexSelection(map, currentHex, fallbackZoneType)
+            pendingGpsSelectionRef.current = { h3Index: currentHex, zoneType: fallbackZoneType }
+
+            const rule = miningRules[fallbackZoneType]
+            const speedText =
+              rule.minSpeedKmh === null
+                ? 'No special speed requirement.'
+                : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
+            setSelectedInfo(
+              `Hex: ${currentHex}\nZone type: ${fallbackZoneType} (loading...)\n${rule.description}\n${speedText}`,
+            )
+          }
         }
       }
 
