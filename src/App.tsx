@@ -17,10 +17,8 @@ function App() {
   )
   const gpsSelectedHexRef = useRef<string | null>(null)
   const lastAutoSelectHexRef = useRef<string | null>(null)
-  const lastAutoMineHexRef = useRef<string | null>(null)
-  const lastAutoMineAtRef = useRef<number>(0)
-  const lastGpsDriveStepAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
+  const pendingGpsSelectionRef = useRef<{ h3Index: string; zoneType: ZoneType } | null>(null)
   const lastGpsSelectedHexRef = useRef<string | null>(null)
   const lastGpsReloadHexRef = useRef<string | null>(null)
   const lastLocationLayerUpdateAtRef = useRef<number>(0)
@@ -463,107 +461,25 @@ function App() {
           }
         }
 
-        // If this GPS hex is already present in features, select it (but only on hex change).
+        // If this GPS hex is already present in features, select it like a click (but only on hex change).
         const currentFeatures = featuresRef.current
         const feature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
         if (feature && hexChanged) {
           applyHexSelection(map, currentHex, feature.properties.zoneType)
+          pendingGpsSelectionRef.current = null
 
-          if (driveModeActiveRef.current && authTokenRef.current) {
-            const currentLastDriveHex = lastDriveHexRef.current
-            if (!currentLastDriveHex) {
-              lastDriveHexRef.current = currentHex
-            } else if (currentLastDriveHex !== currentHex) {
-              const now = Date.now()
-              const minIntervalMs = 1200
-              if (now - lastGpsDriveStepAtRef.current >= minIntervalMs) {
-                lastGpsDriveStepAtRef.current = now
-
-                const fromH3 = currentLastDriveHex
-                const toH3 = currentHex
-
-                void (async () => {
-                  try {
-                    const res = await authedFetch(`${apiBase}/api/drive/step`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ fromH3, toH3 }),
-                    })
-
-                    if (!res.ok) {
-                      return
-                    }
-
-                    const data: {
-                      ok?: boolean
-                      minedHexes?: string[]
-                      count?: number
-                      newBalance?: number
-                    } = await res.json().catch(() => ({}))
-
-                    if (!data.ok) {
-                      return
-                    }
-
-                    if (typeof data.newBalance === 'number') {
-                      setUserBalance(data.newBalance)
-                    }
-
-                    const mined = Array.isArray(data.minedHexes) ? data.minedHexes : []
-                    if (mined.length > 0) {
-                      const ownedSetInner = ownedHexesRef.current
-                      for (const idx of mined) {
-                        ownedSetInner.add(idx)
-                      }
-                      globalOwnedHexesRef.current = new Set([
-                        ...Array.from(globalOwnedHexesRef.current),
-                        ...mined,
-                      ])
-
-                      const current = featuresRef.current
-                      if (current && current.length > 0) {
-                        const globalOwnedSet = globalOwnedHexesRef.current
-                        const updated: HexFeature[] = current.map((f) => {
-                          const idx = f.properties.h3Index
-                          const isOwnedHex = ownedSetInner.has(idx)
-                          const neighbors = h3.gridDisk(idx, 1)
-                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
-
-                          return {
-                            ...f,
-                            properties: {
-                              ...f.properties,
-                              claimed: isOwnedHex,
-                              canMine: canMineNeighbor,
-                            },
-                          }
-                        })
-
-                        featuresRef.current = updated
-
-                        const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-                        if (src) {
-                          src.setData({ type: 'FeatureCollection' as const, features: updated })
-                        }
-                      }
-
-                      if (typeof data.count === 'number') {
-                        setOwnedCount((prev) => (typeof prev === 'number' ? prev + data.count! : data.count!))
-                      }
-                    }
-
-                    lastDriveHexRef.current = currentHex
-                    lastAutoMineHexRef.current = currentHex
-                    lastAutoMineAtRef.current = now
-                  } catch {
-                    // ignore
-                  }
-                })()
-              }
-            }
-          }
+          // Open info panel for GPS hex (like a click would)
+          const rule = miningRules[feature.properties.zoneType]
+          const speedText =
+            rule.minSpeedKmh === null
+              ? 'No special speed requirement.'
+              : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
+          setSelectedInfo(
+            `Hex: ${currentHex}\nZone type: ${feature.properties.zoneType}\n${rule.description}\n${speedText}`,
+          )
+        } else if (hexChanged && !feature) {
+          // Hex not loaded yet - store pending selection to apply after next reload
+          pendingGpsSelectionRef.current = { h3Index: currentHex, zoneType: 'INTERURBAN' }
         }
       }
 
@@ -1078,7 +994,24 @@ function App() {
         features = newFeatures
         featuresRef.current = newFeatures
 
-        if (!manualSelectedHex && gpsHex) {
+        // If there's a pending GPS selection and the hex is now loaded, apply it
+        const pending = pendingGpsSelectionRef.current
+        if (pending && !manualSelectedHex) {
+          const pendingFeature = newFeatures.find((f) => f.properties.h3Index === pending.h3Index)
+          if (pendingFeature) {
+            setSelectedHex({ h3Index: pending.h3Index, zoneType: pendingFeature.properties.zoneType })
+            setSelectedOwned(ownedSet.has(pending.h3Index))
+            const rule = miningRules[pendingFeature.properties.zoneType]
+            const speedText =
+              rule.minSpeedKmh === null
+                ? 'No special speed requirement.'
+                : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
+            setSelectedInfo(
+              `Hex: ${pending.h3Index}\nZone type: ${pendingFeature.properties.zoneType}\n${rule.description}\n${speedText}`,
+            )
+            pendingGpsSelectionRef.current = null
+          }
+        } else if (!manualSelectedHex && gpsHex) {
           const gpsFeature = newFeatures.find((f) => f.properties.h3Index === gpsHex)
           if (gpsFeature) {
             setSelectedHex({ h3Index: gpsHex, zoneType: gpsFeature.properties.zoneType })
