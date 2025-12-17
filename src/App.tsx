@@ -101,6 +101,31 @@ function App() {
     setMineMessageType(null)
     setCanSpawnHere(false)
 
+    // Always update the gps-selected-hex layer to show orange highlight
+    try {
+      const gpsSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
+      if (gpsSource) {
+        const boundary = h3.cellToBoundary(h3Index, true)
+        const coordsLngLat = boundary.map(([lat, lng]) => [lng, lat])
+        coordsLngLat.push(coordsLngLat[0])
+        gpsSource.setData({
+          type: 'FeatureCollection' as const,
+          features: [
+            {
+              type: 'Feature' as const,
+              properties: { h3Index },
+              geometry: {
+                type: 'Polygon' as const,
+                coordinates: [coordsLngLat],
+              },
+            },
+          ],
+        })
+      }
+    } catch {
+      // ignore if source not ready
+    }
+
     const currentFeatures = featuresRef.current
     if (!currentFeatures || currentFeatures.length === 0) return
 
