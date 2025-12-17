@@ -468,11 +468,10 @@ function App() {
         if (feature && hexChanged) {
           applyHexSelection(map, currentHex, feature.properties.zoneType)
 
-          // Auto-mine only when Drive Mode is active and the hex is MAIN_ROAD.
+          // Auto-mine only when Drive Mode is active.
           const shouldAutoMine =
             driveModeActiveRef.current &&
             authTokenRef.current &&
-            feature.properties.zoneType === 'MAIN_ROAD' &&
             !ownedHexesRef.current.has(currentHex) &&
             currentHex !== lastAutoMineHexRef.current
 

@@ -61,6 +61,7 @@ const treasuryDataPath = path.join(dataDir, 'treasury.json')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me'
 const DEFAULT_START_HEX = '8b3f4dc1e26dfff'
+const DRIVE_ANYWHERE_ENABLED = true
 
 // Fixed GHX cost for creating a new spawn hex (new starting point) for the
 // demo user. In later versions this can be made configurable and split into
@@ -1375,7 +1376,8 @@ app.post('/api/drive/simulate', requireAuth, async (req, res) => {
     return
   }
 
-  const { centerH3Index } = req.body as { centerH3Index?: string }
+  const { centerH3Index, allowAny } = req.body as { centerH3Index?: string; allowAny?: boolean }
+  const useAllowAny = Boolean(allowAny) || DRIVE_ANYWHERE_ENABLED
 
   if (!centerH3Index || typeof centerH3Index !== 'string') {
     res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' })
@@ -1409,6 +1411,11 @@ app.post('/api/drive/simulate', requireAuth, async (req, res) => {
       continue
     }
 
+    if (useAllowAny) {
+      newlyClaimed.push(idx)
+      continue
+    }
+
     try {
       const inferred = await inferZoneTypeAtCentroid(idx)
 
@@ -1431,7 +1438,7 @@ app.post('/api/drive/simulate', requireAuth, async (req, res) => {
   if (newlyClaimed.length === 0) {
     res.json({
       ok: false,
-      reason: 'NO_ROAD_HEXES',
+      reason: useAllowAny ? 'NO_HEXES' : 'NO_ROAD_HEXES',
       balance: user.balance,
     })
     return
@@ -1478,7 +1485,8 @@ app.post('/api/drive/step', requireAuth, async (req, res) => {
     return
   }
 
-  const { fromH3, toH3 } = req.body as { fromH3?: string; toH3?: string }
+  const { fromH3, toH3, allowAny } = req.body as { fromH3?: string; toH3?: string; allowAny?: boolean }
+  const useAllowAny = Boolean(allowAny) || DRIVE_ANYWHERE_ENABLED
 
   if (!fromH3 || !toH3 || typeof fromH3 !== 'string' || typeof toH3 !== 'string') {
     res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' })
@@ -1517,6 +1525,11 @@ app.post('/api/drive/step', requireAuth, async (req, res) => {
       continue
     }
 
+    if (useAllowAny) {
+      newlyMined.push(idx)
+      continue
+    }
+
     try {
       const inferred = await inferZoneTypeAtCentroid(idx)
       const isRoadHex = inferred.zoneType === 'MAIN_ROAD' || inferred.hasRoad
@@ -1534,14 +1547,14 @@ app.post('/api/drive/step', requireAuth, async (req, res) => {
   // target hex is still unowned, fall back to at least mining the target hex
   // itself. This makes Drive Mode behaviour more intuitive when driving along
   // long intercity segments that are sparsely tagged in OSM.
-  if (newlyMined.length === 0 && !user.ownedHexes.has(toH3)) {
+  if (!useAllowAny && newlyMined.length === 0 && !user.ownedHexes.has(toH3)) {
     newlyMined.push(toH3)
   }
 
   const N = newlyMined.length
 
   if (N === 0) {
-    res.json({ ok: false, reason: 'NO_ROAD_HEXES', balance: user.balance })
+    res.json({ ok: false, reason: useAllowAny ? 'NO_HEXES' : 'NO_ROAD_HEXES', balance: user.balance })
     return
   }
 
