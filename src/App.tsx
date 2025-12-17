@@ -494,6 +494,7 @@ function App() {
             const infoText = `Hex: ${currentHex}\nZone type: ${feature.properties.zoneType}\n${rule.description}\n${speedText}`
             console.log('[GPS DEBUG] Setting selectedInfo (feature loaded):', infoText)
             setSelectedInfo(infoText)
+            console.log('[GPS DEBUG] setSelectedInfo called - state should update on next render')
           } else {
             // Hex not loaded yet - select with fallback zoneType and mark as pending
             console.log('[GPS DEBUG] Hex not loaded yet, using fallback zoneType')
