@@ -1138,27 +1138,6 @@ function App() {
         },
       })
 
-      map.addLayer({
-        id: 'gps-selected-hex-fill',
-        type: 'fill',
-        source: 'gps-selected-hex',
-        paint: {
-          'fill-color': '#ff9900',
-          'fill-opacity': 0.35,
-        },
-      })
-
-      map.addLayer({
-        id: 'gps-selected-hex-outline',
-        type: 'line',
-        source: 'gps-selected-hex',
-        paint: {
-          'line-color': '#ffb74d',
-          'line-width': 3,
-          'line-opacity': 0.9,
-        },
-      })
-
       // Veins overlay: soft red polygons for all owned hexes.
       map.addLayer({
         id: 'owned-veins-layer',
@@ -1183,6 +1162,28 @@ function App() {
         paint: {
           'fill-color': '#a855f7',
           'fill-opacity': 0.28,
+        },
+      })
+
+      // GPS selected hex - add AFTER veins so it appears on top
+      map.addLayer({
+        id: 'gps-selected-hex-fill',
+        type: 'fill',
+        source: 'gps-selected-hex',
+        paint: {
+          'fill-color': '#ff9900',
+          'fill-opacity': 0.5,
+        },
+      })
+
+      map.addLayer({
+        id: 'gps-selected-hex-outline',
+        type: 'line',
+        source: 'gps-selected-hex',
+        paint: {
+          'line-color': '#ff9900',
+          'line-width': 4,
+          'line-opacity': 1.0,
         },
       })
 
