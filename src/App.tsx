@@ -17,8 +17,6 @@ function App() {
   )
   const gpsSelectedHexRef = useRef<string | null>(null)
   const lastAutoSelectHexRef = useRef<string | null>(null)
-  const lastAutoMineHexRef = useRef<string | null>(null)
-  const lastAutoMineAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
   const pendingGpsSelectionRef = useRef<{ h3Index: string; zoneType: ZoneType } | null>(null)
   const lastGpsSelectedHexRef = useRef<string | null>(null)
@@ -404,8 +402,10 @@ function App() {
       // This is used to force highlight even if the hex wasn't loaded yet.
       try {
         gpsSelectedHexRef.current = h3.latLngToCell(coords.lat, coords.lon, 11)
+        console.log('[GPS DEBUG] gpsSelectedHexRef set to:', gpsSelectedHexRef.current)
       } catch {
         gpsSelectedHexRef.current = null
+        console.log('[GPS DEBUG] Failed to set gpsSelectedHexRef')
       }
 
       // Always update the dedicated GPS highlight layer so the current hex
@@ -446,11 +446,17 @@ function App() {
 
       // When using "Use my location", ensure the surrounding hex features refresh
       // so GPS selection can behave like a click (orange) even while moving.
+      console.log('[GPS DEBUG] Checking GPS selection conditions:', {
+        isManualSelectLocked,
+        usingMyLocation: usingMyLocationRef.current,
+        gpsSelectedHex: gpsSelectedHexRef.current
+      })
       if (!isManualSelectLocked && usingMyLocationRef.current && gpsSelectedHexRef.current) {
         const currentHex = gpsSelectedHexRef.current
 
         // Only do heavy work (reload + selection) when the GPS hex actually changes.
         const hexChanged = currentHex !== lastGpsSelectedHexRef.current
+        console.log('[GPS DEBUG] hexChanged:', hexChanged, 'currentHex:', currentHex, 'lastGpsSelectedHex:', lastGpsSelectedHexRef.current)
         if (hexChanged) {
           lastGpsSelectedHexRef.current = currentHex
 
@@ -465,11 +471,14 @@ function App() {
 
         // When GPS hex changes, immediately select it (like a click) even if not yet loaded in features
         if (hexChanged) {
+          console.log('[GPS DEBUG] GPS hex changed! Applying selection...')
           const currentFeatures = featuresRef.current
           const feature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
+          console.log('[GPS DEBUG] Feature found in loaded features:', !!feature)
           
           if (feature) {
             // Hex is already loaded - use its actual zoneType
+            console.log('[GPS DEBUG] Calling applyHexSelection with zoneType:', feature.properties.zoneType)
             applyHexSelection(map, currentHex, feature.properties.zoneType)
             pendingGpsSelectionRef.current = null
 
@@ -483,6 +492,7 @@ function App() {
             )
           } else {
             // Hex not loaded yet - select with fallback zoneType and mark as pending
+            console.log('[GPS DEBUG] Hex not loaded yet, using fallback zoneType')
             const fallbackZoneType: ZoneType = 'INTERURBAN'
             applyHexSelection(map, currentHex, fallbackZoneType)
             pendingGpsSelectionRef.current = { h3Index: currentHex, zoneType: fallbackZoneType }
@@ -2601,6 +2611,15 @@ function App() {
               onClick={() => setShowVeins((prev) => !prev)}
             >
               {showVeins ? 'Hide mined veins overlay' : 'Show mined veins overlay'}
+            </button>
+          </div>
+          <div className="hud-line">
+            <button
+              type="button"
+              className={usingMyLocation ? 'location-toggle location-toggle-active' : 'location-toggle'}
+              onClick={handleUseMyLocationClick}
+            >
+              {usingMyLocation ? 'GPS: ON' : 'GPS: OFF'}
             </button>
           </div>
         </div>
