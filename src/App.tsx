@@ -102,15 +102,72 @@ function App() {
     setCanSpawnHere(false)
 
     const currentFeatures = featuresRef.current
-    if (!currentFeatures || currentFeatures.length === 0) return
-
-    const updatedFeatures: HexFeature[] = currentFeatures.map((f) => ({
-      ...f,
-      properties: {
-        ...f.properties,
-        selected: f.properties.h3Index === h3Index,
-      },
-    }))
+    
+    // If hex not in features yet, add it temporarily so it can be selected/highlighted
+    let updatedFeatures: HexFeature[]
+    if (!currentFeatures || currentFeatures.length === 0) {
+      // Create a temporary feature for this hex
+      const boundary = h3.cellToBoundary(h3Index, true)
+      const coords = boundary.map(([lat, lng]) => [lng, lat])
+      coords.push(coords[0])
+      
+      updatedFeatures = [{
+        type: 'Feature',
+        properties: {
+          h3Index,
+          zoneType,
+          claimed: ownedHexesRef.current.has(h3Index),
+          selected: true,
+          canMine: false,
+          debugInfo: [],
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [coords],
+        },
+      }]
+    } else {
+      // Check if hex exists in features
+      const hexExists = currentFeatures.some((f) => f.properties.h3Index === h3Index)
+      
+      if (!hexExists) {
+        // Add the hex to features
+        const boundary = h3.cellToBoundary(h3Index, true)
+        const coords = boundary.map(([lat, lng]) => [lng, lat])
+        coords.push(coords[0])
+        
+        updatedFeatures = [
+          ...currentFeatures.map((f) => ({
+            ...f,
+            properties: { ...f.properties, selected: false },
+          })),
+          {
+            type: 'Feature',
+            properties: {
+              h3Index,
+              zoneType,
+              claimed: ownedHexesRef.current.has(h3Index),
+              selected: true,
+              canMine: false,
+              debugInfo: [],
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [coords],
+            },
+          },
+        ]
+      } else {
+        // Hex exists, just mark it as selected
+        updatedFeatures = currentFeatures.map((f) => ({
+          ...f,
+          properties: {
+            ...f.properties,
+            selected: f.properties.h3Index === h3Index,
+          },
+        }))
+      }
+    }
 
     featuresRef.current = updatedFeatures
     const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
