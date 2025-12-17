@@ -491,9 +491,9 @@ function App() {
               rule.minSpeedKmh === null
                 ? 'No special speed requirement.'
                 : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
-            setSelectedInfo(
-              `Hex: ${currentHex}\nZone type: ${feature.properties.zoneType}\n${rule.description}\n${speedText}`,
-            )
+            const infoText = `Hex: ${currentHex}\nZone type: ${feature.properties.zoneType}\n${rule.description}\n${speedText}`
+            console.log('[GPS DEBUG] Setting selectedInfo (feature loaded):', infoText)
+            setSelectedInfo(infoText)
           } else {
             // Hex not loaded yet - select with fallback zoneType and mark as pending
             console.log('[GPS DEBUG] Hex not loaded yet, using fallback zoneType')
@@ -506,9 +506,9 @@ function App() {
               rule.minSpeedKmh === null
                 ? 'No special speed requirement.'
                 : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
-            setSelectedInfo(
-              `Hex: ${currentHex}\nZone type: ${fallbackZoneType} (loading...)\n${rule.description}\n${speedText}`,
-            )
+            const infoText = `Hex: ${currentHex}\nZone type: ${fallbackZoneType} (loading...)\n${rule.description}\n${speedText}`
+            console.log('[GPS DEBUG] Setting selectedInfo (fallback):', infoText)
+            setSelectedInfo(infoText)
           }
         }
       }
