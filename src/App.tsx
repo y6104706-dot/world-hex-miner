@@ -404,7 +404,9 @@ function App() {
       // This is used to force highlight even if the hex wasn't loaded yet.
       try {
         gpsSelectedHexRef.current = h3.latLngToCell(coords.lat, coords.lon, 11)
-      } catch {
+        console.log('[GPS→HEX] GPS coords:', coords.lat, coords.lon, '→ H3 hex:', gpsSelectedHexRef.current)
+      } catch (err) {
+        console.log('[GPS→HEX] ERROR converting GPS to H3:', err)
         gpsSelectedHexRef.current = null
       }
 
@@ -414,11 +416,14 @@ function App() {
         const gpsSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
         const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
 
+        console.log('[GPS→HEX] Updating layer. gpsSource exists:', !!gpsSource, 'gpsHex:', gpsHex, 'usingMyLocation:', usingMyLocationRef.current)
+
         if (gpsSource) {
           if (gpsHex) {
             const boundary = h3.cellToBoundary(gpsHex, true)
             const coordsLngLat = boundary.map(([lat, lng]) => [lng, lat])
             coordsLngLat.push(coordsLngLat[0])
+            console.log('[GPS→HEX] Setting layer data with', coordsLngLat.length, 'coordinates')
             gpsSource.setData({
               type: 'FeatureCollection' as const,
               features: [
@@ -432,12 +437,16 @@ function App() {
                 },
               ],
             })
+            console.log('[GPS→HEX] ✓ Layer data set successfully')
           } else {
+            console.log('[GPS→HEX] Clearing layer (no GPS hex)')
             gpsSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
           }
+        } else {
+          console.log('[GPS→HEX] WARNING: gpsSource not found in map!')
         }
-      } catch {
-        // ignore if sources not ready yet
+      } catch (err) {
+        console.log('[GPS→HEX] ERROR updating layer:', err)
       }
 
       if (shouldUpdateLayers) {
@@ -1180,8 +1189,8 @@ function App() {
         type: 'fill',
         source: 'gps-selected-hex',
         paint: {
-          'fill-color': '#ff9900',
-          'fill-opacity': 0.35,
+          'fill-color': '#ff0000',
+          'fill-opacity': 0.6,
         },
       })
 
@@ -1190,9 +1199,9 @@ function App() {
         type: 'line',
         source: 'gps-selected-hex',
         paint: {
-          'line-color': '#ffb74d',
-          'line-width': 3,
-          'line-opacity': 0.9,
+          'line-color': '#ff0000',
+          'line-width': 5,
+          'line-opacity': 1.0,
         },
       })
 
