@@ -416,19 +416,26 @@ function App() {
       if (gpsHex && shouldUpdateLayers) {
         const currentFeatures = featuresRef.current
         if (currentFeatures && currentFeatures.length > 0) {
-          const updatedFeatures = currentFeatures.map((f) => ({
-            ...f,
-            properties: {
-              ...f.properties,
-              selected: f.properties.h3Index === gpsHex,
-            },
-          }))
+          // Only update if GPS hex actually exists in loaded features
+          const gpsHexExists = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
           
-          featuresRef.current = updatedFeatures
-          const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-          if (source) {
-            source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
-            console.log('[GPS→HEX] ✓ Marked GPS hex as selected:', gpsHex)
+          if (gpsHexExists) {
+            const updatedFeatures = currentFeatures.map((f) => ({
+              ...f,
+              properties: {
+                ...f.properties,
+                selected: f.properties.h3Index === gpsHex,
+              },
+            }))
+            
+            featuresRef.current = updatedFeatures
+            const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+            if (source) {
+              source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+              console.log('[GPS→HEX] ✓ Marked GPS hex as selected:', gpsHex)
+            }
+          } else {
+            console.log('[GPS→HEX] GPS hex not in loaded features, skipping selection')
           }
         }
       }
