@@ -5,8 +5,8 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import './App.css'
 
 function App() {
-  const apiBase =
-    import.meta.env.VITE_API_BASE_URL ?? `${window.location.protocol}//${window.location.hostname}:4000`
+  // Use relative path for API calls - Vite proxy handles forwarding to backend
+  const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
@@ -33,6 +33,10 @@ function App() {
   const manualSelectedHexRef = useRef<string | null>(null)
   const globalOwnedHexesRef = useRef<Set<string>>(new Set())
   const autoStartedLocationRef = useRef(false)
+  const autoMineEnabledRef = useRef(false)
+  const lastAutoMineGpsHexRef = useRef<string | null>(null)
+
+  const [autoMineEnabled, setAutoMineEnabled] = useState(false)
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -283,6 +287,10 @@ function App() {
   useEffect(() => {
     authTokenRef.current = authToken
   }, [authToken])
+
+  useEffect(() => {
+    autoMineEnabledRef.current = autoMineEnabled
+  }, [autoMineEnabled])
 
   const buildCirclePolygon = (lon: number, lat: number, radiusM: number) => {
     const steps = 60
@@ -593,6 +601,83 @@ function App() {
               const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
               if (source) {
                 source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+              }
+
+              // AUTO-MINE: If enabled, automatically mine the GPS hex
+              if (
+                autoMineEnabledRef.current &&
+                authTokenRef.current &&
+                gpsHex !== lastAutoMineGpsHexRef.current &&
+                !ownedHexesRef.current.has(gpsHex)
+              ) {
+                lastAutoMineGpsHexRef.current = gpsHex
+                console.log('[AUTO-MINE] Attempting to mine hex:', gpsHex)
+
+                void (async () => {
+                  try {
+                    const gpsCoords = lastGeoCoordsRef.current
+                    const res = await authedFetch(`${apiBase}/api/mine`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        h3Index: gpsHex,
+                        lat: gpsCoords?.lat,
+                        lon: gpsCoords?.lon,
+                        accuracyM: gpsCoords?.accuracyM,
+                        gpsAt: Date.now(),
+                      }),
+                    })
+
+                    const data: { ok?: boolean; newBalance?: number; error?: string; reason?: string } =
+                      await res.json().catch(() => ({}))
+
+                    if (data.ok) {
+                      console.log('[AUTO-MINE] ✓ Success! Mined:', gpsHex)
+                      setToastMessage(`⛏️ Auto-mined hex!`)
+                      setToastType('success')
+
+                      // Update owned hexes
+                      ownedHexesRef.current.add(gpsHex)
+                      globalOwnedHexesRef.current.add(gpsHex)
+
+                      if (typeof data.newBalance === 'number') {
+                        setUserBalance(data.newBalance)
+                      }
+                      setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
+
+                      // Update features to show as owned
+                      const currentFeaturesNow = featuresRef.current
+                      if (currentFeaturesNow) {
+                        const globalOwnedSet = globalOwnedHexesRef.current
+                        const updatedNow: HexFeature[] = currentFeaturesNow.map((f) => {
+                          const idx = f.properties.h3Index
+                          const isOwnedHex = ownedHexesRef.current.has(idx)
+                          const neighbors = h3.gridDisk(idx, 1)
+                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
+
+                          return {
+                            ...f,
+                            properties: {
+                              ...f.properties,
+                              claimed: isOwnedHex,
+                              canMine: canMineNeighbor,
+                              selected: f.properties.h3Index === gpsHex,
+                            },
+                          }
+                        })
+                        featuresRef.current = updatedNow
+                        const srcNow = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                        if (srcNow) {
+                          srcNow.setData({ type: 'FeatureCollection' as const, features: updatedNow })
+                        }
+                      }
+                    } else {
+                      console.log('[AUTO-MINE] ✗ Failed:', data.error || data.reason)
+                    }
+                  } catch (err) {
+                    console.log('[AUTO-MINE] ✗ Error:', err)
+                  }
+                })()
               }
             }
           }
@@ -2577,11 +2662,20 @@ function App() {
         <div className="mobile-fab-controls">
           <button
             type="button"
-            className="mobile-fab mobile-fab-location"
+            className={usingMyLocation ? 'mobile-fab mobile-fab-location mobile-fab-location-active' : 'mobile-fab mobile-fab-location'}
             onClick={handleUseMyLocationClick}
             aria-label="Use my location"
           >
             GPS
+          </button>
+          <button
+            type="button"
+            className={autoMineEnabled ? 'mobile-fab mobile-fab-auto-mine mobile-fab-auto-mine-active' : 'mobile-fab mobile-fab-auto-mine'}
+            onClick={() => setAutoMineEnabled((prev) => !prev)}
+            disabled={!usingMyLocation}
+            aria-label="Toggle auto mine"
+          >
+            ⛏️
           </button>
           <button
             type="button"
@@ -2659,6 +2753,25 @@ function App() {
               onClick={() => setShowVeins((prev) => !prev)}
             >
               {showVeins ? 'Hide mined veins overlay' : 'Show mined veins overlay'}
+            </button>
+          </div>
+          <div className="hud-line">
+            <button
+              type="button"
+              className={usingMyLocation ? 'gps-toggle gps-toggle-active' : 'gps-toggle'}
+              onClick={handleUseMyLocationClick}
+            >
+              {usingMyLocation ? '📍 GPS ON - Tracking Location' : '📍 Enable GPS Location'}
+            </button>
+          </div>
+          <div className="hud-line">
+            <button
+              type="button"
+              className={autoMineEnabled ? 'auto-mine-toggle auto-mine-toggle-active' : 'auto-mine-toggle'}
+              onClick={() => setAutoMineEnabled((prev) => !prev)}
+              disabled={!usingMyLocation}
+            >
+              {autoMineEnabled ? '⛏️ Auto-Mine ON' : '⛏️ Auto-Mine OFF'}
             </button>
           </div>
         </div>

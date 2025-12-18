@@ -14,10 +14,23 @@ const app = express();
 const port = Number(process.env.PORT) || 4000;
 app.use(cors());
 app.use(express.json());
-const dataDir = path.join(__dirname, '..', 'data');
+app.get('/', (_req, res) => {
+    res.json({ ok: true, service: 'world-hex-miner-api' });
+});
+function buildGlobalOwnedHexesSet() {
+    const all = new Set();
+    for (const u of usersById.values()) {
+        for (const idx of u.ownedHexes) {
+            all.add(idx);
+        }
+    }
+    return all;
+}
+const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, '..', 'data');
 const legacyDemoUserDataPath = path.join(dataDir, 'demoUser.json');
 const usersDataPath = path.join(dataDir, 'users.json');
 const hexCachePath = path.join(dataDir, 'hexCache.json');
+const coastBufferPath = path.join(dataDir, 'coastBuffer.json');
 const tradesDataPath = path.join(dataDir, 'marketTrades.json');
 const miningEventsPath = path.join(dataDir, 'miningEvents.json');
 const treasuryDataPath = path.join(dataDir, 'treasury.json');
@@ -37,6 +50,8 @@ const DRIVE_COST_GHX = 5;
 // classifier, but large enough so that a typical road corridor yields several
 // candidate hexes.
 const DRIVE_DISK_K = 3;
+const GPS_MINE_ACCURACY_THRESHOLD_M = 35;
+const GPS_MINE_MAX_AGE_MS = 15_000;
 function coerceStoredUserToUser(stored) {
     return {
         id: stored.id,
@@ -166,6 +181,33 @@ function requireAuth(req, res, next) {
         res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
     }
 }
+function applyCoastBufferFromCache(h3Index, base) {
+    // Expand COAST to a small buffer zone around cached coastline hexes.
+    // IMPORTANT: do NOT write this derived result back into hexCache, otherwise
+    // the buffer would recursively grow.
+    const COAST_BUFFER_K = 3;
+    // Do not override high-priority safety / infrastructure zones.
+    const nonOverridable = new Set(['MILITARY', 'PRISON', 'HOSPITAL', 'MAIN_ROAD', 'CLIFF']);
+    if (nonOverridable.has(base.zoneType)) {
+        return base;
+    }
+    try {
+        const disk = h3.gridDisk(h3Index, COAST_BUFFER_K);
+        for (const idx of disk) {
+            if (hexCache[idx]?.zoneType === 'COAST') {
+                return {
+                    ...base,
+                    zoneType: 'COAST',
+                    debug: [...base.debug, `Coast buffer: within ${COAST_BUFFER_K} hexes of cached coastline`],
+                };
+            }
+        }
+    }
+    catch {
+        // ignore
+    }
+    return base;
+}
 function loadHexCache() {
     try {
         if (!fs.existsSync(hexCachePath)) {
@@ -194,6 +236,54 @@ function saveHexCache(cache) {
     }
 }
 const hexCache = loadHexCache();
+function loadCoastBuffer() {
+    try {
+        if (!fs.existsSync(coastBufferPath)) {
+            return new Set();
+        }
+        const raw = fs.readFileSync(coastBufferPath, 'utf8');
+        const parsed = JSON.parse(raw);
+        const hexes = (parsed && typeof parsed === 'object' ? parsed.hexes : null);
+        if (Array.isArray(hexes)) {
+            return new Set(hexes.filter((x) => typeof x === 'string'));
+        }
+    }
+    catch {
+        // ignore
+    }
+    return new Set();
+}
+function saveCoastBuffer(set) {
+    try {
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        fs.writeFileSync(coastBufferPath, JSON.stringify({ hexes: Array.from(set) }, null, 2), 'utf8');
+    }
+    catch {
+        // ignore
+    }
+}
+const coastBufferHexes = loadCoastBuffer();
+function markCoastAndBuffer(h3Index) {
+    const COAST_BUFFER_K = 4;
+    try {
+        const disk = h3.gridDisk(h3Index, COAST_BUFFER_K);
+        let changed = false;
+        for (const idx of disk) {
+            if (!coastBufferHexes.has(idx)) {
+                coastBufferHexes.add(idx);
+                changed = true;
+            }
+        }
+        if (changed) {
+            saveCoastBuffer(coastBufferHexes);
+        }
+    }
+    catch {
+        // ignore
+    }
+}
 function loadTreasury() {
     try {
         if (!fs.existsSync(treasuryDataPath)) {
@@ -267,6 +357,50 @@ function fallbackZoneType(h3Index) {
         return 'SEA';
     }
     return 'INTERURBAN';
+}
+const OVERPASS_ENDPOINTS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.nchc.org.tw/api/interpreter',
+];
+async function sleep(ms) {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+}
+async function overpassFetch(query) {
+    const maxAttempts = 4;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const endpoint = OVERPASS_ENDPOINTS[attempt % OVERPASS_ENDPOINTS.length];
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain',
+                },
+                body: query,
+            });
+            if (response.ok) {
+                const data = (await response.json());
+                return { elements: data.elements ?? [] };
+            }
+            // Retry on rate limits and transient server errors.
+            if (response.status === 429 || (response.status >= 500 && response.status <= 599)) {
+                const backoffMs = 400 * Math.pow(2, attempt);
+                await sleep(backoffMs);
+                continue;
+            }
+            throw new Error(`Overpass error: ${response.status}`);
+        }
+        catch (err) {
+            // Network errors: retry with backoff.
+            if (attempt < maxAttempts - 1) {
+                const backoffMs = 400 * Math.pow(2, attempt);
+                await sleep(backoffMs);
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw new Error('Overpass error: exhausted retries');
 }
 export async function inferZoneTypeFromOverpass(h3Index) {
     const boundary = h3.cellToBoundary(h3Index, true);
@@ -347,19 +481,7 @@ export async function inferZoneTypeFromOverpass(h3Index) {
     );
     out body;
   `;
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain',
-        },
-        // Overpass expects the raw query string in the body
-        body: overpassQuery,
-    });
-    if (!response.ok) {
-        throw new Error(`Overpass error: ${response.status}`);
-    }
-    const data = (await response.json());
-    const elements = data.elements ?? [];
+    const elements = (await overpassFetch(overpassQuery)).elements;
     const debug = [];
     let hasMainRoad = false;
     let hasSea = false;
@@ -368,6 +490,8 @@ export async function inferZoneTypeFromOverpass(h3Index) {
     let hasMilitary = false;
     let hasHospital = false;
     let hasPrisonOrGovernment = false;
+    let hasCoast = false;
+    let hasCliff = false;
     let hasRoad = false;
     let roadClass;
     // Scan all elements once, set simple flags for each type of tag we care
@@ -414,6 +538,12 @@ export async function inferZoneTypeFromOverpass(h3Index) {
         if (tags.natural === 'sea' || tags.natural === 'water' || tags.place === 'sea' || tags.water) {
             hasSea = true;
         }
+        if (tags.natural === 'coastline' || tags.natural === 'beach' || tags.leisure === 'beach') {
+            hasCoast = true;
+        }
+        if (tags.natural === 'cliff') {
+            hasCliff = true;
+        }
         // NATURE_RESERVE: park / forest / wood
         if (tags.leisure === 'park' || tags.landuse === 'forest' || tags.natural === 'wood') {
             hasNature = true;
@@ -433,9 +563,10 @@ export async function inferZoneTypeFromOverpass(h3Index) {
     // 1) MILITARY / PRISON / GOVERNMENT
     // 2) HOSPITAL
     // 3) MAIN_ROAD – real intercity / high-speed roads (motorway/trunk)
-    // 4) URBAN – buildings, residential/commercial/industrial landuse, settlements
-    // 5) SEA – strong water/sea signal when there is no road/urban fabric
-    // 6) NATURE_RESERVE – parks / forests / woods away from dense urban fabric
+    // 4) CLIFF / COAST
+    // 5) URBAN – buildings, residential/commercial/industrial landuse, settlements
+    // 6) SEA – strong water/sea signal when there is no road/urban fabric
+    // 7) NATURE_RESERVE – parks / forests / woods away from dense urban fabric
     if (hasMilitary || hasPrisonOrGovernment) {
         if (hasMilitary) {
             debug.push('OSM: military tag detected');
@@ -451,6 +582,17 @@ export async function inferZoneTypeFromOverpass(h3Index) {
     if (hasMainRoad) {
         debug.push('OSM: main road detected (motorway/trunk)');
         return { zoneType: 'MAIN_ROAD', debug, hasRoad, roadClass };
+    }
+    if (hasCliff) {
+        debug.push('OSM: cliff tag detected');
+        return { zoneType: 'CLIFF', debug, hasRoad, roadClass };
+    }
+    if (hasCoast) {
+        debug.push('OSM: coastline/beach tag detected');
+        // Persist a safety buffer around detected coastline so mining can be
+        // forbidden near coasts even if nearby hexes are not classified as COAST.
+        markCoastAndBuffer(h3Index);
+        return { zoneType: 'COAST', debug, hasRoad, roadClass };
     }
     if (hasUrban) {
         debug.push('OSM: urban fabric tag detected');
@@ -513,18 +655,7 @@ export async function inferZoneTypeAtCentroid(h3Index) {
     );
     out body;
   `;
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain',
-        },
-        body: overpassQuery,
-    });
-    if (!response.ok) {
-        throw new Error(`Overpass error: ${response.status}`);
-    }
-    const data = (await response.json());
-    const elements = data.elements ?? [];
+    const elements = (await overpassFetch(overpassQuery)).elements;
     const debug = [];
     let hasMainRoad = false;
     let hasSea = false;
@@ -655,10 +786,11 @@ app.get('/api/hex/:h3Index', async (req, res) => {
             // temporary Overpass failures do not permanently pollute the map.
         }
     }
+    const coastAware = applyCoastBufferFromCache(h3Index, { zoneType: entry.zoneType, debug: entry.debug });
     const result = {
         h3Index,
-        zoneType: entry.zoneType,
-        debug: entry.debug,
+        zoneType: coastAware.zoneType,
+        debug: coastAware.debug,
     };
     res.json(result);
 });
@@ -976,6 +1108,23 @@ app.get('/api/owned-hexes', requireAuth, (req, res) => {
     const user = req.user;
     res.json({ hexes: Array.from(user.ownedHexes) });
 });
+app.get('/api/owned-hexes/global', requireAuth, (req, res) => {
+    const user = req.user;
+    const mine = Array.from(user.ownedHexes);
+    const mineSet = new Set(mine);
+    const othersSet = new Set();
+    for (const other of usersById.values()) {
+        if (other.id === user.id) {
+            continue;
+        }
+        for (const idx of other.ownedHexes) {
+            if (!mineSet.has(idx)) {
+                othersSet.add(idx);
+            }
+        }
+    }
+    res.json({ mine, others: Array.from(othersSet) });
+});
 // Drive Mode simulation endpoint: given a centre H3 index, look at nearby
 // hexes within DRIVE_DISK_K rings, classify them via the centroid-based OSM
 // classifier and claim those that are MAIN_ROAD for the demo user in exchange
@@ -1169,9 +1318,50 @@ app.post('/api/spawn', requireAuth, (req, res) => {
         res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
         return;
     }
-    const { h3Index } = req.body;
+    const { h3Index, lat, lon, accuracyM, gpsAt } = req.body;
     if (!h3Index || typeof h3Index !== 'string') {
         res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' });
+        return;
+    }
+    if (typeof lat !== 'number' ||
+        typeof lon !== 'number' ||
+        typeof accuracyM !== 'number' ||
+        typeof gpsAt !== 'number' ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon) ||
+        !Number.isFinite(accuracyM) ||
+        !Number.isFinite(gpsAt)) {
+        res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false });
+        return;
+    }
+    const now = Date.now();
+    if (now - gpsAt > GPS_MINE_MAX_AGE_MS) {
+        res.json({ ok: false, reason: 'GPS_STALE', balance: user.balance, owned: false });
+        return;
+    }
+    if (accuracyM > GPS_MINE_ACCURACY_THRESHOLD_M) {
+        res.json({
+            ok: false,
+            reason: 'GPS_ACCURACY_LOW',
+            balance: user.balance,
+            owned: false,
+            thresholdM: GPS_MINE_ACCURACY_THRESHOLD_M,
+        });
+        return;
+    }
+    let gpsHex = null;
+    try {
+        gpsHex = h3.latLngToCell(lat, lon, 11);
+    }
+    catch {
+        gpsHex = null;
+    }
+    if (!gpsHex) {
+        res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false });
+        return;
+    }
+    if (gpsHex !== h3Index) {
+        res.json({ ok: false, reason: 'GPS_MISMATCH', balance: user.balance, owned: false });
         return;
     }
     if (user.ownedHexes.has(h3Index)) {
@@ -1220,9 +1410,50 @@ app.post('/api/mine', requireAuth, (req, res) => {
         res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
         return;
     }
-    const { h3Index } = req.body;
+    const { h3Index, lat, lon, accuracyM, gpsAt } = req.body;
     if (!h3Index || typeof h3Index !== 'string') {
         res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' });
+        return;
+    }
+    if (typeof lat !== 'number' ||
+        typeof lon !== 'number' ||
+        typeof accuracyM !== 'number' ||
+        typeof gpsAt !== 'number' ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon) ||
+        !Number.isFinite(accuracyM) ||
+        !Number.isFinite(gpsAt)) {
+        res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false });
+        return;
+    }
+    const now = Date.now();
+    if (now - gpsAt > GPS_MINE_MAX_AGE_MS) {
+        res.json({ ok: false, reason: 'GPS_STALE', balance: user.balance, owned: false });
+        return;
+    }
+    if (accuracyM > GPS_MINE_ACCURACY_THRESHOLD_M) {
+        res.json({
+            ok: false,
+            reason: 'GPS_ACCURACY_LOW',
+            balance: user.balance,
+            owned: false,
+            thresholdM: GPS_MINE_ACCURACY_THRESHOLD_M,
+        });
+        return;
+    }
+    let gpsHex = null;
+    try {
+        gpsHex = h3.latLngToCell(lat, lon, 11);
+    }
+    catch {
+        gpsHex = null;
+    }
+    if (!gpsHex) {
+        res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false });
+        return;
+    }
+    if (gpsHex !== h3Index) {
+        res.json({ ok: false, reason: 'GPS_MISMATCH', balance: user.balance, owned: false });
         return;
     }
     const alreadyOwned = user.ownedHexes.has(h3Index);
@@ -1235,11 +1466,25 @@ app.post('/api/mine', requireAuth, (req, res) => {
         });
         return;
     }
-    // Frontier rule: you can only mine hexes that are adjacent (distance 1) to at
-    // least one already owned hex. The very first owned hex is seeded separately.
-    if (user.ownedHexes.size > 0) {
+    // Safety rule: forbid mining on COAST and in a persisted buffer around
+    // detected coastlines (legal/safety protection).
+    if (coastBufferHexes.has(h3Index)) {
+        res.json({
+            ok: false,
+            reason: 'FORBIDDEN_ZONE',
+            zoneType: 'COAST',
+            balance: user.balance,
+            owned: false,
+        });
+        return;
+    }
+    // Frontier rule (global): you can only mine hexes that are adjacent (distance
+    // 1) to at least one mined hex by ANY user. This makes the world frontier
+    // shared rather than per-user.
+    const globalOwned = buildGlobalOwnedHexesSet();
+    if (globalOwned.size > 0) {
         const neighbors = h3.gridDisk(h3Index, 1);
-        const hasAdjacentOwned = neighbors.some((n) => user.ownedHexes.has(n));
+        const hasAdjacentOwned = neighbors.some((n) => globalOwned.has(n));
         if (!hasAdjacentOwned) {
             res.json({
                 ok: false,
@@ -1275,8 +1520,9 @@ app.get('/api/hex/:h3Index/osm', async (req, res) => {
     let roadClass;
     try {
         const inferred = await inferZoneTypeFromOverpass(h3Index);
-        zoneType = inferred.zoneType;
-        debug = inferred.debug;
+        const coastAware = applyCoastBufferFromCache(h3Index, inferred);
+        zoneType = coastAware.zoneType;
+        debug = coastAware.debug;
         hasRoad = inferred.hasRoad;
         roadClass = inferred.roadClass;
     }
