@@ -410,16 +410,16 @@ function App() {
         gpsSelectedHexRef.current = null
       }
 
-      // Simple approach: mark GPS hex as selected in the main h3-hex features
-      // This reuses the existing working orange selection styling
+      // Mark GPS hex as selected - this will make it orange
       const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
       if (gpsHex && shouldUpdateLayers) {
         const currentFeatures = featuresRef.current
         if (currentFeatures && currentFeatures.length > 0) {
-          // Only update if GPS hex actually exists in loaded features
+          // Check if GPS hex exists in loaded features
           const gpsHexExists = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
           
           if (gpsHexExists) {
+            // Mark GPS hex as selected
             const updatedFeatures = currentFeatures.map((f) => ({
               ...f,
               properties: {
@@ -432,10 +432,8 @@ function App() {
             const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
             if (source) {
               source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
-              console.log('[GPS→HEX] ✓ Marked GPS hex as selected:', gpsHex)
+              console.log('[GPS→HEX] ✓ GPS hex marked orange:', gpsHex)
             }
-          } else {
-            console.log('[GPS→HEX] GPS hex not in loaded features, skipping selection')
           }
         }
       }
