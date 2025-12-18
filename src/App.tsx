@@ -410,43 +410,27 @@ function App() {
         gpsSelectedHexRef.current = null
       }
 
-      // Always update the dedicated GPS highlight layer so the current hex
-      // is visibly orange even if it is not part of the loaded frontier.
-      try {
-        const gpsSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
-        const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
-
-        console.log('[GPS→HEX] Updating layer. gpsSource exists:', !!gpsSource, 'gpsHex:', gpsHex, 'usingMyLocation:', usingMyLocationRef.current)
-
-        if (gpsSource) {
-          if (gpsHex) {
-            const boundary = h3.cellToBoundary(gpsHex, true)
-            const coordsLngLat = boundary.map(([lat, lng]) => [lng, lat])
-            coordsLngLat.push(coordsLngLat[0])
-            console.log('[GPS→HEX] Setting layer data with', coordsLngLat.length, 'coordinates')
-            gpsSource.setData({
-              type: 'FeatureCollection' as const,
-              features: [
-                {
-                  type: 'Feature' as const,
-                  properties: { h3Index: gpsHex },
-                  geometry: {
-                    type: 'Polygon' as const,
-                    coordinates: [coordsLngLat],
-                  },
-                },
-              ],
-            })
-            console.log('[GPS→HEX] ✓ Layer data set successfully')
-          } else {
-            console.log('[GPS→HEX] Clearing layer (no GPS hex)')
-            gpsSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+      // Simple approach: mark GPS hex as selected in the main h3-hex features
+      // This reuses the existing working orange selection styling
+      const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
+      if (gpsHex && shouldUpdateLayers) {
+        const currentFeatures = featuresRef.current
+        if (currentFeatures && currentFeatures.length > 0) {
+          const updatedFeatures = currentFeatures.map((f) => ({
+            ...f,
+            properties: {
+              ...f.properties,
+              selected: f.properties.h3Index === gpsHex,
+            },
+          }))
+          
+          featuresRef.current = updatedFeatures
+          const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+          if (source) {
+            source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+            console.log('[GPS→HEX] ✓ Marked GPS hex as selected:', gpsHex)
           }
-        } else {
-          console.log('[GPS→HEX] WARNING: gpsSource not found in map!')
         }
-      } catch (err) {
-        console.log('[GPS→HEX] ERROR updating layer:', err)
       }
 
       if (shouldUpdateLayers) {
