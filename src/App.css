@@ -48,6 +48,39 @@
   justify-content: flex-start;
 }
 
+.map-center-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 500;
+  display: none;
+}
+
+.crosshair-horizontal,
+.crosshair-vertical {
+  position: absolute;
+  background: rgba(255, 153, 0, 0.9);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.crosshair-horizontal {
+  width: 40px;
+  height: 3px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.crosshair-vertical {
+  width: 3px;
+  height: 40px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .mobile-drawer {
   margin-top: 0;
   margin-left: 0;

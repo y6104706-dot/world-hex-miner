@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Simple GPS Hex Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/h3-js@4.1.0/dist/h3-js.umd.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover { background: #357ae8; }
+    #status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="gpsBtn">🌍 Enable GPS</button>
+    <div id="status"></div>
+  </div>
+  <div id="map"></div>
+
+  <script>
+    // Wait for h3 library to load
+    const h3 = window.h3 || window.h3js;
+    console.log('H3 library loaded:', !!h3, h3);
+    
+    let map, gpsMarker, hexLayers = [], currentGpsHex = null;
+
+    // Initialize map
+    map = L.map('map').setView([32.0853, 34.7818], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    console.log('Map initialized');
+
+    function loadHexesAround(lat, lon, gpsHex) {
+      // Clear old hexes
+      hexLayers.forEach(layer => map.removeLayer(layer));
+      hexLayers = [];
+
+      // Get hexes around location
+      const centerHex = h3.latLngToCell(lat, lon, 11);
+      const hexes = h3.gridDisk(centerHex, 2);
+
+      console.log('Loading', hexes.length, 'hexes around', centerHex, 'GPS hex:', gpsHex);
+
+      hexes.forEach(hexId => {
+        const boundary = h3.cellToBoundary(hexId, true);
+        const coords = boundary.map(([lat, lng]) => [lat, lng]);
+
+        const isSelected = hexId === gpsHex;
+        const color = isSelected ? '#ff9900' : '#3388ff';
+
+        const polygon = L.polygon(coords, {
+          color: color,
+          fillColor: color,
+          fillOpacity: isSelected ? 0.7 : 0.4,
+          weight: isSelected ? 5 : 2
+        }).addTo(map);
+
+        polygon.hexId = hexId;
+        hexLayers.push(polygon);
+        
+        console.log('Added hex:', hexId, 'selected:', isSelected, 'color:', color);
+      });
+
+      console.log('Loaded', hexLayers.length, 'hexes. GPS hex:', currentGpsHex, 'Orange hex should be visible!');
+    }
+
+    function updateGpsLocation(lat, lon) {
+      console.log('GPS update:', lat, lon);
+
+      // Update or create GPS marker
+      if (gpsMarker) {
+        gpsMarker.setLatLng([lat, lon]);
+      } else {
+        gpsMarker = L.circleMarker([lat, lon], {
+          radius: 8,
+          fillColor: '#4285f4',
+          color: '#fff',
+          weight: 2,
+          fillOpacity: 1
+        }).addTo(map);
+      }
+
+      // Calculate GPS hex
+      const gpsHex = h3.latLngToCell(lat, lon, 11);
+      console.log('GPS hex:', gpsHex);
+
+      if (gpsHex !== currentGpsHex) {
+        currentGpsHex = gpsHex;
+        loadHexesAround(lat, lon, gpsHex);
+        document.getElementById('status').innerHTML = `<strong>GPS Hex:</strong> ${gpsHex}`;
+      }
+
+      // Center map
+      map.setView([lat, lon], 15);
+    }
+
+    document.getElementById('gpsBtn').addEventListener('click', () => {
+      const btn = document.getElementById('gpsBtn');
+      const status = document.getElementById('status');
+
+      if (navigator.geolocation) {
+        status.textContent = 'Getting GPS location...';
+        
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            updateGpsLocation(position.coords.latitude, position.coords.longitude);
+            btn.textContent = '✓ GPS Active';
+            btn.style.background = '#0f9d58';
+          },
+          (error) => {
+            console.error('GPS error:', error);
+            status.innerHTML = `<span style="color: red;">GPS Error: ${error.message}</span>`;
+          },
+          { enableHighAccuracy: true }
+        );
+      } else {
+        status.innerHTML = '<span style="color: red;">GPS not supported</span>';
+      }
+    });
+
+    console.log('Ready! Click "Enable GPS" button.');
+  </script>
+</body>
+</html>

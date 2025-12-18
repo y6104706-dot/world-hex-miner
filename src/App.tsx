@@ -1029,6 +1029,7 @@ function App() {
           hexIndexes.push(gpsHex)
         }
 
+
         const ownedSet = ownedHexesRef.current
         const globalOwnedSet = globalOwnedHexesRef.current
         const infoCache = hexInfoCacheRef.current
@@ -1056,13 +1057,20 @@ function App() {
           const neighbors = h3.gridDisk(hexIndex, 1)
           const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
 
+          // Priority: manual selection > GPS hex
+          const isSelected = manualSelectedHex
+            ? hexIndex === manualSelectedHex
+            : gpsHex
+              ? hexIndex === gpsHex
+              : false
+
           newFeatures.push({
             type: 'Feature',
             properties: {
               h3Index: hexIndex,
               zoneType,
               claimed: isOwned,
-              selected: manualSelectedHex ? hexIndex === manualSelectedHex : gpsHex ? hexIndex === gpsHex : false,
+              selected: isSelected,
               canMine,
               debugInfo,
             },
@@ -3264,8 +3272,26 @@ function App() {
             </div>
           )}
           {selectedHex && (
-            <button type="button" className="mine-button" onClick={handleMineClick}>
-              Mine this hex
+            <button 
+              type="button" 
+              className="mine-button" 
+              onClick={handleMineClick}
+              disabled={
+                !usingMyLocation || 
+                !gpsSelectedHexRef.current || 
+                selectedHex.h3Index !== gpsSelectedHexRef.current
+              }
+              title={
+                !usingMyLocation 
+                  ? "Enable GPS to mine" 
+                  : !gpsSelectedHexRef.current 
+                    ? "Waiting for GPS location..." 
+                    : selectedHex.h3Index !== gpsSelectedHexRef.current
+                      ? "You must be in this hex to mine it (GPS verification required)"
+                      : "Mine this hex"
+              }
+            >
+              Mine this hex {(!usingMyLocation || selectedHex.h3Index !== gpsSelectedHexRef.current) && "🔒"}
             </button>
           )}
           {selectedHex && canSpawnHere && (

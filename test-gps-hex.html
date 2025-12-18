@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>GPS Hex Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/h3-js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="gpsBtn">Enable GPS</button>
+    <div id="status"></div>
+  </div>
+  <div id="map"></div>
+
+  <script>
+    const h3 = h3js;
+    let map, gpsWatchId, currentGpsHex = null;
+
+    // Initialize map
+    map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
+          }
+        },
+        layers: [{
+          id: 'osm',
+          type: 'raster',
+          source: 'osm'
+        }]
+      },
+      center: [34.7818, 32.0853],
+      zoom: 13
+    });
+
+    map.on('load', () => {
+      // Add H3 hex source
+      map.addSource('hexes', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+
+      // Add hex fill layer
+      map.addLayer({
+        id: 'hex-fill',
+        type: 'fill',
+        source: 'hexes',
+        paint: {
+          'fill-color': [
+            'case',
+            ['get', 'selected'], '#ff9900',
+            '#3388ff'
+          ],
+          'fill-opacity': 0.3
+        }
+      });
+
+      // Add hex outline layer
+      map.addLayer({
+        id: 'hex-outline',
+        type: 'line',
+        source: 'hexes',
+        paint: {
+          'line-color': [
+            'case',
+            ['get', 'selected'], '#ff9900',
+            '#3388ff'
+          ],
+          'line-width': 2
+        }
+      });
+
+      // Add GPS dot source
+      map.addSource('gps-dot', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+
+      // Add GPS dot layer
+      map.addLayer({
+        id: 'gps-dot',
+        type: 'circle',
+        source: 'gps-dot',
+        paint: {
+          'fill-color': '#4285f4',
+          'fill-opacity': 1
+        }
+      });
+
+      loadHexesAroundCenter();
+    });
+
+    function loadHexesAroundCenter() {
+      const center = map.getCenter();
+      const centerHex = h3.latLngToCell(center.lat, center.lng, 11);
+      const hexes = h3.gridDisk(centerHex, 3);
+
+      const features = hexes.map(hexId => {
+        const boundary = h3.cellToBoundary(hexId, true);
+        const coords = boundary.map(([lat, lng]) => [lng, lat]);
+        coords.push(coords[0]);
+
+        return {
+          type: 'Feature',
+          properties: {
+            h3Index: hexId,
+            selected: false
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [coords]
+          }
+        };
+      });
+
+      map.getSource('hexes').setData({
+        type: 'FeatureCollection',
+        features
+      });
+
+      console.log('Loaded', features.length, 'hexes');
+    }
+
+    function updateGpsLocation(lat, lon) {
+      console.log('GPS update:', lat, lon);
+
+      // Update GPS dot
+      map.getSource('gps-dot').setData({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [lon, lat]
+          }
+        }]
+      });
+
+      // Calculate GPS hex
+      const gpsHex = h3.latLngToCell(lat, lon, 11);
+      console.log('GPS hex:', gpsHex);
+
+      if (gpsHex !== currentGpsHex) {
+        currentGpsHex = gpsHex;
+
+        // Get current hexes
+        const hexData = map.getSource('hexes')._data;
+        
+        // Mark GPS hex as selected
+        const updatedFeatures = hexData.features.map(f => ({
+          ...f,
+          properties: {
+            ...f.properties,
+            selected: f.properties.h3Index === gpsHex
+          }
+        }));
+
+        map.getSource('hexes').setData({
+          type: 'FeatureCollection',
+          features: updatedFeatures
+        });
+
+        console.log('Marked hex as selected:', gpsHex);
+        document.getElementById('status').textContent = `GPS Hex: ${gpsHex}`;
+      }
+
+      // Center map on GPS
+      map.setCenter([lon, lat]);
+    }
+
+    document.getElementById('gpsBtn').addEventListener('click', () => {
+      if (gpsWatchId) {
+        navigator.geolocation.clearWatch(gpsWatchId);
+        gpsWatchId = null;
+        document.getElementById('gpsBtn').textContent = 'Enable GPS';
+        document.getElementById('status').textContent = '';
+      } else {
+        gpsWatchId = navigator.geolocation.watchPosition(
+          (position) => {
+            updateGpsLocation(position.coords.latitude, position.coords.longitude);
+          },
+          (error) => {
+            console.error('GPS error:', error);
+            document.getElementById('status').textContent = 'GPS Error: ' + error.message;
+          },
+          { enableHighAccuracy: true, maximumAge: 0 }
+        );
+        document.getElementById('gpsBtn').textContent = 'Disable GPS';
+        document.getElementById('status').textContent = 'GPS enabled...';
+      }
+    });
+  </script>
+</body>
+</html>
