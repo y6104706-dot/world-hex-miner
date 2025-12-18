@@ -19,16 +19,15 @@ function App() {
   const lastAutoSelectHexRef = useRef<string | null>(null)
   const lastAutoMineHexRef = useRef<string | null>(null)
   const lastAutoMineAtRef = useRef<number>(0)
+  const lastGpsDriveStepAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
   const lastGpsSelectedHexRef = useRef<string | null>(null)
   const lastGpsReloadHexRef = useRef<string | null>(null)
   const lastLocationLayerUpdateAtRef = useRef<number>(0)
-  const lastGeoAtRef = useRef<number>(0)
-  const lastGpsInfoHexRef = useRef<string | null>(null)
   const usingMyLocationRef = useRef(false)
   const followMyLocationRef = useRef(false)
   const authTokenRef = useRef<string | null>(null)
-  const loadHexesForCurrentViewRef = useRef<((force?: boolean) => void) | null>(null)
+  const loadHexesForCurrentViewRef = useRef<(() => void) | null>(null)
   const lastGpsHexRefreshAtRef = useRef<number>(0)
   const manualSelectUntilRef = useRef<number>(0)
   const manualSelectedHexRef = useRef<string | null>(null)
@@ -58,9 +57,8 @@ function App() {
 
   const authedFetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers)
-    const token = authTokenRef.current ?? authToken
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`)
+    if (authToken) {
+      headers.set('Authorization', `Bearer ${authToken}`)
     }
     return fetch(input, { ...init, headers })
   }
@@ -361,7 +359,6 @@ function App() {
     headingDeg: number | null
   }) => {
     lastGeoCoordsRef.current = coords
-    lastGeoAtRef.current = Date.now()
     const map = mapRef.current
     if (!map) return
 
@@ -407,40 +404,38 @@ function App() {
       // This is used to force highlight even if the hex wasn't loaded yet.
       try {
         gpsSelectedHexRef.current = h3.latLngToCell(coords.lat, coords.lon, 11)
-      } catch {
+        console.log('[GPS→HEX] GPS coords:', coords.lat, coords.lon, '→ H3 hex:', gpsSelectedHexRef.current)
+      } catch (err) {
+        console.log('[GPS→HEX] ERROR converting GPS to H3:', err)
         gpsSelectedHexRef.current = null
       }
 
-      // Always update the dedicated GPS highlight layer so the current hex
-      // is visibly orange even if it is not part of the loaded frontier.
-      try {
-        const gpsSource = map.getSource('gps-selected-hex') as maplibregl.GeoJSONSource | undefined
-        const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
-
-        if (gpsSource && shouldUpdateLayers) {
-          if (gpsHex) {
-            const boundary = h3.cellToBoundary(gpsHex, true)
-            const coordsLngLat = boundary.map(([lat, lng]) => [lng, lat])
-            coordsLngLat.push(coordsLngLat[0])
-            gpsSource.setData({
-              type: 'FeatureCollection' as const,
-              features: [
-                {
-                  type: 'Feature' as const,
-                  properties: { h3Index: gpsHex },
-                  geometry: {
-                    type: 'Polygon' as const,
-                    coordinates: [coordsLngLat],
-                  },
-                },
-              ],
-            })
-          } else {
-            gpsSource.setData({ type: 'FeatureCollection' as const, features: [] as any[] })
+      // Mark GPS hex as selected - this will make it orange
+      const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
+      if (gpsHex && shouldUpdateLayers) {
+        const currentFeatures = featuresRef.current
+        if (currentFeatures && currentFeatures.length > 0) {
+          // Check if GPS hex exists in loaded features
+          const gpsHexExists = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
+          
+          if (gpsHexExists) {
+            // Mark GPS hex as selected
+            const updatedFeatures = currentFeatures.map((f) => ({
+              ...f,
+              properties: {
+                ...f.properties,
+                selected: f.properties.h3Index === gpsHex,
+              },
+            }))
+            
+            featuresRef.current = updatedFeatures
+            const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+            if (source) {
+              source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+              console.log('[GPS→HEX] ✓ GPS hex marked orange:', gpsHex)
+            }
           }
         }
-      } catch {
-        // ignore if sources not ready yet
       }
 
       if (shouldUpdateLayers) {
@@ -462,7 +457,7 @@ function App() {
           if (now - lastGpsHexRefreshAtRef.current > minRefreshMs || currentHex !== lastGpsReloadHexRef.current) {
             lastGpsHexRefreshAtRef.current = now
             lastGpsReloadHexRef.current = currentHex
-            loadHexesForCurrentViewRef.current?.(true)
+            loadHexesForCurrentViewRef.current?.()
           }
         }
 
@@ -472,105 +467,99 @@ function App() {
         if (feature && hexChanged) {
           applyHexSelection(map, currentHex, feature.properties.zoneType)
 
-          // Auto-open the hex details panel when we enter a new GPS hex (if accuracy is good).
-          // This makes mining a simple "enter hex -> press Mine" flow.
-          const gpsInfoAccuracyThresholdM = 35
-          if (coords.accuracyM <= gpsInfoAccuracyThresholdM && lastGpsInfoHexRef.current !== currentHex) {
-            lastGpsInfoHexRef.current = currentHex
-            const zoneType = feature.properties.zoneType
-            const rule = miningRules[zoneType]
-            const speedText =
-              rule.minSpeedKmh === null
-                ? 'No special speed requirement.'
-                : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
-            setSelectedInfo(`Hex: ${currentHex}\nZone type: ${zoneType}\n${rule.description}\n${speedText}`)
-            setSelectedDebug(null)
-          }
+          if (driveModeActiveRef.current && authTokenRef.current) {
+            const currentLastDriveHex = lastDriveHexRef.current
+            if (!currentLastDriveHex) {
+              lastDriveHexRef.current = currentHex
+            } else if (currentLastDriveHex !== currentHex) {
+              const now = Date.now()
+              const minIntervalMs = 1200
+              if (now - lastGpsDriveStepAtRef.current >= minIntervalMs) {
+                lastGpsDriveStepAtRef.current = now
 
-          // Auto-mine only when Drive Mode is active and the hex is MAIN_ROAD.
-          const gpsMineAccuracyThresholdM = 35
-          const shouldAutoMine =
-            driveModeActiveRef.current &&
-            authTokenRef.current &&
-            usingMyLocationRef.current &&
-            coords.accuracyM <= gpsMineAccuracyThresholdM &&
-            feature.properties.zoneType === 'MAIN_ROAD' &&
-            !ownedHexesRef.current.has(currentHex) &&
-            currentHex !== lastAutoMineHexRef.current
+                const fromH3 = currentLastDriveHex
+                const toH3 = currentHex
 
-          if (shouldAutoMine) {
-            const now = Date.now()
-            const minIntervalMs = 1200
-            if (now - lastAutoMineAtRef.current >= minIntervalMs) {
-              lastAutoMineAtRef.current = now
-              lastAutoMineHexRef.current = currentHex
-
-              void (async () => {
-                try {
-                  const res = await authedFetch(`${apiBase}/api/mine`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      h3Index: currentHex,
-                      lat: coords.lat,
-                      lon: coords.lon,
-                      accuracyM: coords.accuracyM,
-                      gpsAt: lastGeoAtRef.current,
-                    }),
-                  })
-
-                  if (!res.ok) {
-                    return
-                  }
-
-                  const data: { ok?: boolean; balance?: number } = await res.json().catch(() => ({}))
-                  if (!data.ok) {
-                    return
-                  }
-
-                  if (typeof data.balance === 'number') {
-                    setUserBalance(data.balance)
-                  }
-
-                  setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : prev))
-                  ownedHexesRef.current.add(currentHex)
-                  globalOwnedHexesRef.current.add(currentHex)
-                  setSelectedOwned(true)
-
-                  const ownedSet = ownedHexesRef.current
-                  const globalOwnedSet = globalOwnedHexesRef.current
-                  const refreshedFeatures = featuresRef.current
-                  const nextFeatures: HexFeature[] = refreshedFeatures.map((f) => {
-                    const idx = f.properties.h3Index
-                    const isOwned = ownedSet.has(idx)
-                    const neighbors = h3.gridDisk(idx, 1)
-                    const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
-                    return {
-                      ...f,
-                      properties: {
-                        ...f.properties,
-                        claimed: isOwned,
-                        canMine,
+                void (async () => {
+                  try {
+                    const res = await authedFetch(`${apiBase}/api/drive/step`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
                       },
+                      body: JSON.stringify({ fromH3, toH3 }),
+                    })
+
+                    if (!res.ok) {
+                      return
                     }
-                  })
 
-                  featuresRef.current = nextFeatures
-                  const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-                  if (source) {
-                    source.setData({ type: 'FeatureCollection' as const, features: nextFeatures })
-                  }
+                    const data: {
+                      ok?: boolean
+                      minedHexes?: string[]
+                      count?: number
+                      newBalance?: number
+                    } = await res.json().catch(() => ({}))
 
-                  const reload = loadHexesForCurrentViewRef.current
-                  if (reload) {
-                    reload(true)
+                    if (!data.ok) {
+                      return
+                    }
+
+                    if (typeof data.newBalance === 'number') {
+                      setUserBalance(data.newBalance)
+                    }
+
+                    const mined = Array.isArray(data.minedHexes) ? data.minedHexes : []
+                    if (mined.length > 0) {
+                      const ownedSetInner = ownedHexesRef.current
+                      for (const idx of mined) {
+                        ownedSetInner.add(idx)
+                      }
+                      globalOwnedHexesRef.current = new Set([
+                        ...Array.from(globalOwnedHexesRef.current),
+                        ...mined,
+                      ])
+
+                      const current = featuresRef.current
+                      if (current && current.length > 0) {
+                        const globalOwnedSet = globalOwnedHexesRef.current
+                        const updated: HexFeature[] = current.map((f) => {
+                          const idx = f.properties.h3Index
+                          const isOwnedHex = ownedSetInner.has(idx)
+                          const neighbors = h3.gridDisk(idx, 1)
+                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
+
+                          return {
+                            ...f,
+                            properties: {
+                              ...f.properties,
+                              claimed: isOwnedHex,
+                              canMine: canMineNeighbor,
+                            },
+                          }
+                        })
+
+                        featuresRef.current = updated
+
+                        const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                        if (src) {
+                          src.setData({ type: 'FeatureCollection' as const, features: updated })
+                        }
+                      }
+
+                      if (typeof data.count === 'number') {
+                        setOwnedCount((prev) => (typeof prev === 'number' ? prev + data.count! : data.count!))
+                      }
+                    }
+
+                    lastDriveHexRef.current = currentHex
+                    lastAutoMineHexRef.current = currentHex
+                    lastAutoMineAtRef.current = now
+                  } catch {
+                    // ignore
                   }
-                } catch {
-                  // ignore
-                }
-              })()
+                })()
+              }
             }
           }
         }
@@ -581,8 +570,6 @@ function App() {
       if (!isManualSelectLocked && usingMyLocationRef.current) {
         const gpsHex = gpsSelectedHexRef.current
         if (gpsHex) {
-          const gpsInfoAccuracyThresholdM = 35
-          const lastCoords = lastGeoCoordsRef.current
           const currentFeatures = featuresRef.current
           if (currentFeatures && currentFeatures.length > 0) {
             const hasGpsFeature = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
@@ -601,24 +588,6 @@ function App() {
               if (gpsFeature) {
                 setSelectedHex({ h3Index: gpsHex, zoneType: gpsFeature.properties.zoneType })
                 setSelectedOwned(ownedHexesRef.current.has(gpsHex))
-
-                // If we already have the GPS hex in the loaded features, also open
-                // the details panel once (when the GPS hex changes and accuracy is good).
-                if (
-                  lastGpsInfoHexRef.current !== gpsHex &&
-                  lastCoords &&
-                  lastCoords.accuracyM <= gpsInfoAccuracyThresholdM
-                ) {
-                  lastGpsInfoHexRef.current = gpsHex
-                  const zoneType = gpsFeature.properties.zoneType
-                  const rule = miningRules[zoneType]
-                  const speedText =
-                    rule.minSpeedKmh === null
-                      ? 'No special speed requirement.'
-                      : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
-                  setSelectedInfo(`Hex: ${gpsHex}\nZone type: ${zoneType}\n${rule.description}\n${speedText}`)
-                  setSelectedDebug(null)
-                }
               }
 
               const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
@@ -934,7 +903,7 @@ function App() {
       })
 
       const loadOwnedHexes = async () => {
-        if (!authTokenRef.current) {
+        if (!authToken) {
           ownedHexesRef.current = new Set()
           globalOwnedHexesRef.current = new Set()
           return
@@ -946,12 +915,8 @@ function App() {
             const mine = Array.isArray(data.mine) ? data.mine : []
             const others = Array.isArray(data.others) ? data.others : []
 
-            const existingMine = ownedHexesRef.current
-            const existingGlobal = globalOwnedHexesRef.current
-            const mergedMine = new Set<string>([...existingMine, ...mine])
-            const mergedGlobal = new Set<string>([...existingGlobal, ...mine, ...others])
-            ownedHexesRef.current = mergedMine
-            globalOwnedHexesRef.current = mergedGlobal
+            ownedHexesRef.current = new Set(mine)
+            globalOwnedHexesRef.current = new Set([...mine, ...others])
             return
           }
         } catch {
@@ -972,7 +937,7 @@ function App() {
         }
       }
 
-      const loadHexesForCurrentView = async (force?: boolean) => {
+      const loadHexesForCurrentView = async () => {
         const zoom = map.getZoom()
 
         // When zoomed out too far, do not render any hexes to keep performance
@@ -1013,7 +978,7 @@ function App() {
         const now = Date.now()
         const minIntervalMs = 1500
 
-        if (lastLoadCenter && !force) {
+        if (lastLoadCenter) {
           const dLat = Math.abs(centerLat - lastLoadCenter.lat)
           const dLng = Math.abs(centerLng - lastLoadCenter.lng)
           const movedFarEnough = dLat > 0.0007 || dLng > 0.0007
@@ -1156,8 +1121,8 @@ function App() {
         }
       }
 
-      loadHexesForCurrentViewRef.current = (force?: boolean) => {
-        void loadHexesForCurrentView(force)
+      loadHexesForCurrentViewRef.current = () => {
+        void loadHexesForCurrentView()
       }
 
       void loadHexesForCurrentView()
@@ -1178,9 +1143,9 @@ function App() {
             'case',
             ['get', 'selected'],
             '#ff9900',
-            ['to-boolean', ['get', 'claimed']],
+            ['get', 'claimed'],
             '#b91c1c',
-            ['to-boolean', ['get', 'canMine']],
+            ['get', 'canMine'],
             '#e5e7eb',
             '#000000',
           ],
@@ -1188,9 +1153,9 @@ function App() {
             'case',
             ['get', 'selected'],
             0.6,
-            ['to-boolean', ['get', 'claimed']],
+            ['get', 'claimed'],
             0.65,
-            ['to-boolean', ['get', 'canMine']],
+            ['get', 'canMine'],
             0.15,
             0.2,
           ],
@@ -1205,27 +1170,6 @@ function App() {
           'line-color': '#555555',
           'line-width': 0.8,
           'line-opacity': 0.7,
-        },
-      })
-
-      map.addLayer({
-        id: 'gps-selected-hex-fill',
-        type: 'fill',
-        source: 'gps-selected-hex',
-        paint: {
-          'fill-color': '#ff9900',
-          'fill-opacity': 0.35,
-        },
-      })
-
-      map.addLayer({
-        id: 'gps-selected-hex-outline',
-        type: 'line',
-        source: 'gps-selected-hex',
-        paint: {
-          'line-color': '#ffb74d',
-          'line-width': 3,
-          'line-opacity': 0.9,
         },
       })
 
@@ -1253,6 +1197,28 @@ function App() {
         paint: {
           'fill-color': '#a855f7',
           'fill-opacity': 0.28,
+        },
+      })
+
+      // GPS selected hex - MUST be last so it renders on top of everything
+      map.addLayer({
+        id: 'gps-selected-hex-fill',
+        type: 'fill',
+        source: 'gps-selected-hex',
+        paint: {
+          'fill-color': '#ff0000',
+          'fill-opacity': 0.6,
+        },
+      })
+
+      map.addLayer({
+        id: 'gps-selected-hex-outline',
+        type: 'line',
+        source: 'gps-selected-hex',
+        paint: {
+          'line-color': '#ff0000',
+          'line-width': 5,
+          'line-opacity': 1.0,
         },
       })
 
@@ -1591,21 +1557,6 @@ function App() {
   }, [apiBase, authToken])
 
   useEffect(() => {
-    if (viewMode !== 'MAP') {
-      return
-    }
-
-    if (!mapRef.current) {
-      return
-    }
-
-    const reload = loadHexesForCurrentViewRef.current
-    if (reload) {
-      reload(true)
-    }
-  }, [authToken, viewMode])
-
-  useEffect(() => {
     if (!authToken) {
       setUsdtBalance(null)
       return
@@ -1836,42 +1787,6 @@ function App() {
 
     const { h3Index } = selectedHex
 
-    const gpsMineAccuracyThresholdM = 35
-    const gpsMineMaxAgeMs = 15_000
-    const lastCoords = lastGeoCoordsRef.current
-    const gpsHex = gpsSelectedHexRef.current
-    const geoAgeMs = Date.now() - lastGeoAtRef.current
-
-    if (!authTokenRef.current) {
-      setMineMessage('Please log in to mine hexes.')
-      setMineMessageType('error')
-      return
-    }
-
-    if (!usingMyLocationRef.current) {
-      setMineMessage('Enable GPS (Use my location) to mine hexes.')
-      setMineMessageType('error')
-      return
-    }
-
-    if (!lastCoords || !gpsHex || geoAgeMs > gpsMineMaxAgeMs) {
-      setMineMessage('Waiting for a fresh GPS fix…')
-      setMineMessageType('error')
-      return
-    }
-
-    if (lastCoords.accuracyM > gpsMineAccuracyThresholdM) {
-      setMineMessage('GPS accuracy is too low to mine. Move outdoors or wait for a better fix.')
-      setMineMessageType('error')
-      return
-    }
-
-    if (gpsHex !== h3Index) {
-      setMineMessage('You can only mine the hex you are currently standing in (GPS).')
-      setMineMessageType('error')
-      return
-    }
-
     const doMine = async () => {
       try {
         const res = await authedFetch(`${apiBase}/api/mine`, {
@@ -1879,13 +1794,7 @@ function App() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            h3Index,
-            lat: lastCoords.lat,
-            lon: lastCoords.lon,
-            accuracyM: lastCoords.accuracyM,
-            gpsAt: lastGeoAtRef.current,
-          }),
+          body: JSON.stringify({ h3Index }),
         })
 
         if (!res.ok) {
@@ -1959,12 +1868,11 @@ function App() {
         }
 
         const ownedSet = ownedHexesRef.current
-        const globalOwnedSet = globalOwnedHexesRef.current
         const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
           const idx = f.properties.h3Index
           const isOwned = ownedSet.has(idx)
           const neighbors = h3.gridDisk(idx, 1)
-          const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
+          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
 
           return {
             ...f,
@@ -1987,11 +1895,6 @@ function App() {
         const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
         if (source) {
           source.setData(updatedCollection)
-        }
-
-        const reload = loadHexesForCurrentViewRef.current
-        if (reload) {
-          reload(true)
         }
 
         setMineMessage(`Hex ${h3Index} mined successfully.`)
@@ -2146,13 +2049,6 @@ function App() {
 
     const { h3Index } = selectedHex
 
-    const lastCoords = lastGeoCoordsRef.current
-    if (!lastCoords) {
-      setMineMessage('Enable GPS (Use my location) to spawn new mining areas.')
-      setMineMessageType('error')
-      return
-    }
-
     const doSpawn = async () => {
       try {
         const res = await authedFetch(`${apiBase}/api/spawn`, {
@@ -2160,13 +2056,7 @@ function App() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            h3Index,
-            lat: lastCoords.lat,
-            lon: lastCoords.lon,
-            accuracyM: lastCoords.accuracyM,
-            gpsAt: lastGeoAtRef.current,
-          }),
+          body: JSON.stringify({ h3Index }),
         })
 
         if (!res.ok) {
@@ -3374,53 +3264,10 @@ function App() {
             </div>
           )}
           {selectedHex && (
-            <button
-              type="button"
-              className="mine-button"
-              onClick={handleMineClick}
-              disabled={(() => {
-                const gpsMineAccuracyThresholdM = 35
-                const gpsMineMaxAgeMs = 15_000
-                const lastCoords = lastGeoCoordsRef.current
-                const gpsHex = gpsSelectedHexRef.current
-                const geoAgeMs = Date.now() - lastGeoAtRef.current
-
-                if (!authTokenRef.current) return true
-                if (!usingMyLocationRef.current) return true
-                if (!lastCoords || !gpsHex) return true
-                if (geoAgeMs > gpsMineMaxAgeMs) return true
-                if (lastCoords.accuracyM > gpsMineAccuracyThresholdM) return true
-                if (gpsHex !== selectedHex.h3Index) return true
-                return false
-              })()}
-            >
+            <button type="button" className="mine-button" onClick={handleMineClick}>
               Mine this hex
             </button>
           )}
-          {selectedHex && (() => {
-            const gpsMineAccuracyThresholdM = 35
-            const gpsMineMaxAgeMs = 15_000
-            const lastCoords = lastGeoCoordsRef.current
-            const gpsHex = gpsSelectedHexRef.current
-            const geoAgeMs = Date.now() - lastGeoAtRef.current
-
-            if (!authTokenRef.current) {
-              return <div className="mine-message mine-message-error">Log in to mine.</div>
-            }
-            if (!usingMyLocationRef.current) {
-              return <div className="mine-message mine-message-error">Enable GPS (Use my location) to mine.</div>
-            }
-            if (!lastCoords || !gpsHex || geoAgeMs > gpsMineMaxAgeMs) {
-              return <div className="mine-message">Waiting for a fresh GPS fix…</div>
-            }
-            if (lastCoords.accuracyM > gpsMineAccuracyThresholdM) {
-              return <div className="mine-message">GPS accuracy too low to mine (need ≤ {gpsMineAccuracyThresholdM}m).</div>
-            }
-            if (gpsHex !== selectedHex.h3Index) {
-              return <div className="mine-message">Select your current GPS hex to mine.</div>
-            }
-            return null
-          })()}
           {selectedHex && canSpawnHere && (
             <button type="button" className="mine-button" onClick={handleSpawnClick}>
               Start a new mining area here (Spawn for 5 GHX)
