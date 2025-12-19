@@ -3451,12 +3451,322 @@
   },
   {
     "timestamp": 1766111265779,
+    "h3Index": "8b2db0540743fff",
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d"
+  },
+  {
+    "timestamp": 1766111364826,
+    "h3Index": "8b2db0540741fff",
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d"
+  },
+  {
+    "timestamp": 1766137852917,
     "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
     "h3Index": "8b2db0540743fff"
   },
   {
-    "timestamp": 1766111364826,
+    "timestamp": 1766137898678,
     "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
     "h3Index": "8b2db0540741fff"
+  },
+  {
+    "timestamp": 1766140497698,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540740fff"
+  },
+  {
+    "timestamp": 1766140503707,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540744fff"
+  },
+  {
+    "timestamp": 1766140511712,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540745fff"
+  },
+  {
+    "timestamp": 1766140535724,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054074efff"
+  },
+  {
+    "timestamp": 1766140539700,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540748fff"
+  },
+  {
+    "timestamp": 1766140543727,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054074bfff"
+  },
+  {
+    "timestamp": 1766140547743,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540296fff"
+  },
+  {
+    "timestamp": 1766140551709,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540290fff"
+  },
+  {
+    "timestamp": 1766140557713,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540291fff"
+  },
+  {
+    "timestamp": 1766140559723,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054029efff"
+  },
+  {
+    "timestamp": 1766140565689,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054029afff"
+  },
+  {
+    "timestamp": 1766140573709,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543934fff"
+  },
+  {
+    "timestamp": 1766140577713,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543930fff"
+  },
+  {
+    "timestamp": 1766140581692,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543933fff"
+  },
+  {
+    "timestamp": 1766140884706,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540298fff"
+  },
+  {
+    "timestamp": 1766140904701,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054029bfff"
+  },
+  {
+    "timestamp": 1766140908706,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540299fff"
+  },
+  {
+    "timestamp": 1766140914708,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543924fff"
+  },
+  {
+    "timestamp": 1766140922756,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054028bfff"
+  },
+  {
+    "timestamp": 1766140928701,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402d6fff"
+  },
+  {
+    "timestamp": 1766140932679,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402d4fff"
+  },
+  {
+    "timestamp": 1766140938705,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402f3fff"
+  },
+  {
+    "timestamp": 1766140976725,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402f1fff"
+  },
+  {
+    "timestamp": 1766140992707,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402e2fff"
+  },
+  {
+    "timestamp": 1766141026735,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402e3fff"
+  },
+  {
+    "timestamp": 1766141030706,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402e0fff"
+  },
+  {
+    "timestamp": 1766141036711,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402e1fff"
+  },
+  {
+    "timestamp": 1766141050721,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402eefff"
+  },
+  {
+    "timestamp": 1766141405718,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402eafff"
+  },
+  {
+    "timestamp": 1766141411720,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402ebfff"
+  },
+  {
+    "timestamp": 1766141417716,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402cdfff"
+  },
+  {
+    "timestamp": 1766141423744,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db05402c9fff"
+  },
+  {
+    "timestamp": 1766141427719,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0541596fff"
+  },
+  {
+    "timestamp": 1766141435708,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0541592fff"
+  },
+  {
+    "timestamp": 1766141443689,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054396cfff"
+  },
+  {
+    "timestamp": 1766141451775,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543968fff"
+  },
+  {
+    "timestamp": 1766141455696,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054396bfff"
+  },
+  {
+    "timestamp": 1766141463704,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054394dfff"
+  },
+  {
+    "timestamp": 1766141469726,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054394cfff"
+  },
+  {
+    "timestamp": 1766141471709,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054394efff"
+  },
+  {
+    "timestamp": 1766141477748,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543943fff"
+  },
+  {
+    "timestamp": 1766141479711,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054395cfff"
+  },
+  {
+    "timestamp": 1766141483708,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543951fff"
+  },
+  {
+    "timestamp": 1766141487713,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543953fff"
+  },
+  {
+    "timestamp": 1766141489708,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543952fff"
+  },
+  {
+    "timestamp": 1766141493716,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543825fff"
+  },
+  {
+    "timestamp": 1766141499734,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543824fff"
+  },
+  {
+    "timestamp": 1766141505706,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543919fff"
+  },
+  {
+    "timestamp": 1766141511717,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543918fff"
+  },
+  {
+    "timestamp": 1766141517744,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054391efff"
+  },
+  {
+    "timestamp": 1766141521777,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543911fff"
+  },
+  {
+    "timestamp": 1766141525726,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0543915fff"
+  },
+  {
+    "timestamp": 1766141638711,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054076efff"
+  },
+  {
+    "timestamp": 1766141644692,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540761fff"
+  },
+  {
+    "timestamp": 1766141648709,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540392fff"
+  },
+  {
+    "timestamp": 1766141656709,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540396fff"
+  },
+  {
+    "timestamp": 1766141662686,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540765fff"
+  },
+  {
+    "timestamp": 1766141678712,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db0540763fff"
+  },
+  {
+    "timestamp": 1766141801695,
+    "userId": "c8f82da5-c369-40f7-983a-6895d180a17d",
+    "h3Index": "8b2db054075dfff"
+  },
+  {
+    "timestamp": 1766145825138,
+    "userId": "f8319229-a124-47a7-a173-6f60aa07a681",
+    "h3Index": "8b2db0540743fff"
   }
 ]

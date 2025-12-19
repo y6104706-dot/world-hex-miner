@@ -1763,14 +1763,15 @@ app.post('/api/mine', requireAuth, (req, res) => {
     return
   }
 
-  const alreadyOwned = user.ownedHexes.has(h3Index)
-
-  if (alreadyOwned) {
+  // Check if this hex is already owned by ANY user (global check)
+  const globalOwned = buildGlobalOwnedHexesSet()
+  if (globalOwned.has(h3Index)) {
+    const alreadyOwnedByMe = user.ownedHexes.has(h3Index)
     res.json({
       ok: false,
       reason: 'ALREADY_MINED',
       balance: user.balance,
-      owned: true,
+      owned: alreadyOwnedByMe,
     })
     return
   }
@@ -1791,7 +1792,6 @@ app.post('/api/mine', requireAuth, (req, res) => {
   // Frontier rule (global): you can only mine hexes that are adjacent (distance
   // 1) to at least one mined hex by ANY user. This makes the world frontier
   // shared rather than per-user.
-  const globalOwned = buildGlobalOwnedHexesSet()
   if (globalOwned.size > 0) {
     const neighbors = h3.gridDisk(h3Index, 1)
     const hasAdjacentOwned = neighbors.some((n) => globalOwned.has(n))
