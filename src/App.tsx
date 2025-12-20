@@ -90,6 +90,7 @@ function App() {
       h3Index: string
       zoneType: ZoneType
       claimed: boolean
+      ownedByOther: boolean
       selected: boolean
       canMine: boolean
       debugInfo: string[]
@@ -534,14 +535,16 @@ function App() {
                         const updated: HexFeature[] = current.map((f) => {
                           const idx = f.properties.h3Index
                           const isOwnedHex = ownedSetInner.has(idx)
+                          const isOwnedByOther = !isOwnedHex && globalOwnedSet.has(idx)
                           const neighbors = h3.gridDisk(idx, 1)
-                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
+                          const canMineNeighbor = !isOwnedHex && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
 
                           return {
                             ...f,
                             properties: {
                               ...f.properties,
                               claimed: isOwnedHex,
+                              ownedByOther: isOwnedByOther,
                               canMine: canMineNeighbor,
                             },
                           }
@@ -652,14 +655,16 @@ function App() {
                         const updatedNow: HexFeature[] = currentFeaturesNow.map((f) => {
                           const idx = f.properties.h3Index
                           const isOwnedHex = ownedHexesRef.current.has(idx)
+                          const isOwnedByOther = !isOwnedHex && globalOwnedSet.has(idx)
                           const neighbors = h3.gridDisk(idx, 1)
-                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
+                          const canMineNeighbor = !isOwnedHex && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
 
                           return {
                             ...f,
                             properties: {
                               ...f.properties,
                               claimed: isOwnedHex,
+                              ownedByOther: isOwnedByOther,
                               canMine: canMineNeighbor,
                               selected: f.properties.h3Index === gpsHex,
                             },
@@ -1139,8 +1144,9 @@ function App() {
           }
 
           const isOwned = ownedSet.has(hexIndex)
+          const isOwnedByOther = !isOwned && globalOwnedSet.has(hexIndex)
           const neighbors = h3.gridDisk(hexIndex, 1)
-          const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
+          const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
 
           // Priority: manual selection > GPS hex
           const isSelected = manualSelectedHex
@@ -1155,6 +1161,7 @@ function App() {
               h3Index: hexIndex,
               zoneType,
               claimed: isOwned,
+              ownedByOther: isOwnedByOther,
               selected: isSelected,
               canMine,
               debugInfo,
@@ -1229,25 +1236,27 @@ function App() {
         type: 'fill',
         source: 'h3-hex',
         paint: {
-          // Frontier visualisation: claimed hexes are highlighted, directly
-          // mineable neighbours are shown as faint candidates, everything else
-          // is almost transparent.
+          // Permanent coloring: gold for my mined hexes, dark blue for others' hexes
           'fill-color': [
             'case',
             ['get', 'selected'],
-            '#ff9900',
+            '#ff9900',  // Orange for selected hex
             ['get', 'claimed'],
-            '#b91c1c',
+            '#ffd700',  // Gold for my mined hexes
+            ['get', 'ownedByOther'],
+            '#1e3a8a',  // Dark blue for others' hexes
             ['get', 'canMine'],
-            '#e5e7eb',
-            '#000000',
+            '#e5e7eb',  // Light gray for mineable candidates
+            '#000000',  // Black for unmined
           ],
           'fill-opacity': [
             'case',
             ['get', 'selected'],
             0.6,
             ['get', 'claimed'],
-            0.65,
+            0.7,  // Gold with good visibility
+            ['get', 'ownedByOther'],
+            0.6,  // Dark blue with good visibility
             ['get', 'canMine'],
             0.15,
             0.2,
@@ -1480,17 +1489,20 @@ function App() {
 
               const current = featuresRef.current
               if (current && current.length > 0) {
+                const globalOwnedSet = globalOwnedHexesRef.current
                 const updated: HexFeature[] = current.map((f) => {
                   const idx = f.properties.h3Index
                   const isOwnedHex = ownedSetInner.has(idx)
+                  const isOwnedByOther = !isOwnedHex && globalOwnedSet.has(idx)
                   const neighbors = h3.gridDisk(idx, 1)
-                  const canMineNeighbor = !isOwnedHex && neighbors.some((n) => ownedSetInner.has(n))
+                  const canMineNeighbor = !isOwnedHex && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
 
                   return {
                     ...f,
                     properties: {
                       ...f.properties,
                       claimed: isOwnedHex,
+                      ownedByOther: isOwnedByOther,
                       canMine: canMineNeighbor,
                     },
                   }
@@ -1961,17 +1973,20 @@ function App() {
         }
 
         const ownedSet = ownedHexesRef.current
+        const globalOwnedSet = globalOwnedHexesRef.current
         const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
           const idx = f.properties.h3Index
           const isOwned = ownedSet.has(idx)
+          const isOwnedByOther = !isOwned && globalOwnedSet.has(idx)
           const neighbors = h3.gridDisk(idx, 1)
-          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+          const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
 
           return {
             ...f,
             properties: {
               ...f.properties,
               claimed: isOwned,
+              ownedByOther: isOwnedByOther,
               canMine,
             },
           }
@@ -2092,17 +2107,20 @@ function App() {
 
           const currentFeatures = featuresRef.current
           if (currentFeatures && currentFeatures.length > 0) {
+            const globalOwnedSet = globalOwnedHexesRef.current
             const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
               const idx = f.properties.h3Index
               const isOwned = ownedSet.has(idx)
+              const isOwnedByOther = !isOwned && globalOwnedSet.has(idx)
               const neighbors = h3.gridDisk(idx, 1)
-              const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+              const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
 
               return {
                 ...f,
                 properties: {
                   ...f.properties,
                   claimed: isOwned,
+                  ownedByOther: isOwnedByOther,
                   canMine,
                 },
               }
@@ -2204,6 +2222,7 @@ function App() {
         setCanSpawnHere(false)
 
         ownedHexesRef.current.add(h3Index)
+        globalOwnedHexesRef.current.add(h3Index)
 
         const currentFeatures = featuresRef.current
         if (!currentFeatures || currentFeatures.length === 0 || !mapRef.current) {
@@ -2213,17 +2232,20 @@ function App() {
         }
 
         const ownedSet = ownedHexesRef.current
+        const globalOwnedSet = globalOwnedHexesRef.current
         const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
           const idx = f.properties.h3Index
           const isOwned = ownedSet.has(idx)
+          const isOwnedByOther = !isOwned && globalOwnedSet.has(idx)
           const neighbors = h3.gridDisk(idx, 1)
-          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
+          const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
 
           return {
             ...f,
             properties: {
               ...f.properties,
               claimed: isOwned,
+              ownedByOther: isOwnedByOther,
               canMine,
             },
           }

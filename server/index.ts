@@ -910,8 +910,8 @@ export async function inferZoneTypeAtCentroid(h3Index: string): Promise<Inferred
     return { zoneType: 'NATURE_RESERVE', debug, hasRoad, roadClass }
   }
 
-  debug.push('Centroid: no matching tags found, defaulting to SEA (global fallback)')
-  return { zoneType: 'SEA', debug, hasRoad, roadClass }
+  debug.push('Centroid: no matching tags found, defaulting to INTERURBAN (global fallback)')
+  return { zoneType: 'INTERURBAN', debug, hasRoad, roadClass }
 }
 
 // Endpoint used for initial map rendering – first tries cached OSM/Overpass-based
