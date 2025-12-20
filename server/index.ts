@@ -1767,6 +1767,7 @@ app.post('/api/mine', requireAuth, (req, res) => {
   const globalOwned = buildGlobalOwnedHexesSet()
   if (globalOwned.has(h3Index)) {
     const alreadyOwnedByMe = user.ownedHexes.has(h3Index)
+    console.log(`[MINE] ALREADY_MINED: hex ${h3Index} already owned. By me: ${alreadyOwnedByMe}, global owned: ${globalOwned.size}`)
     res.json({
       ok: false,
       reason: 'ALREADY_MINED',
@@ -1775,6 +1776,8 @@ app.post('/api/mine', requireAuth, (req, res) => {
     })
     return
   }
+  
+  console.log(`[MINE] Attempting to mine hex ${h3Index} for user ${user.id}. Global owned: ${globalOwned.size}, user owned: ${user.ownedHexes.size}`)
 
   // Safety rule: forbid mining on COAST and in a persisted buffer around
   // detected coastlines (legal/safety protection).
@@ -1789,25 +1792,14 @@ app.post('/api/mine', requireAuth, (req, res) => {
     return
   }
 
-  // Frontier rule (global): you can only mine hexes that are adjacent (distance
-  // 1) to at least one mined hex by ANY user. This makes the world frontier
-  // shared rather than per-user.
-  if (globalOwned.size > 0) {
-    const neighbors = h3.gridDisk(h3Index, 1)
-    const hasAdjacentOwned = neighbors.some((n) => globalOwned.has(n))
-    if (!hasAdjacentOwned) {
-      res.json({
-        ok: false,
-        reason: 'NOT_ADJACENT',
-        balance: user.balance,
-        owned: false,
-      })
-      return
-    }
-  }
+  // Frontier rule removed: Allow mining any hex that hasn't been mined yet.
+  // The global ownership check above already prevents mining hexes that were mined by anyone.
+  // This allows users to explore and mine hexes anywhere, not just adjacent to existing mines.
 
   user.ownedHexes.add(h3Index)
   user.balance += 1
+
+  console.log(`[MINE] ✓ SUCCESS: mined hex ${h3Index} for user ${user.id}. New balance: ${user.balance}, total owned: ${user.ownedHexes.size}`)
 
   miningEvents.push({
     timestamp: Date.now(),
