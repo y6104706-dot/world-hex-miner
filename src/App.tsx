@@ -920,7 +920,12 @@ function App() {
   useEffect(() => {
     if (!mapContainerRef.current) return
 
-    const centerLonLat: [number, number] = [34.7818, 32.0853]
+    // Center on Tel Aviv, Israel
+    // MapLibre expects [longitude, latitude] format
+    // Tel Aviv coordinates: longitude=34.7818°E, latitude=32.0853°N
+    // IMPORTANT: Format is [lon, lat] NOT [lat, lon]!
+    // If map goes to Cyprus/sea on refresh, coordinates might be reversed
+    const centerLonLat: [number, number] = [34.7818, 32.0853] // [lon, lat] = [34.78°E, 32.08°N]
     const h3Resolution = 11
 
     const mapStyleUrl =
@@ -1220,8 +1225,19 @@ function App() {
 
         for (const hexIndex of hexIndexes) {
           const boundary = h3.cellToBoundary(hexIndex, true)
-          // h3.cellToBoundary with true returns [lng, lat] already
-          const coords = boundary.map(([lng, lat]) => [lng, lat] as [number, number])
+          // h3.cellToBoundary with true returns [lng, lat] format
+          // But if coordinates appear reversed (lat in lng position), swap them
+          const coords = boundary.map((coord) => {
+            const [first, second] = coord
+            // Check if coordinates might be reversed: if first value is 29-34 and second is 34-36, it's likely [lat, lng]
+            // Otherwise assume [lng, lat] format
+            if (first >= 29 && first <= 34 && second >= 34 && second <= 36) {
+              // Likely reversed: swap to [lng, lat]
+              return [second, first] as [number, number]
+            }
+            // Normal: [lng, lat]
+            return [first, second] as [number, number]
+          })
           coords.push(coords[0])
 
           let zoneType: ZoneType = 'URBAN'
@@ -1290,22 +1306,43 @@ function App() {
 
         if (!hasFitToHexes && features.length > 0) {
           const allCoords = features.flatMap((f) => f.geometry.coordinates[0] as [number, number][])
-          const lngs = allCoords.map(([lng]) => lng)
-          const lats = allCoords.map(([, lat]) => lat)
+          // Check if coordinates might be reversed by looking at the first coordinate
+          // If first coord has values in Israel range (29-34 for lat, 34-36 for lon), assume correct order
+          // Otherwise, might be reversed
+          const firstCoord = allCoords[0]
+          const mightBeReversed = firstCoord && firstCoord[0] >= 29 && firstCoord[0] <= 34 && firstCoord[1] >= 34 && firstCoord[1] <= 36
+          
+          const lngs = mightBeReversed 
+            ? allCoords.map(([, lng]) => lng) // If reversed, second value is longitude
+            : allCoords.map(([lng]) => lng)   // Normal: first value is longitude
+          const lats = mightBeReversed
+            ? allCoords.map(([lat]) => lat)   // If reversed, first value is latitude
+            : allCoords.map(([, lat]) => lat)  // Normal: second value is latitude
+            
           const minLng = Math.min(...lngs)
           const maxLng = Math.max(...lngs)
           const minLat = Math.min(...lats)
           const maxLat = Math.max(...lats)
 
-          map.fitBounds(
-            [
-              [minLng, minLat],
-              [maxLng, maxLat],
-            ],
-            { padding: 40 },
-          )
+          // Validate coordinates are reasonable (Israel is roughly 29-34°N, 34-36°E)
+          // If coordinates are way off (like Cyprus at 35°N, 33°E or reversed), skip fitBounds
+          const isReasonable = 
+            minLng >= 30 && maxLng <= 36 && // Longitude range for Israel/Middle East
+            minLat >= 29 && maxLat <= 34    // Latitude range for Israel/Middle East
 
-          hasFitToHexes = true
+          if (isReasonable) {
+            map.fitBounds(
+              [
+                [minLng, minLat],
+                [maxLng, maxLat],
+              ],
+              { padding: 40 },
+            )
+            hasFitToHexes = true
+          } else {
+            console.log('[MAP] Skipping fitBounds - coordinates out of range:', { minLng, maxLng, minLat, maxLat, mightBeReversed })
+            // Keep default center on Tel Aviv instead of fitting to invalid coordinates
+          }
         }
       }
 
@@ -1853,7 +1890,19 @@ function App() {
     const toPolygonFeatures = (hexes: string[]) => {
       return hexes.map((idx) => {
         const boundary = h3.cellToBoundary(idx, true)
-        const coords = boundary.map(([lng, lat]) => [lng, lat] as [number, number])
+        // h3.cellToBoundary with true returns [lng, lat] format
+        // But if coordinates appear reversed (lat in lng position), swap them
+        const coords = boundary.map((coord) => {
+          const [first, second] = coord
+          // Check if coordinates might be reversed: if first value is 29-34 and second is 34-36, it's likely [lat, lng]
+          // Otherwise assume [lng, lat] format
+          if (first >= 29 && first <= 34 && second >= 34 && second <= 36) {
+            // Likely reversed: swap to [lng, lat]
+            return [second, first] as [number, number]
+          }
+          // Normal: [lng, lat]
+          return [first, second] as [number, number]
+        })
         if (coords.length > 0) {
           coords.push(coords[0])
         }
@@ -1966,8 +2015,19 @@ function App() {
     const toPolygonFeatures = (hexes: string[]) => {
       return hexes.map((idx) => {
         const boundary = h3.cellToBoundary(idx, true)
-        // h3.cellToBoundary with true returns [lng, lat] already
-        const coords = boundary.map(([lng, lat]) => [lng, lat] as [number, number])
+        // h3.cellToBoundary with true returns [lng, lat] format
+        // But if coordinates appear reversed (lat in lng position), swap them
+        const coords = boundary.map((coord) => {
+          const [first, second] = coord
+          // Check if coordinates might be reversed: if first value is 29-34 and second is 34-36, it's likely [lat, lng]
+          // Otherwise assume [lng, lat] format
+          if (first >= 29 && first <= 34 && second >= 34 && second <= 36) {
+            // Likely reversed: swap to [lng, lat]
+            return [second, first] as [number, number]
+          }
+          // Normal: [lng, lat]
+          return [first, second] as [number, number]
+        })
         if (coords.length > 0) {
           coords.push(coords[0])
         }
