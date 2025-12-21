@@ -6,7 +6,9 @@ import './App.css'
 
 function App() {
   // Use relative path for API calls - Vite proxy handles forwarding to backend
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
+  // If VITE_API_BASE_URL is set to a full URL (like ngrok), ignore it and use relative paths
+  const envApiBase = import.meta.env.VITE_API_BASE_URL ?? ''
+  const apiBase = envApiBase && (envApiBase.startsWith('http://') || envApiBase.startsWith('https://')) ? '' : envApiBase
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
@@ -35,6 +37,7 @@ function App() {
   const autoStartedLocationRef = useRef(false)
   const autoMineEnabledRef = useRef(false)
   const lastAutoMineGpsHexRef = useRef<string | null>(null)
+  const autoMinedHexesRef = useRef<string[]>([]) // Track hexes mined in auto mode
 
   const [autoMineEnabled, setAutoMineEnabled] = useState(false)
 
@@ -90,7 +93,6 @@ function App() {
       h3Index: string
       zoneType: ZoneType
       claimed: boolean
-      ownedByOther: boolean
       selected: boolean
       canMine: boolean
       debugInfo: string[]
@@ -163,13 +165,25 @@ function App() {
       setAuthSubmitting(true)
       setAuthError(null)
       try {
-        const res = await fetch(`${apiBase}/api/auth/login`, {
+        // Force relative path to use Vite proxy, even if apiBase is set
+        const url = apiBase && !apiBase.startsWith('/') ? `${apiBase}/api/auth/login` : '/api/auth/login'
+        console.log('[LOGIN] Attempting login:', { url, email: authEmail, hasPassword: !!authPassword, apiBase })
+        
+        const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: authEmail, password: authPassword }),
         })
 
-        const data: { ok?: boolean; token?: string; error?: string } = await res.json().catch(() => ({}))
+        console.log('[LOGIN] Response status:', res.status, res.statusText)
+        
+        const data: { ok?: boolean; token?: string; error?: string } = await res.json().catch((err) => {
+          console.log('[LOGIN] JSON parse error:', err)
+          return {}
+        })
+        
+        console.log('[LOGIN] Response data:', { ok: data.ok, hasToken: !!data.token, error: data.error })
+        
         if (!res.ok || !data.ok || !data.token) {
           setAuthError(data.error ?? 'Login failed.')
           return
@@ -180,7 +194,8 @@ function App() {
         setToastType('success')
         setAuthPassword('')
         setViewMode('MAP')
-      } catch {
+      } catch (err) {
+        console.log('[LOGIN] Network error:', err)
         setAuthError('Network error during login.')
       } finally {
         setAuthSubmitting(false)
@@ -274,6 +289,7 @@ function App() {
   const [usingMyLocation, setUsingMyLocation] = useState(false)
   const [followMyLocation, setFollowMyLocation] = useState(false)
   const [driveModeActive, setDriveModeActive] = useState(false)
+  const [currentGpsHex, setCurrentGpsHex] = useState<string | null>(null)
   const driveModeActiveRef = useRef(false)
   const lastDriveHexRef = useRef<string | null>(null)
 
@@ -282,16 +298,16 @@ function App() {
   }, [usingMyLocation])
 
   useEffect(() => {
+    autoMineEnabledRef.current = autoMineEnabled
+  }, [autoMineEnabled])
+
+  useEffect(() => {
     followMyLocationRef.current = followMyLocation
   }, [followMyLocation])
 
   useEffect(() => {
     authTokenRef.current = authToken
   }, [authToken])
-
-  useEffect(() => {
-    autoMineEnabledRef.current = autoMineEnabled
-  }, [autoMineEnabled])
 
   const buildCirclePolygon = (lon: number, lat: number, radiusM: number) => {
     const steps = 60
@@ -412,11 +428,14 @@ function App() {
       // Track current GPS hex whenever we have a location.
       // This is used to force highlight even if the hex wasn't loaded yet.
       try {
-        gpsSelectedHexRef.current = h3.latLngToCell(coords.lat, coords.lon, 11)
-        console.log('[GPS→HEX] GPS coords:', coords.lat, coords.lon, '→ H3 hex:', gpsSelectedHexRef.current)
+        const newGpsHex = h3.latLngToCell(coords.lat, coords.lon, 11)
+        gpsSelectedHexRef.current = newGpsHex
+        setCurrentGpsHex(newGpsHex)
+        console.log('[GPS→HEX] GPS coords:', coords.lat, coords.lon, '→ H3 hex:', newGpsHex)
       } catch (err) {
         console.log('[GPS→HEX] ERROR converting GPS to H3:', err)
         gpsSelectedHexRef.current = null
+        setCurrentGpsHex(null)
       }
 
       // Mark GPS hex as selected - this will make it orange
@@ -447,6 +466,22 @@ function App() {
         }
       }
 
+      // Rotate map based on heading when GPS is active and following location
+      if (usingMyLocationRef.current && followMyLocationRef.current && typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)) {
+        // Convert heading from degrees (0-360, where 0 is north) to bearing (-180 to 180, where 0 is north)
+        // MapLibre uses bearing where 0 is north, positive is clockwise
+        const bearing = -coords.headingDeg // Negative because MapLibre bearing is opposite to GPS heading
+        const currentBearing = map.getBearing()
+        
+        // Only update if bearing changed significantly (more than 2 degrees) to avoid jitter
+        if (Math.abs(currentBearing - bearing) > 2) {
+          map.easeTo({
+            bearing: bearing,
+            duration: 500, // Smooth rotation
+          })
+        }
+      }
+
       if (shouldUpdateLayers) {
         lastLocationLayerUpdateAtRef.current = now
       }
@@ -466,6 +501,14 @@ function App() {
           if (now - lastGpsHexRefreshAtRef.current > minRefreshMs || currentHex !== lastGpsReloadHexRef.current) {
             lastGpsHexRefreshAtRef.current = now
             lastGpsReloadHexRef.current = currentHex
+            loadHexesForCurrentViewRef.current?.()
+          }
+        } else {
+          // Even if hex didn't change, reload hexes around GPS periodically to keep them visible
+          // This ensures the gray/transparent hexes around GPS stay loaded
+          const minRefreshMs = 5000 // Refresh every 5 seconds to keep hexes visible
+          if (now - lastGpsHexRefreshAtRef.current > minRefreshMs) {
+            lastGpsHexRefreshAtRef.current = now
             loadHexesForCurrentViewRef.current?.()
           }
         }
@@ -535,16 +578,14 @@ function App() {
                         const updated: HexFeature[] = current.map((f) => {
                           const idx = f.properties.h3Index
                           const isOwnedHex = ownedSetInner.has(idx)
-                          const isOwnedByOther = !isOwnedHex && globalOwnedSet.has(idx)
                           const neighbors = h3.gridDisk(idx, 1)
-                          const canMineNeighbor = !isOwnedHex && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
+                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
 
                           return {
                             ...f,
                             properties: {
                               ...f.properties,
                               claimed: isOwnedHex,
-                              ownedByOther: isOwnedByOther,
                               canMine: canMineNeighbor,
                             },
                           }
@@ -573,6 +614,115 @@ function App() {
               }
             }
           }
+        }
+
+        // AUTO-MINE: If enabled, automatically mine the GPS hex
+        // Check this outside of hexChanged so it works even if user stays in same hex
+        console.log('[AUTO-MINE-CHECK]', {
+          enabled: autoMineEnabledRef.current,
+          hasAuth: !!authTokenRef.current,
+          currentHex,
+          lastMined: lastAutoMineGpsHexRef.current,
+          isOwned: currentHex ? ownedHexesRef.current.has(currentHex) : false,
+          willMine: autoMineEnabledRef.current &&
+            authTokenRef.current &&
+            currentHex &&
+            currentHex !== lastAutoMineGpsHexRef.current &&
+            !ownedHexesRef.current.has(currentHex)
+        })
+        if (
+          autoMineEnabledRef.current &&
+          authTokenRef.current &&
+          currentHex &&
+          currentHex !== lastAutoMineGpsHexRef.current &&
+          !ownedHexesRef.current.has(currentHex)
+        ) {
+          lastAutoMineGpsHexRef.current = currentHex
+          console.log('[AUTO-MINE] Attempting to mine hex:', currentHex)
+
+          void (async () => {
+            try {
+              const gpsCoords = lastGeoCoordsRef.current
+              if (!gpsCoords || typeof gpsCoords.lat !== 'number' || typeof gpsCoords.lon !== 'number') {
+                console.log('[AUTO-MINE] ✗ No GPS coordinates available')
+                return
+              }
+              
+              console.log('[AUTO-MINE] GPS coords:', gpsCoords.lat, gpsCoords.lon, 'accuracy:', gpsCoords.accuracyM)
+              
+              const res = await authedFetch(`${apiBase}/api/mine`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  h3Index: currentHex,
+                  lat: gpsCoords.lat,
+                  lon: gpsCoords.lon,
+                  accuracyM: gpsCoords.accuracyM || 10,
+                  gpsAt: Date.now(),
+                }),
+              })
+              
+              console.log('[AUTO-MINE] Response status:', res.status)
+
+              const data: { ok?: boolean; newBalance?: number; error?: string; reason?: string } =
+                await res.json().catch(() => ({}))
+
+              if (data.ok) {
+                console.log('[AUTO-MINE] ✓ Success! Mined:', currentHex)
+                setToastMessage(`⛏️ Auto-mined hex!`)
+                setToastType('success')
+
+                // Track auto-mined hex
+                autoMinedHexesRef.current.push(currentHex)
+
+                // Update owned hexes
+                ownedHexesRef.current.add(currentHex)
+                globalOwnedHexesRef.current.add(currentHex)
+
+                if (typeof data.newBalance === 'number') {
+                  setUserBalance(data.newBalance)
+                }
+                setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
+
+                // Update features to show as owned
+                const currentFeaturesNow = featuresRef.current
+                if (currentFeaturesNow) {
+                  const globalOwnedSetNow = globalOwnedHexesRef.current
+                  const updatedNow: HexFeature[] = currentFeaturesNow.map((f) => {
+                    const idx = f.properties.h3Index
+                    const isOwnedHex = ownedHexesRef.current.has(idx)
+                    const neighbors = h3.gridDisk(idx, 1)
+                    const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSetNow.has(n))
+
+                    return {
+                      ...f,
+                      properties: {
+                        ...f.properties,
+                        claimed: isOwnedHex,
+                        canMine: canMineNeighbor,
+                        selected: f.properties.h3Index === currentHex,
+                      },
+                    }
+                  })
+                  featuresRef.current = updatedNow
+                  const srcNow = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                  if (srcNow) {
+                    srcNow.setData({ type: 'FeatureCollection' as const, features: updatedNow })
+                  }
+                }
+
+                // Update veins layers to show the newly mined hex
+                await updateVeinsLayers()
+              } else if (data.reason === 'ALREADY_OWNED_BY_OTHER') {
+                // Hex already owned by another user - skip it
+                console.log('[AUTO-MINE] ✗ Hex already owned by another user:', currentHex)
+              } else {
+                console.log('[AUTO-MINE] ✗ Failed:', data.error || data.reason)
+              }
+            } catch (err) {
+              console.log('[AUTO-MINE] ✗ Error:', err)
+            }
+          })()
         }
       }
 
@@ -604,85 +754,6 @@ function App() {
               const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
               if (source) {
                 source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
-              }
-
-              // AUTO-MINE: If enabled, automatically mine the GPS hex
-              if (
-                autoMineEnabledRef.current &&
-                authTokenRef.current &&
-                gpsHex !== lastAutoMineGpsHexRef.current &&
-                !ownedHexesRef.current.has(gpsHex)
-              ) {
-                lastAutoMineGpsHexRef.current = gpsHex
-                console.log('[AUTO-MINE] Attempting to mine hex:', gpsHex)
-
-                void (async () => {
-                  try {
-                    const gpsCoords = lastGeoCoordsRef.current
-                    const res = await authedFetch(`${apiBase}/api/mine`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        h3Index: gpsHex,
-                        lat: gpsCoords?.lat,
-                        lon: gpsCoords?.lon,
-                        accuracyM: gpsCoords?.accuracyM,
-                        gpsAt: Date.now(),
-                      }),
-                    })
-
-                    const data: { ok?: boolean; newBalance?: number; error?: string; reason?: string } =
-                      await res.json().catch(() => ({}))
-
-                    if (data.ok) {
-                      console.log('[AUTO-MINE] ✓ Success! Mined:', gpsHex)
-                      setToastMessage(`⛏️ Auto-mined hex!`)
-                      setToastType('success')
-
-                      // Update owned hexes
-                      ownedHexesRef.current.add(gpsHex)
-                      globalOwnedHexesRef.current.add(gpsHex)
-
-                      if (typeof data.newBalance === 'number') {
-                        setUserBalance(data.newBalance)
-                      }
-                      setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
-
-                      // Update features to show as owned
-                      const currentFeaturesNow = featuresRef.current
-                      if (currentFeaturesNow) {
-                        const globalOwnedSet = globalOwnedHexesRef.current
-                        const updatedNow: HexFeature[] = currentFeaturesNow.map((f) => {
-                          const idx = f.properties.h3Index
-                          const isOwnedHex = ownedHexesRef.current.has(idx)
-                          const isOwnedByOther = !isOwnedHex && globalOwnedSet.has(idx)
-                          const neighbors = h3.gridDisk(idx, 1)
-                          const canMineNeighbor = !isOwnedHex && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
-
-                          return {
-                            ...f,
-                            properties: {
-                              ...f.properties,
-                              claimed: isOwnedHex,
-                              ownedByOther: isOwnedByOther,
-                              canMine: canMineNeighbor,
-                              selected: f.properties.h3Index === gpsHex,
-                            },
-                          }
-                        })
-                        featuresRef.current = updatedNow
-                        const srcNow = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-                        if (srcNow) {
-                          srcNow.setData({ type: 'FeatureCollection' as const, features: updatedNow })
-                        }
-                      }
-                    } else {
-                      console.log('[AUTO-MINE] ✗ Failed:', data.error || data.reason)
-                    }
-                  } catch (err) {
-                    console.log('[AUTO-MINE] ✗ Error:', err)
-                  }
-                })()
               }
             }
           }
@@ -1088,35 +1159,53 @@ function App() {
         // so that claimed state is correct after reload or viewport changes.
         await loadOwnedHexes()
 
-        // Roughly ~150m radius in degrees (depends on latitude, but good
-        // enough for our purposes). This keeps the number of hexes per load
-        // relatively small.
-        const deltaLat = 0.0015
-        const deltaLng = 0.0015
-
-        const south = centerLat - deltaLat
-        const north = centerLat + deltaLat
-        const west = centerLng - deltaLng
-        const east = centerLng + deltaLng
-
-        // h3-js expects coordinates in [lat, lng] order. Build a small
-        // rectangle polygon centred on the current map center.
-        const polygon: number[][][] = [[
-          [south, west],
-          [south, east],
-          [north, east],
-          [north, west],
-          [south, west],
-        ]]
-
-        const hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
-
         const gpsHex =
           usingMyLocationRef.current && Date.now() >= manualSelectUntilRef.current
             ? gpsSelectedHexRef.current
             : null
-        if (gpsHex && !hexIndexes.includes(gpsHex)) {
-          hexIndexes.push(gpsHex)
+
+        let hexIndexes: string[] = []
+
+        // If GPS is active AND follow mode is on, load hexes around GPS location
+        // Otherwise, load hexes around map center (virtual position)
+        if (gpsHex && lastGeoCoordsRef.current && followMyLocationRef.current) {
+          // Load hexes around GPS location: the GPS hex + all its neighbors (4 rings for more coverage)
+          const gpsNeighbors = h3.gridDisk(gpsHex, 4) // 4 rings = GPS hex + 4 rings of neighbors (~37 hexes)
+          hexIndexes = [...new Set(gpsNeighbors)] // Remove duplicates
+          
+          // Also include hexes from map center viewport if they're not already included
+          const deltaLat = 0.0015
+          const deltaLng = 0.0015
+          const south = centerLat - deltaLat
+          const north = centerLat + deltaLat
+          const west = centerLng - deltaLng
+          const east = centerLng + deltaLng
+          const polygon: number[][][] = [[
+            [south, west],
+            [south, east],
+            [north, east],
+            [north, west],
+            [south, west],
+          ]]
+          const viewportHexes = h3.polygonToCells(polygon, h3Resolution, true)
+          // Merge viewport hexes with GPS hexes
+          hexIndexes = [...new Set([...hexIndexes, ...viewportHexes])]
+        } else {
+          // No GPS or follow mode off: load hexes around map center only
+          const deltaLat = 0.0015
+          const deltaLng = 0.0015
+          const south = centerLat - deltaLat
+          const north = centerLat + deltaLat
+          const west = centerLng - deltaLng
+          const east = centerLng + deltaLng
+          const polygon: number[][][] = [[
+            [south, west],
+            [south, east],
+            [north, east],
+            [north, west],
+            [south, west],
+          ]]
+          hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
         }
 
 
@@ -1131,7 +1220,8 @@ function App() {
 
         for (const hexIndex of hexIndexes) {
           const boundary = h3.cellToBoundary(hexIndex, true)
-          const coords = boundary.map(([lat, lng]) => [lng, lat])
+          // h3.cellToBoundary with true returns [lng, lat] already
+          const coords = boundary.map(([lng, lat]) => [lng, lat] as [number, number])
           coords.push(coords[0])
 
           let zoneType: ZoneType = 'URBAN'
@@ -1144,9 +1234,8 @@ function App() {
           }
 
           const isOwned = ownedSet.has(hexIndex)
-          const isOwnedByOther = !isOwned && globalOwnedSet.has(hexIndex)
           const neighbors = h3.gridDisk(hexIndex, 1)
-          const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
+          const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
 
           // Priority: manual selection > GPS hex
           const isSelected = manualSelectedHex
@@ -1161,7 +1250,6 @@ function App() {
               h3Index: hexIndex,
               zoneType,
               claimed: isOwned,
-              ownedByOther: isOwnedByOther,
               selected: isSelected,
               canMine,
               debugInfo,
@@ -1236,27 +1324,25 @@ function App() {
         type: 'fill',
         source: 'h3-hex',
         paint: {
-          // Permanent coloring: gold for my mined hexes, dark blue for others' hexes
+          // Frontier visualisation: claimed hexes are highlighted, directly
+          // mineable neighbours are shown as faint candidates, everything else
+          // is almost transparent.
           'fill-color': [
             'case',
             ['get', 'selected'],
-            '#ff9900',  // Orange for selected hex
+            '#ff9900',
             ['get', 'claimed'],
-            '#ffd700',  // Gold for my mined hexes
-            ['get', 'ownedByOther'],
-            '#1e3a8a',  // Dark blue for others' hexes
+            '#b91c1c',
             ['get', 'canMine'],
-            '#e5e7eb',  // Light gray for mineable candidates
-            '#000000',  // Black for unmined
+            '#e5e7eb',
+            '#000000',
           ],
           'fill-opacity': [
             'case',
             ['get', 'selected'],
             0.6,
             ['get', 'claimed'],
-            0.7,  // Gold with good visibility
-            ['get', 'ownedByOther'],
-            0.6,  // Dark blue with good visibility
+            0.65,
             ['get', 'canMine'],
             0.15,
             0.2,
@@ -1275,17 +1361,22 @@ function App() {
         },
       })
 
-      // Veins overlay: soft red polygons for all owned hexes.
+      // Veins overlay: permanent coloring for all owned hexes (always visible)
+      // These layers must be above h3-hex-fill to show the permanent colors
+      // Find a layer to place them before (like labels or roads)
+      const beforeId = map.getStyle().layers?.find((l) => l.id.includes('label') || l.id.includes('road'))?.id || undefined
+      
       map.addLayer({
         id: 'owned-veins-layer',
         type: 'fill',
         source: 'owned-veins',
+        beforeId: beforeId, // Place above h3-hex-fill but below labels
         layout: {
-          visibility: 'none',
+          visibility: 'visible',  // Always visible for permanent coloring
         },
         paint: {
-          'fill-color': '#f59e0b',
-          'fill-opacity': 0.45,
+          'fill-color': '#ffd700',  // Gold for my mined hexes
+          'fill-opacity': 0.3,  // More transparent as requested
         },
       })
 
@@ -1293,12 +1384,13 @@ function App() {
         id: 'others-veins-layer',
         type: 'fill',
         source: 'others-veins',
+        beforeId: beforeId, // Place above h3-hex-fill but below labels
         layout: {
-          visibility: 'none',
+          visibility: 'visible',  // Always visible for permanent coloring
         },
         paint: {
-          'fill-color': '#a855f7',
-          'fill-opacity': 0.28,
+          'fill-color': '#1e3a8a',  // Dark blue for others' hexes
+          'fill-opacity': 0.3,  // More transparent as requested
         },
       })
 
@@ -1489,20 +1581,17 @@ function App() {
 
               const current = featuresRef.current
               if (current && current.length > 0) {
-                const globalOwnedSet = globalOwnedHexesRef.current
                 const updated: HexFeature[] = current.map((f) => {
                   const idx = f.properties.h3Index
                   const isOwnedHex = ownedSetInner.has(idx)
-                  const isOwnedByOther = !isOwnedHex && globalOwnedSet.has(idx)
                   const neighbors = h3.gridDisk(idx, 1)
-                  const canMineNeighbor = !isOwnedHex && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
+                  const canMineNeighbor = !isOwnedHex && neighbors.some((n) => ownedSetInner.has(n))
 
                   return {
                     ...f,
                     properties: {
                       ...f.properties,
                       claimed: isOwnedHex,
-                      ownedByOther: isOwnedByOther,
                       canMine: canMineNeighbor,
                     },
                   }
@@ -1751,6 +1840,64 @@ function App() {
     }
   }, [apiBase, authToken])
 
+  // Helper function to update veins layers with current owned hexes
+  const updateVeinsLayers = async () => {
+    const map = mapRef.current
+    if (!map) return
+
+    const source = map.getSource('owned-veins') as maplibregl.GeoJSONSource | undefined
+    const othersSource = map.getSource('others-veins') as maplibregl.GeoJSONSource | undefined
+
+    if (!source || !othersSource) return
+
+    const toPolygonFeatures = (hexes: string[]) => {
+      return hexes.map((idx) => {
+        const boundary = h3.cellToBoundary(idx, true)
+        const coords = boundary.map(([lng, lat]) => [lng, lat] as [number, number])
+        if (coords.length > 0) {
+          coords.push(coords[0])
+        }
+        return {
+          type: 'Feature' as const,
+          properties: { h3Index: idx },
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [coords],
+          },
+        }
+      })
+    }
+
+    try {
+      console.log('[VEINS-UPDATE] Updating veins with current owned hexes...')
+      const res = await authedFetch(`${apiBase}/api/owned-hexes/global`)
+      if (!res.ok) {
+        console.log('[VEINS-UPDATE] Failed to fetch owned hexes, status:', res.status)
+        return
+      }
+      const data: { mine?: string[]; others?: string[] } = await res.json().catch(() => ({}))
+
+      const mineHexes = Array.isArray(data.mine) ? data.mine : []
+      const othersHexes = Array.isArray(data.others) ? data.others : []
+
+      console.log('[VEINS-UPDATE] Updating:', mineHexes.length, 'mine,', othersHexes.length, 'others')
+
+      source.setData({
+        type: 'FeatureCollection' as const,
+        features: toPolygonFeatures(mineHexes),
+      })
+
+      othersSource.setData({
+        type: 'FeatureCollection' as const,
+        features: toPolygonFeatures(othersHexes),
+      })
+
+      console.log('[VEINS-UPDATE] ✓ Veins updated')
+    } catch (err) {
+      console.log('[VEINS-UPDATE] ✗ Error updating veins:', err)
+    }
+  }
+
   // Veins overlay: when toggled on, populate the dedicated MapLibre source
   // with all owned hexes as polygon features, and show the fill layer. When
   // toggled off, hide the layer. This is intentionally decoupled from the main
@@ -1769,16 +1916,18 @@ function App() {
 
     if (!source || !othersSource) return
 
-    if (!showVeins) {
-      // Hide the layer when the overlay is turned off.
-      if (map.getLayer(layerId)) {
-        map.setLayoutProperty(layerId, 'visibility', 'none')
-      }
-      if (map.getLayer(othersLayerId)) {
-        map.setLayoutProperty(othersLayerId, 'visibility', 'none')
-      }
+    // Veins layers are always visible now for permanent coloring
+    // showVeins toggle only affects main layer opacity for highlighting
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, 'visibility', 'visible')
+    }
+    if (map.getLayer(othersLayerId)) {
+      map.setLayoutProperty(othersLayerId, 'visibility', 'visible')
+    }
 
-      if (map.getLayer(mainLayerId)) {
+    // Update main layer opacity based on showVeins toggle
+    if (map.getLayer(mainLayerId)) {
+      if (!showVeins) {
         map.setPaintProperty(mainLayerId, 'fill-color', [
           'case',
           ['get', 'selected'],
@@ -1799,27 +1948,26 @@ function App() {
           0.15,
           0.2,
         ])
+      } else {
+        map.setPaintProperty(mainLayerId, 'fill-opacity', [
+          'case',
+          ['get', 'selected'],
+          0.6,
+          ['get', 'claimed'],
+          0,
+          ['get', 'canMine'],
+          0.08,
+          0.08,
+        ])
       }
-      return
     }
 
-    if (map.getLayer(mainLayerId)) {
-      map.setPaintProperty(mainLayerId, 'fill-opacity', [
-        'case',
-        ['get', 'selected'],
-        0.6,
-        ['get', 'claimed'],
-        0,
-        ['get', 'canMine'],
-        0.08,
-        0.08,
-      ])
-    }
-
+    // Always load veins data for permanent coloring, regardless of showVeins toggle
     const toPolygonFeatures = (hexes: string[]) => {
       return hexes.map((idx) => {
         const boundary = h3.cellToBoundary(idx, true)
-        const coords = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
+        // h3.cellToBoundary with true returns [lng, lat] already
+        const coords = boundary.map(([lng, lat]) => [lng, lat] as [number, number])
         if (coords.length > 0) {
           coords.push(coords[0])
         }
@@ -1836,14 +1984,18 @@ function App() {
 
     void (async () => {
       try {
+        console.log('[VEINS] Loading owned hexes for veins display...')
         const res = await authedFetch(`${apiBase}/api/owned-hexes/global`)
         if (!res.ok) {
+          console.log('[VEINS] Failed to fetch owned hexes, status:', res.status)
           return
         }
         const data: { mine?: string[]; others?: string[] } = await res.json().catch(() => ({}))
 
         const mineHexes = Array.isArray(data.mine) ? data.mine : []
         const othersHexes = Array.isArray(data.others) ? data.others : []
+
+        console.log('[VEINS] Loaded:', mineHexes.length, 'mine,', othersHexes.length, 'others')
 
         source.setData({
           type: 'FeatureCollection' as const,
@@ -1855,17 +2007,22 @@ function App() {
           features: toPolygonFeatures(othersHexes),
         })
 
-        if (map.getLayer(othersLayerId)) {
-          map.setLayoutProperty(othersLayerId, 'visibility', 'visible')
-        }
-        if (map.getLayer(layerId)) {
-          map.setLayoutProperty(layerId, 'visibility', 'visible')
-        }
-      } catch {
-        // ignore
+        console.log('[VEINS] ✓ Veins data updated on map')
+        // Layers are always visible now, no need to set visibility here
+      } catch (err) {
+        console.log('[VEINS] ✗ Error loading veins:', err)
       }
     })()
-  }, [showVeins, apiBase, authToken])
+  }, [apiBase, authToken])  // Remove showVeins dependency - always load veins for permanent coloring
+
+  // Update veins when showVeins changes (user clicks the button)
+  useEffect(() => {
+    if (showVeins) {
+      // When veins is toggled on, force update the veins layers
+      console.log('[VEINS-TOGGLE] Veins toggled ON, updating veins layers...')
+      updateVeinsLayers()
+    }
+  }, [showVeins])
 
   useEffect(() => {
     const loadMinedStats = async () => {
@@ -1890,7 +2047,26 @@ function App() {
       return
     }
 
+    // GPS verification - must be using GPS and in the correct hex
+    if (!usingMyLocationRef.current) {
+      setMineMessage('❌ GPS must be enabled to mine. Please enable GPS location.')
+      setMineMessageType('error')
+      return
+    }
+
+    if (!gpsSelectedHexRef.current) {
+      setMineMessage('❌ Waiting for GPS location. Please wait for GPS to acquire your position.')
+      setMineMessageType('error')
+      return
+    }
+
     const { h3Index } = selectedHex
+
+    if (h3Index !== gpsSelectedHexRef.current) {
+      setMineMessage('❌ GPS verification failed: You must be physically inside this hex to mine it. Your GPS shows you are in a different hex.')
+      setMineMessageType('error')
+      return
+    }
 
     const doMine = async () => {
       try {
@@ -1926,9 +2102,6 @@ function App() {
             } else {
               setMineMessage('Mining is forbidden in this zone.')
             }
-          } else if (data.reason === 'NOT_ADJACENT') {
-            setMineMessage('You can only mine hexes that touch an already mined hex.')
-            setCanSpawnHere(true)
           } else {
             setMineMessage('Mining was not accepted.')
           }
@@ -1965,6 +2138,9 @@ function App() {
         ownedHexesRef.current.add(h3Index)
         globalOwnedHexesRef.current.add(h3Index)
 
+        // Update veins layers to show the newly mined hex
+        await updateVeinsLayers()
+
         const currentFeatures = featuresRef.current
         if (!currentFeatures || currentFeatures.length === 0 || !mapRef.current) {
           setMineMessage(`Hex ${h3Index} mined, but map state could not be updated.`)
@@ -1973,20 +2149,17 @@ function App() {
         }
 
         const ownedSet = ownedHexesRef.current
-        const globalOwnedSet = globalOwnedHexesRef.current
         const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
           const idx = f.properties.h3Index
           const isOwned = ownedSet.has(idx)
-          const isOwnedByOther = !isOwned && globalOwnedSet.has(idx)
           const neighbors = h3.gridDisk(idx, 1)
-          const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
+          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
 
           return {
             ...f,
             properties: {
               ...f.properties,
               claimed: isOwned,
-              ownedByOther: isOwnedByOther,
               canMine,
             },
           }
@@ -2107,20 +2280,17 @@ function App() {
 
           const currentFeatures = featuresRef.current
           if (currentFeatures && currentFeatures.length > 0) {
-            const globalOwnedSet = globalOwnedHexesRef.current
             const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
               const idx = f.properties.h3Index
               const isOwned = ownedSet.has(idx)
-              const isOwnedByOther = !isOwned && globalOwnedSet.has(idx)
               const neighbors = h3.gridDisk(idx, 1)
-              const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
+              const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
 
               return {
                 ...f,
                 properties: {
                   ...f.properties,
                   claimed: isOwned,
-                  ownedByOther: isOwnedByOther,
                   canMine,
                 },
               }
@@ -2222,7 +2392,6 @@ function App() {
         setCanSpawnHere(false)
 
         ownedHexesRef.current.add(h3Index)
-        globalOwnedHexesRef.current.add(h3Index)
 
         const currentFeatures = featuresRef.current
         if (!currentFeatures || currentFeatures.length === 0 || !mapRef.current) {
@@ -2232,20 +2401,17 @@ function App() {
         }
 
         const ownedSet = ownedHexesRef.current
-        const globalOwnedSet = globalOwnedHexesRef.current
         const updatedFeatures: HexFeature[] = currentFeatures.map((f) => {
           const idx = f.properties.h3Index
           const isOwned = ownedSet.has(idx)
-          const isOwnedByOther = !isOwned && globalOwnedSet.has(idx)
           const neighbors = h3.gridDisk(idx, 1)
-          const canMine = !isOwned && !isOwnedByOther && neighbors.some((n) => globalOwnedSet.has(n))
+          const canMine = !isOwned && neighbors.some((n) => ownedSet.has(n))
 
           return {
             ...f,
             properties: {
               ...f.properties,
               claimed: isOwned,
-              ownedByOther: isOwnedByOther,
               canMine,
             },
           }
@@ -2316,71 +2482,97 @@ function App() {
       return
     }
 
-    setUsingMyLocation(true)
-    setFollowMyLocation(true)
-    usingMyLocationRef.current = true
-    followMyLocationRef.current = true
-    lastFollowAtRef.current = 0
+    // If GPS is not active, activate it and move to current location
+    if (!usingMyLocationRef.current) {
+      setUsingMyLocation(true)
+      setFollowMyLocation(true)
+      usingMyLocationRef.current = true
+      followMyLocationRef.current = true
+      lastFollowAtRef.current = 0
 
-    if (geoWatchIdRef.current === null) {
-      geoWatchIdRef.current = navigator.geolocation.watchPosition(
-        (pos) => {
-          const heading =
-            typeof pos.coords.heading === 'number' && Number.isFinite(pos.coords.heading)
-              ? pos.coords.heading
-              : null
-          setMapUserLocation({
-            lon: pos.coords.longitude,
-            lat: pos.coords.latitude,
-            accuracyM: typeof pos.coords.accuracy === 'number' ? pos.coords.accuracy : 30,
-            headingDeg: heading,
-          })
-        },
-        (error) => {
-          setToastMessage(error.message || 'Failed to get current location.')
-          setToastType('error')
-        },
-        { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
-      )
-    }
-
-    const doInitialFix = (options: PositionOptions) => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          const map = mapRef.current
-          if (!map) return
-
-          const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
-          map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
-
-          setToastMessage(
-            `Moved to location: lat ${latitude.toFixed(5)}, lon ${longitude.toFixed(5)}`,
-          )
-          setToastType('success')
-        },
-        (error) => {
-          const map = mapRef.current
-          // If permission denied or other error, we surface a simple toast message.
-          if (error.code === 3) {
-            setToastMessage('Timed out while getting location. Retrying…')
-            setToastType('error')
-            window.setTimeout(() => {
-              doInitialFix({ enableHighAccuracy: false, maximumAge: 60_000, timeout: 20_000 })
-            }, 350)
-          } else {
+      if (geoWatchIdRef.current === null) {
+        geoWatchIdRef.current = navigator.geolocation.watchPosition(
+          (pos) => {
+            const heading =
+              typeof pos.coords.heading === 'number' && Number.isFinite(pos.coords.heading)
+                ? pos.coords.heading
+                : null
+            setMapUserLocation({
+              lon: pos.coords.longitude,
+              lat: pos.coords.latitude,
+              accuracyM: typeof pos.coords.accuracy === 'number' ? pos.coords.accuracy : 30,
+              headingDeg: heading,
+            })
+          },
+          (error) => {
             setToastMessage(error.message || 'Failed to get current location.')
             setToastType('error')
+          },
+          { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
+        )
+      }
+
+      // Move to current location immediately
+      const doInitialFix = (options: PositionOptions) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords
+            const map = mapRef.current
+            if (!map) return
+
+            const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
+            map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
+
+            setToastMessage('GPS activated - following your location')
+            setToastType('success')
+          },
+          (error) => {
+            const map = mapRef.current
+            // If permission denied or other error, we surface a simple toast message.
+            if (error.code === 3) {
+              setToastMessage('Timed out while getting location. Retrying…')
+              setToastType('error')
+              window.setTimeout(() => {
+                doInitialFix({ enableHighAccuracy: false, maximumAge: 60_000, timeout: 20_000 })
+              }, 350)
+            } else {
+              setToastMessage(error.message || 'Failed to get current location.')
+              setToastType('error')
+            }
+
+            // Optionally we could fall back to keeping the current view; do nothing.
+            if (!map) return
+          },
+          options,
+        )
+      }
+
+      doInitialFix({ enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 })
+    } else {
+      // GPS is already active - toggle follow mode
+      const newFollowState = !followMyLocationRef.current
+      setFollowMyLocation(newFollowState)
+      followMyLocationRef.current = newFollowState
+      
+      if (newFollowState) {
+        // If turning on follow mode, move to current GPS location
+        if (lastGeoCoordsRef.current) {
+          const map = mapRef.current
+          if (map) {
+            const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
+            map.flyTo({ 
+              center: [lastGeoCoordsRef.current.lon, lastGeoCoordsRef.current.lat], 
+              zoom: desiredZoom 
+            })
+            setToastMessage('GPS follow mode ON - following your location')
+            setToastType('success')
           }
-
-          // Optionally we could fall back to keeping the current view; do nothing.
-          if (!map) return
-        },
-        options,
-      )
+        }
+      } else {
+        setToastMessage('GPS follow mode OFF - free navigation mode')
+        setToastType('success')
+      }
     }
-
-    doInitialFix({ enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 })
   }
 
   useEffect(() => {
@@ -2692,15 +2884,6 @@ function App() {
           </button>
           <button
             type="button"
-            className={autoMineEnabled ? 'mobile-fab mobile-fab-auto-mine mobile-fab-auto-mine-active' : 'mobile-fab mobile-fab-auto-mine'}
-            onClick={() => setAutoMineEnabled((prev) => !prev)}
-            disabled={!usingMyLocation}
-            aria-label="Toggle auto mine"
-          >
-            ⛏️
-          </button>
-          <button
-            type="button"
             className={
               driveModeActive
                 ? 'mobile-fab mobile-fab-drive mobile-fab-drive-active'
@@ -2713,8 +2896,119 @@ function App() {
           </button>
           <button
             type="button"
+            className={autoMineEnabled ? 'mobile-fab mobile-fab-auto-mine mobile-fab-auto-mine-active' : 'mobile-fab mobile-fab-auto-mine'}
+            onClick={async () => {
+              const wasEnabled = autoMineEnabled
+              const willBeEnabled = !wasEnabled
+              
+              if (willBeEnabled) {
+                // Enabling auto-mine - charge 5 GHX upfront
+                try {
+                  console.log('[AUTO-MINE] Charging 5 GHX upfront fee for enabling auto-mine')
+                  console.log('[AUTO-MINE] API Base:', apiBase)
+                  console.log('[AUTO-MINE] Auth token:', authTokenRef.current ? 'present' : 'missing')
+                  
+                  const res = await authedFetch(`${apiBase}/api/auto-mine-fee`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fee: 5, hexCount: 0, isUpfront: true }),
+                  })
+                  
+                  console.log('[AUTO-MINE] Response status:', res.status, res.statusText)
+                  
+                  // Read response once
+                  const data: { ok?: boolean; newBalance?: number; reason?: string; error?: string } = await res.json().catch((err) => {
+                    console.log('[AUTO-MINE] JSON parse error:', err)
+                    return { ok: false, error: 'NETWORK_ERROR' }
+                  })
+                  
+                  console.log('[AUTO-MINE] Response data:', data)
+                  
+                  if (!res.ok || !data.ok) {
+                    // Error response
+                    const errorReason = data.reason || data.error || 'UNKNOWN_ERROR'
+                    console.log('[AUTO-MINE] Fee failed:', errorReason, 'Balance:', data.newBalance, 'Status:', res.status)
+                    setToastMessage(errorReason === 'INSUFFICIENT_GHX' ? 'Insufficient GHX (need 5 GHX)' : `Failed to enable auto-mining: ${errorReason}`)
+                    setToastType('error')
+                    if (typeof data.newBalance === 'number') {
+                      setUserBalance(data.newBalance)
+                    }
+                    return // Don't enable if fee failed
+                  }
+                  
+                  // Success
+                  if (typeof data.newBalance === 'number') {
+                    setUserBalance(data.newBalance)
+                    setAutoMineEnabled(true)
+                    setToastMessage(`⛏️ Auto-mining enabled (5 GHX fee)`)
+                    setToastType('success')
+                    // Reset auto-mined hexes list for new session
+                    autoMinedHexesRef.current = []
+                  } else {
+                    setToastMessage('Failed to enable auto-mining (invalid response)')
+                    setToastType('error')
+                    return
+                  }
+                } catch (err) {
+                  console.log('[AUTO-MINE] Error charging upfront fee:', err)
+                  setToastMessage('Failed to enable auto-mining (network error)')
+                  setToastType('error')
+                  return
+                }
+              } else {
+                // Disabling auto-mine - charge 1 GHX per 10 hexes mined
+                setAutoMineEnabled(false)
+                
+                if (autoMinedHexesRef.current.length > 0) {
+                  const autoMinedCount = autoMinedHexesRef.current.length
+                  // 1 GHX per 10 hexes (rounded down)
+                  const fee = Math.floor(autoMinedCount / 10)
+                  
+                  if (fee > 0) {
+                    try {
+                      console.log(`[AUTO-MINE-FEE] Charging ${fee} GHX fee for ${autoMinedCount} auto-mined hexes (1 GHX per 10 hexes)`)
+                      const res = await authedFetch(`${apiBase}/api/auto-mine-fee`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fee, hexCount: autoMinedCount }),
+                      })
+                      
+                      const data: { ok?: boolean; newBalance?: number } = await res.json().catch(() => ({}))
+                      if (data.ok && typeof data.newBalance === 'number') {
+                        setUserBalance(data.newBalance)
+                        setToastMessage(`⛏️ Auto-mining fee: ${fee} GHX (1 GHX per 10 hexes, ${autoMinedCount} total)`)
+                        setToastType('success')
+                      }
+                    } catch (err) {
+                      console.log('[AUTO-MINE-FEE] Error charging fee:', err)
+                    }
+                  }
+                  
+                  // Reset auto-mined hexes list
+                  autoMinedHexesRef.current = []
+                }
+              }
+            }}
+            disabled={!usingMyLocation}
+            aria-label="Toggle auto mine"
+          >
+            ⛏️
+          </button>
+          <button
+            type="button"
             className={showVeins ? 'mobile-fab mobile-fab-veins mobile-fab-veins-active' : 'mobile-fab mobile-fab-veins'}
-            onClick={() => setShowVeins((prev) => !prev)}
+            onClick={() => {
+              setShowVeins((prev) => {
+                const newValue = !prev
+                // Force update veins when toggling on
+                if (newValue) {
+                  setTimeout(() => {
+                    updateVeinsLayers()
+                  }, 100)
+                }
+                return newValue
+              })
+            }}
             aria-label="Toggle mined veins overlay"
           >
             Veins
@@ -2775,25 +3069,6 @@ function App() {
               onClick={() => setShowVeins((prev) => !prev)}
             >
               {showVeins ? 'Hide mined veins overlay' : 'Show mined veins overlay'}
-            </button>
-          </div>
-          <div className="hud-line">
-            <button
-              type="button"
-              className={usingMyLocation ? 'gps-toggle gps-toggle-active' : 'gps-toggle'}
-              onClick={handleUseMyLocationClick}
-            >
-              {usingMyLocation ? '📍 GPS ON - Tracking Location' : '📍 Enable GPS Location'}
-            </button>
-          </div>
-          <div className="hud-line">
-            <button
-              type="button"
-              className={autoMineEnabled ? 'auto-mine-toggle auto-mine-toggle-active' : 'auto-mine-toggle'}
-              onClick={() => setAutoMineEnabled((prev) => !prev)}
-              disabled={!usingMyLocation}
-            >
-              {autoMineEnabled ? '⛏️ Auto-Mine ON' : '⛏️ Auto-Mine OFF'}
             </button>
           </div>
         </div>
@@ -3413,20 +3688,20 @@ function App() {
               onClick={handleMineClick}
               disabled={
                 !usingMyLocation || 
-                !gpsSelectedHexRef.current || 
-                selectedHex.h3Index !== gpsSelectedHexRef.current
+                !currentGpsHex || 
+                selectedHex.h3Index !== currentGpsHex
               }
               title={
                 !usingMyLocation 
                   ? "Enable GPS to mine" 
-                  : !gpsSelectedHexRef.current 
+                  : !currentGpsHex 
                     ? "Waiting for GPS location..." 
-                    : selectedHex.h3Index !== gpsSelectedHexRef.current
+                    : selectedHex.h3Index !== currentGpsHex
                       ? "You must be in this hex to mine it (GPS verification required)"
                       : "Mine this hex"
               }
             >
-              Mine this hex {(!usingMyLocation || selectedHex.h3Index !== gpsSelectedHexRef.current) && "🔒"}
+              Mine this hex {(!usingMyLocation || selectedHex.h3Index !== currentGpsHex) && "🔒"}
             </button>
           )}
           {selectedHex && canSpawnHere && (

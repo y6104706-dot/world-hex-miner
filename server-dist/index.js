@@ -142,7 +142,7 @@ function createUser(emailRaw, passwordRaw) {
         id,
         email,
         passwordHash,
-        balance: 10,
+        balance: 100, // Fixed: should be 100, not 10
         usdtBalance: 1_000,
         ownedHexes: new Set([DEFAULT_START_HEX]),
     };
@@ -168,16 +168,23 @@ function requireAuth(req, res, next) {
             res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
             return;
         }
-        const user = usersById.get(userId);
+        // Reload users from disk to ensure we have the latest data
+        // This prevents issues where users might be sharing the same user object
+        const currentUsers = loadUsers();
+        const user = currentUsers.get(userId);
         if (!user) {
+            console.log('[AUTH] User not found:', userId);
             res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
             return;
         }
-        ;
+        // Update the in-memory map to keep it in sync
+        usersById.set(userId, user);
+        console.log('[AUTH] Authenticated user:', user.id, user.email, 'ownedHexes:', user.ownedHexes.size);
         req.user = user;
         next();
     }
-    catch {
+    catch (err) {
+        console.log('[AUTH] Token verification failed:', err);
         res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
     }
 }
@@ -746,8 +753,8 @@ export async function inferZoneTypeAtCentroid(h3Index) {
         debug.push('Centroid: park / forest / wood detected');
         return { zoneType: 'NATURE_RESERVE', debug, hasRoad, roadClass };
     }
-    debug.push('Centroid: no matching tags found, defaulting to INTERURBAN (global fallback)');
-    return { zoneType: 'INTERURBAN', debug, hasRoad, roadClass };
+    debug.push('Centroid: no matching tags found, defaulting to SEA (global fallback)');
+    return { zoneType: 'SEA', debug, hasRoad, roadClass };
 }
 // Endpoint used for initial map rendering – first tries cached OSM/Overpass-based
 // classification, then falls back to a deterministic hash-based type on error.
@@ -1043,20 +1050,25 @@ app.post('/api/auth/login', (req, res) => {
     const body = req.body;
     const email = body.email;
     const password = body.password;
+    console.log('[LOGIN] Attempt:', { email, hasPassword: !!password, passwordLength: password?.length });
     if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
+        console.log('[LOGIN] ✗ Invalid input format');
         res.status(400).json({ ok: false, error: 'INVALID_CREDENTIALS' });
         return;
     }
     const user = findUserByEmail(email);
     if (!user) {
+        console.log('[LOGIN] ✗ User not found:', email);
         res.status(401).json({ ok: false, error: 'INVALID_CREDENTIALS' });
         return;
     }
     const ok = bcrypt.compareSync(password, user.passwordHash);
     if (!ok) {
+        console.log('[LOGIN] ✗ Password mismatch for:', email);
         res.status(401).json({ ok: false, error: 'INVALID_CREDENTIALS' });
         return;
     }
+    console.log('[LOGIN] ✓ Success for:', email);
     const token = signAuthToken(user);
     res.json({
         ok: true,
@@ -1456,20 +1468,36 @@ app.post('/api/mine', requireAuth, (req, res) => {
         res.json({ ok: false, reason: 'GPS_MISMATCH', balance: user.balance, owned: false });
         return;
     }
-    // Check if this hex is already owned by ANY user (global check)
-    const globalOwned = buildGlobalOwnedHexesSet();
-    if (globalOwned.has(h3Index)) {
-        const alreadyOwnedByMe = user.ownedHexes.has(h3Index);
-        console.log(`[MINE] ALREADY_MINED: hex ${h3Index} already owned. By me: ${alreadyOwnedByMe}, global owned: ${globalOwned.size}`);
+    const alreadyOwned = user.ownedHexes.has(h3Index);
+    if (alreadyOwned) {
         res.json({
             ok: false,
             reason: 'ALREADY_MINED',
             balance: user.balance,
-            owned: alreadyOwnedByMe,
+            owned: true,
         });
         return;
     }
-    console.log(`[MINE] Attempting to mine hex ${h3Index} for user ${user.id}. Global owned: ${globalOwned.size}, user owned: ${user.ownedHexes.size}`);
+    // Check if hex is already owned by ANY other user (global ownership check)
+    // Build set excluding current user to check if another user owns this hex
+    const otherUsersOwned = new Set();
+    for (const otherUser of usersById.values()) {
+        if (otherUser.id !== user.id) {
+            for (const idx of otherUser.ownedHexes) {
+                otherUsersOwned.add(idx);
+            }
+        }
+    }
+    if (otherUsersOwned.has(h3Index)) {
+        // Hex is already owned by another user - cannot mine it
+        res.json({
+            ok: false,
+            reason: 'ALREADY_OWNED_BY_OTHER',
+            balance: user.balance,
+            owned: false,
+        });
+        return;
+    }
     // Safety rule: forbid mining on COAST and in a persisted buffer around
     // detected coastlines (legal/safety protection).
     if (coastBufferHexes.has(h3Index)) {
@@ -1482,12 +1510,13 @@ app.post('/api/mine', requireAuth, (req, res) => {
         });
         return;
     }
-    // Frontier rule removed: Allow mining any hex that hasn't been mined yet.
-    // The global ownership check above already prevents mining hexes that were mined by anyone.
-    // This allows users to explore and mine hexes anywhere, not just adjacent to existing mines.
+    // Removed NOT_ADJACENT rule - users can now mine any hex that is not already owned
+    console.log('[MINE] Mining hex:', h3Index, 'for user:', user.id, user.email);
+    console.log('[MINE] User balance before:', user.balance, 'ownedHexes count:', user.ownedHexes.size);
     user.ownedHexes.add(h3Index);
     user.balance += 1;
-    console.log(`[MINE] ✓ SUCCESS: mined hex ${h3Index} for user ${user.id}. New balance: ${user.balance}, total owned: ${user.ownedHexes.size}`);
+    console.log('[MINE] User balance after:', user.balance, 'ownedHexes count:', user.ownedHexes.size);
+    console.log('[MINE] User ownedHexes:', Array.from(user.ownedHexes).slice(0, 5), '...');
     miningEvents.push({
         timestamp: Date.now(),
         userId: user.id,
@@ -1495,10 +1524,50 @@ app.post('/api/mine', requireAuth, (req, res) => {
     });
     saveMiningEvents(miningEvents);
     saveUsers(usersById);
+    // Verify the save worked
+    const savedUsers = loadUsers();
+    const savedUser = savedUsers.get(user.id);
+    console.log('[MINE] After save - user ownedHexes count:', savedUser?.ownedHexes.size, 'balance:', savedUser?.balance);
     res.json({
         ok: true,
         balance: user.balance,
         owned: true,
+    });
+});
+// Auto-mine fee endpoint: charge 10% fee on all auto-mined hexes
+app.post('/api/auto-mine-fee', requireAuth, (req, res) => {
+    const user = req.user;
+    if (!user) {
+        res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
+        return;
+    }
+    const { fee, hexCount, isUpfront } = req.body;
+    if (typeof fee !== 'number' || !Number.isFinite(fee) || fee < 0) {
+        res.status(400).json({ ok: false, error: 'INVALID_FEE' });
+        return;
+    }
+    if (typeof hexCount !== 'number' || !Number.isFinite(hexCount) || hexCount < 0) {
+        res.status(400).json({ ok: false, error: 'INVALID_HEX_COUNT' });
+        return;
+    }
+    if (user.balance < fee) {
+        res.json({
+            ok: false,
+            reason: 'INSUFFICIENT_GHX',
+            balance: user.balance,
+            requiredFee: fee,
+        });
+        return;
+    }
+    user.balance -= fee;
+    collectTreasuryFee(fee);
+    saveUsers(usersById);
+    res.json({
+        ok: true,
+        newBalance: user.balance,
+        fee,
+        hexCount,
+        isUpfront: !!isUpfront,
     });
 });
 // Heavier endpoint used only on explicit user interaction (click on a hex).
