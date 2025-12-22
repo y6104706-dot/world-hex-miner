@@ -18,9 +18,19 @@ dist-ssr
 .idea
 .DS_Store
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+
+# Data files (should not be in git)
+data/
+server-dist/
+
+# Backup files
+*.backup
+*.old
+*.old-backup
+
+# Environment files
+.env
+.env.local
+.env.production
 
 .vercel
