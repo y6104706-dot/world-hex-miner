@@ -554,10 +554,13 @@ function App() {
               if (now - lastAutoMineAt >= minIntervalMs) {
                 lastAutoMineAtRef.current = now
 
+                console.log('[Auto-Mine] Attempting to mine hex:', currentHex)
+
                 void (async () => {
                   try {
                     const gpsCoords = lastGeoCoordsRef.current
                     if (!gpsCoords) {
+                      console.log('[Auto-Mine] No GPS coordinates')
                       return
                     }
 
@@ -576,12 +579,14 @@ function App() {
                     })
 
                     if (!res.ok) {
+                      console.log('[Auto-Mine] Request failed:', res.status, res.statusText)
                       return
                     }
 
                     const data: { ok?: boolean; balance?: number; reason?: string } = await res.json()
 
                     if (data.ok) {
+                      console.log('[Auto-Mine] ✓ Successfully mined hex:', currentHex)
                       if (typeof data.balance === 'number') {
                         setUserBalance(data.balance)
                       }
@@ -623,12 +628,15 @@ function App() {
                     } else if (data.reason) {
                       // Show error message for failed mining attempts
                       console.log('[Auto-Mine] Mining failed:', data.reason)
+                      setToastMessage(`Mining failed: ${data.reason}`)
+                      setToastType('error')
                     }
 
                     lastAutoMinedHexRef.current = currentHex
                   } catch (err) {
                     console.error('[Auto-Mine] Error:', err)
-                    // ignore
+                    setToastMessage(`Mining error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+                    setToastType('error')
                   }
                 })()
               }
