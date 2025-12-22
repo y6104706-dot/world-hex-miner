@@ -2505,6 +2505,14 @@ function App() {
           <div className="top-bar-tabs">
             <button
               type="button"
+              className={usingMyLocation ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={handleUseMyLocationClick}
+              style={{ marginRight: '10px' }}
+            >
+              📍 GPS
+            </button>
+            <button
+              type="button"
               className={viewMode === 'MAP' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
               onClick={() => setViewMode('MAP')}
             >
