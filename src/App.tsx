@@ -3,12 +3,13 @@ import maplibregl from 'maplibre-gl'
 import * as h3 from 'h3-js'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './App.css'
+import { CanvasHexLayer } from './components/CanvasHexLayer'
+import type { HexFeature } from './types/hex'
+import type { ZoneType } from './utils/hexUtils'
 
 function App() {
-  // Use relative path for API calls - Vite proxy handles forwarding to backend
-  // If VITE_API_BASE_URL is set to a full URL (like ngrok), ignore it and use relative paths
-  const envApiBase = import.meta.env.VITE_API_BASE_URL ?? ''
-  const apiBase = envApiBase && (envApiBase.startsWith('http://') || envApiBase.startsWith('https://')) ? '' : envApiBase
+  const apiBase =
+    import.meta.env.VITE_API_BASE_URL ?? `${window.location.protocol}//${window.location.hostname}:4000`
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
@@ -35,11 +36,6 @@ function App() {
   const manualSelectedHexRef = useRef<string | null>(null)
   const globalOwnedHexesRef = useRef<Set<string>>(new Set())
   const autoStartedLocationRef = useRef(false)
-  const autoMineEnabledRef = useRef(false)
-  const lastAutoMineGpsHexRef = useRef<string | null>(null)
-  const autoMinedHexesRef = useRef<string[]>([]) // Track hexes mined in auto mode
-
-  const [autoMineEnabled, setAutoMineEnabled] = useState(false)
 
   const [authToken, setAuthToken] = useState<string | null>(() => {
     try {
@@ -70,37 +66,9 @@ function App() {
     return fetch(input, { ...init, headers })
   }
 
-  type ZoneType =
-    | 'SEA'
-    | 'MAIN_ROAD'
-    | 'URBAN'
-    | 'INTERURBAN'
-    | 'MILITARY'
-    | 'HOSPITAL'
-    | 'CLIFF'
-    | 'COAST'
-    | 'NATURE_RESERVE'
-    | 'RIVER'
-
   type MiningRule = {
     minSpeedKmh: number | null
     description: string
-  }
-
-  type HexFeature = {
-    type: 'Feature'
-    properties: {
-      h3Index: string
-      zoneType: ZoneType
-      claimed: boolean
-      selected: boolean
-      canMine: boolean
-      debugInfo: string[]
-    }
-    geometry: {
-      type: 'Polygon'
-      coordinates: number[][][]
-    }
   }
 
   const applyHexSelection = (map: maplibregl.Map, h3Index: string, zoneType: ZoneType) => {
@@ -165,25 +133,13 @@ function App() {
       setAuthSubmitting(true)
       setAuthError(null)
       try {
-        // Force relative path to use Vite proxy, even if apiBase is set
-        const url = apiBase && !apiBase.startsWith('/') ? `${apiBase}/api/auth/login` : '/api/auth/login'
-        console.log('[LOGIN] Attempting login:', { url, email: authEmail, hasPassword: !!authPassword, apiBase })
-        
-        const res = await fetch(url, {
+        const res = await fetch(`${apiBase}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: authEmail, password: authPassword }),
         })
 
-        console.log('[LOGIN] Response status:', res.status, res.statusText)
-        
-        const data: { ok?: boolean; token?: string; error?: string } = await res.json().catch((err) => {
-          console.log('[LOGIN] JSON parse error:', err)
-          return {}
-        })
-        
-        console.log('[LOGIN] Response data:', { ok: data.ok, hasToken: !!data.token, error: data.error })
-        
+        const data: { ok?: boolean; token?: string; error?: string } = await res.json().catch(() => ({}))
         if (!res.ok || !data.ok || !data.token) {
           setAuthError(data.error ?? 'Login failed.')
           return
@@ -194,8 +150,7 @@ function App() {
         setToastType('success')
         setAuthPassword('')
         setViewMode('MAP')
-      } catch (err) {
-        console.log('[LOGIN] Network error:', err)
+      } catch {
         setAuthError('Network error during login.')
       } finally {
         setAuthSubmitting(false)
@@ -253,10 +208,6 @@ function App() {
       minSpeedKmh: null,
       description: 'Nature reserve / forest / large green area.',
     },
-    RIVER: {
-      minSpeedKmh: null,
-      description: 'River / stream / canal.',
-    },
     MILITARY: {
       minSpeedKmh: null,
       description: 'Military or similarly sensitive zone.',
@@ -269,9 +220,9 @@ function App() {
       minSpeedKmh: null,
       description: 'Cliff / steep or dangerous terrain.',
     },
-    COAST: {
+    PRISON: {
       minSpeedKmh: null,
-      description: 'Coastline / beach edge.',
+      description: 'Prison or detention facility.',
     },
   }
 
@@ -296,10 +247,6 @@ function App() {
   useEffect(() => {
     usingMyLocationRef.current = usingMyLocation
   }, [usingMyLocation])
-
-  useEffect(() => {
-    autoMineEnabledRef.current = autoMineEnabled
-  }, [autoMineEnabled])
 
   useEffect(() => {
     followMyLocationRef.current = followMyLocation
@@ -466,22 +413,6 @@ function App() {
         }
       }
 
-      // Rotate map based on heading when GPS is active and following location
-      if (usingMyLocationRef.current && followMyLocationRef.current && typeof coords.headingDeg === 'number' && Number.isFinite(coords.headingDeg)) {
-        // Convert heading from degrees (0-360, where 0 is north) to bearing (-180 to 180, where 0 is north)
-        // MapLibre uses bearing where 0 is north, positive is clockwise
-        const bearing = -coords.headingDeg // Negative because MapLibre bearing is opposite to GPS heading
-        const currentBearing = map.getBearing()
-        
-        // Only update if bearing changed significantly (more than 2 degrees) to avoid jitter
-        if (Math.abs(currentBearing - bearing) > 2) {
-          map.easeTo({
-            bearing: bearing,
-            duration: 500, // Smooth rotation
-          })
-        }
-      }
-
       if (shouldUpdateLayers) {
         lastLocationLayerUpdateAtRef.current = now
       }
@@ -501,14 +432,6 @@ function App() {
           if (now - lastGpsHexRefreshAtRef.current > minRefreshMs || currentHex !== lastGpsReloadHexRef.current) {
             lastGpsHexRefreshAtRef.current = now
             lastGpsReloadHexRef.current = currentHex
-            loadHexesForCurrentViewRef.current?.()
-          }
-        } else {
-          // Even if hex didn't change, reload hexes around GPS periodically to keep them visible
-          // This ensures the gray/transparent hexes around GPS stay loaded
-          const minRefreshMs = 5000 // Refresh every 5 seconds to keep hexes visible
-          if (now - lastGpsHexRefreshAtRef.current > minRefreshMs) {
-            lastGpsHexRefreshAtRef.current = now
             loadHexesForCurrentViewRef.current?.()
           }
         }
@@ -614,115 +537,6 @@ function App() {
               }
             }
           }
-        }
-
-        // AUTO-MINE: If enabled, automatically mine the GPS hex
-        // Check this outside of hexChanged so it works even if user stays in same hex
-        console.log('[AUTO-MINE-CHECK]', {
-          enabled: autoMineEnabledRef.current,
-          hasAuth: !!authTokenRef.current,
-          currentHex,
-          lastMined: lastAutoMineGpsHexRef.current,
-          isOwned: currentHex ? ownedHexesRef.current.has(currentHex) : false,
-          willMine: autoMineEnabledRef.current &&
-            authTokenRef.current &&
-            currentHex &&
-            currentHex !== lastAutoMineGpsHexRef.current &&
-            !ownedHexesRef.current.has(currentHex)
-        })
-        if (
-          autoMineEnabledRef.current &&
-          authTokenRef.current &&
-          currentHex &&
-          currentHex !== lastAutoMineGpsHexRef.current &&
-          !ownedHexesRef.current.has(currentHex)
-        ) {
-          lastAutoMineGpsHexRef.current = currentHex
-          console.log('[AUTO-MINE] Attempting to mine hex:', currentHex)
-
-          void (async () => {
-            try {
-              const gpsCoords = lastGeoCoordsRef.current
-              if (!gpsCoords || typeof gpsCoords.lat !== 'number' || typeof gpsCoords.lon !== 'number') {
-                console.log('[AUTO-MINE] ✗ No GPS coordinates available')
-                return
-              }
-              
-              console.log('[AUTO-MINE] GPS coords:', gpsCoords.lat, gpsCoords.lon, 'accuracy:', gpsCoords.accuracyM)
-              
-              const res = await authedFetch(`${apiBase}/api/mine`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  h3Index: currentHex,
-                  lat: gpsCoords.lat,
-                  lon: gpsCoords.lon,
-                  accuracyM: gpsCoords.accuracyM || 10,
-                  gpsAt: Date.now(),
-                }),
-              })
-              
-              console.log('[AUTO-MINE] Response status:', res.status)
-
-              const data: { ok?: boolean; newBalance?: number; error?: string; reason?: string } =
-                await res.json().catch(() => ({}))
-
-              if (data.ok) {
-                console.log('[AUTO-MINE] ✓ Success! Mined:', currentHex)
-                setToastMessage(`⛏️ Auto-mined hex!`)
-                setToastType('success')
-
-                // Track auto-mined hex
-                autoMinedHexesRef.current.push(currentHex)
-
-                // Update owned hexes
-                ownedHexesRef.current.add(currentHex)
-                globalOwnedHexesRef.current.add(currentHex)
-
-                if (typeof data.newBalance === 'number') {
-                  setUserBalance(data.newBalance)
-                }
-                setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
-
-                // Update features to show as owned
-                const currentFeaturesNow = featuresRef.current
-                if (currentFeaturesNow) {
-                  const globalOwnedSetNow = globalOwnedHexesRef.current
-                  const updatedNow: HexFeature[] = currentFeaturesNow.map((f) => {
-                    const idx = f.properties.h3Index
-                    const isOwnedHex = ownedHexesRef.current.has(idx)
-                    const neighbors = h3.gridDisk(idx, 1)
-                    const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSetNow.has(n))
-
-                    return {
-                      ...f,
-                      properties: {
-                        ...f.properties,
-                        claimed: isOwnedHex,
-                        canMine: canMineNeighbor,
-                        selected: f.properties.h3Index === currentHex,
-                      },
-                    }
-                  })
-                  featuresRef.current = updatedNow
-                  const srcNow = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-                  if (srcNow) {
-                    srcNow.setData({ type: 'FeatureCollection' as const, features: updatedNow })
-                  }
-                }
-
-                // Update veins layers to show the newly mined hex
-                await updateVeinsLayers()
-              } else if (data.reason === 'ALREADY_OWNED_BY_OTHER') {
-                // Hex already owned by another user - skip it
-                console.log('[AUTO-MINE] ✗ Hex already owned by another user:', currentHex)
-              } else {
-                console.log('[AUTO-MINE] ✗ Failed:', data.error || data.reason)
-              }
-            } catch (err) {
-              console.log('[AUTO-MINE] ✗ Error:', err)
-            }
-          })()
         }
       }
 
@@ -920,12 +734,7 @@ function App() {
   useEffect(() => {
     if (!mapContainerRef.current) return
 
-    // Center on Tel Aviv, Israel
-    // MapLibre expects [longitude, latitude] format
-    // Tel Aviv coordinates: longitude=34.7818°E, latitude=32.0853°N
-    // IMPORTANT: Format is [lon, lat] NOT [lat, lon]!
-    // If map goes to Cyprus/sea on refresh, coordinates might be reversed
-    const centerLonLat: [number, number] = [34.7818, 32.0853] // [lon, lat] = [34.78°E, 32.08°N]
+    const centerLonLat: [number, number] = [34.7818, 32.0853]
     const h3Resolution = 11
 
     const mapStyleUrl =
@@ -1003,6 +812,11 @@ function App() {
         data: { type: 'FeatureCollection' as const, features: [] as any[] },
       })
 
+      map.addSource('hex-center-dots', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection' as const, features: [] as any[] },
+      })
+
       map.addLayer({
         id: 'user-accuracy-fill',
         type: 'fill',
@@ -1053,6 +867,36 @@ function App() {
           'circle-radius': 6,
           'circle-color': '#3b82f6',
           'circle-opacity': 0.95,
+        },
+      })
+
+      map.addLayer({
+        id: 'hex-center-dots-mined',
+        type: 'circle',
+        source: 'hex-center-dots',
+        filter: ['==', ['get', 'isMine'], true],
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#00FF00',
+          'circle-opacity': 0.9,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#00AA00',
+          'circle-stroke-opacity': 1,
+        },
+      })
+
+      map.addLayer({
+        id: 'hex-center-dots-gps',
+        type: 'circle',
+        source: 'hex-center-dots',
+        filter: ['==', ['get', 'isGpsLocation'], true],
+        paint: {
+          'circle-radius': 10,
+          'circle-color': '#FFD700',
+          'circle-opacity': 0.95,
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#FFA500',
+          'circle-stroke-opacity': 1,
         },
       })
 
@@ -1164,53 +1008,35 @@ function App() {
         // so that claimed state is correct after reload or viewport changes.
         await loadOwnedHexes()
 
+        // Roughly ~150m radius in degrees (depends on latitude, but good
+        // enough for our purposes). This keeps the number of hexes per load
+        // relatively small.
+        const deltaLat = 0.0015
+        const deltaLng = 0.0015
+
+        const south = centerLat - deltaLat
+        const north = centerLat + deltaLat
+        const west = centerLng - deltaLng
+        const east = centerLng + deltaLng
+
+        // h3-js expects coordinates in [lat, lng] order. Build a small
+        // rectangle polygon centred on the current map center.
+        const polygon: number[][][] = [[
+          [south, west],
+          [south, east],
+          [north, east],
+          [north, west],
+          [south, west],
+        ]]
+
+        const hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
+
         const gpsHex =
           usingMyLocationRef.current && Date.now() >= manualSelectUntilRef.current
             ? gpsSelectedHexRef.current
             : null
-
-        let hexIndexes: string[] = []
-
-        // If GPS is active AND follow mode is on, load hexes around GPS location
-        // Otherwise, load hexes around map center (virtual position)
-        if (gpsHex && lastGeoCoordsRef.current && followMyLocationRef.current) {
-          // Load hexes around GPS location: the GPS hex + all its neighbors (4 rings for more coverage)
-          const gpsNeighbors = h3.gridDisk(gpsHex, 4) // 4 rings = GPS hex + 4 rings of neighbors (~37 hexes)
-          hexIndexes = [...new Set(gpsNeighbors)] // Remove duplicates
-          
-          // Also include hexes from map center viewport if they're not already included
-          const deltaLat = 0.0015
-          const deltaLng = 0.0015
-          const south = centerLat - deltaLat
-          const north = centerLat + deltaLat
-          const west = centerLng - deltaLng
-          const east = centerLng + deltaLng
-          const polygon: number[][][] = [[
-            [south, west],
-            [south, east],
-            [north, east],
-            [north, west],
-            [south, west],
-          ]]
-          const viewportHexes = h3.polygonToCells(polygon, h3Resolution, true)
-          // Merge viewport hexes with GPS hexes
-          hexIndexes = [...new Set([...hexIndexes, ...viewportHexes])]
-        } else {
-          // No GPS or follow mode off: load hexes around map center only
-          const deltaLat = 0.0015
-          const deltaLng = 0.0015
-          const south = centerLat - deltaLat
-          const north = centerLat + deltaLat
-          const west = centerLng - deltaLng
-          const east = centerLng + deltaLng
-          const polygon: number[][][] = [[
-            [south, west],
-            [south, east],
-            [north, east],
-            [north, west],
-            [south, west],
-          ]]
-          hexIndexes = h3.polygonToCells(polygon, h3Resolution, true)
+        if (gpsHex && !hexIndexes.includes(gpsHex)) {
+          hexIndexes.push(gpsHex)
         }
 
 
@@ -1225,19 +1051,7 @@ function App() {
 
         for (const hexIndex of hexIndexes) {
           const boundary = h3.cellToBoundary(hexIndex, true)
-          // h3.cellToBoundary with true returns [lng, lat] format
-          // But if coordinates appear reversed (lat in lng position), swap them
-          const coords = boundary.map((coord) => {
-            const [first, second] = coord
-            // Check if coordinates might be reversed: if first value is 29-34 and second is 34-36, it's likely [lat, lng]
-            // Otherwise assume [lng, lat] format
-            if (first >= 29 && first <= 34 && second >= 34 && second <= 36) {
-              // Likely reversed: swap to [lng, lat]
-              return [second, first] as [number, number]
-            }
-            // Normal: [lng, lat]
-            return [first, second] as [number, number]
-          })
+          const coords: [number, number][] = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
           coords.push(coords[0])
 
           let zoneType: ZoneType = 'URBAN'
@@ -1250,6 +1064,7 @@ function App() {
           }
 
           const isOwned = ownedSet.has(hexIndex)
+          const isOthers = !isOwned && globalOwnedSet.has(hexIndex)
           const neighbors = h3.gridDisk(hexIndex, 1)
           const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
 
@@ -1268,6 +1083,9 @@ function App() {
               claimed: isOwned,
               selected: isSelected,
               canMine,
+              owner: isOwned ? 'mine' : isOthers ? 'others' : null,
+              isMine: isOwned,
+              isOthers: isOthers,
               debugInfo,
             },
             geometry: {
@@ -1304,45 +1122,59 @@ function App() {
           // its own data.
         }
 
+        // Create center dots for each hex
+        const centerDots = newFeatures.map((feature) => {
+          const hexIndex = feature.properties.h3Index
+          const [lat, lng] = h3.cellToLatLng(hexIndex)
+          const isOwned = ownedSet.has(hexIndex)
+          const isGpsLocation = hexIndex === gpsHex
+          
+          return {
+            type: 'Feature' as const,
+            properties: {
+              h3Index: hexIndex,
+              isMine: isOwned,
+              isGpsLocation: isGpsLocation,
+            },
+            geometry: {
+              type: 'Point' as const,
+              coordinates: [lng, lat],
+            },
+          }
+        })
+
+        const centerDotsCollection = {
+          type: 'FeatureCollection' as const,
+          features: centerDots,
+        }
+
+        try {
+          const dotsSource = map.getSource('hex-center-dots') as maplibregl.GeoJSONSource | undefined
+          if (dotsSource) {
+            dotsSource.setData(centerDotsCollection)
+          }
+        } catch {
+          // Ignore if source not ready
+        }
+
         if (!hasFitToHexes && features.length > 0) {
           const allCoords = features.flatMap((f) => f.geometry.coordinates[0] as [number, number][])
-          // Check if coordinates might be reversed by looking at the first coordinate
-          // If first coord has values in Israel range (29-34 for lat, 34-36 for lon), assume correct order
-          // Otherwise, might be reversed
-          const firstCoord = allCoords[0]
-          const mightBeReversed = firstCoord && firstCoord[0] >= 29 && firstCoord[0] <= 34 && firstCoord[1] >= 34 && firstCoord[1] <= 36
-          
-          const lngs = mightBeReversed 
-            ? allCoords.map(([, lng]) => lng) // If reversed, second value is longitude
-            : allCoords.map(([lng]) => lng)   // Normal: first value is longitude
-          const lats = mightBeReversed
-            ? allCoords.map(([lat]) => lat)   // If reversed, first value is latitude
-            : allCoords.map(([, lat]) => lat)  // Normal: second value is latitude
-            
+          const lngs = allCoords.map(([lng]) => lng)
+          const lats = allCoords.map(([, lat]) => lat)
           const minLng = Math.min(...lngs)
           const maxLng = Math.max(...lngs)
           const minLat = Math.min(...lats)
           const maxLat = Math.max(...lats)
 
-          // Validate coordinates are reasonable (Israel is roughly 29-34°N, 34-36°E)
-          // If coordinates are way off (like Cyprus at 35°N, 33°E or reversed), skip fitBounds
-          const isReasonable = 
-            minLng >= 30 && maxLng <= 36 && // Longitude range for Israel/Middle East
-            minLat >= 29 && maxLat <= 34    // Latitude range for Israel/Middle East
+          map.fitBounds(
+            [
+              [minLng, minLat],
+              [maxLng, maxLat],
+            ],
+            { padding: 40 },
+          )
 
-          if (isReasonable) {
-            map.fitBounds(
-              [
-                [minLng, minLat],
-                [maxLng, maxLat],
-              ],
-              { padding: 40 },
-            )
-            hasFitToHexes = true
-          } else {
-            console.log('[MAP] Skipping fitBounds - coordinates out of range:', { minLng, maxLng, minLat, maxLat, mightBeReversed })
-            // Keep default center on Tel Aviv instead of fitting to invalid coordinates
-          }
+          hasFitToHexes = true
         }
       }
 
@@ -1398,22 +1230,17 @@ function App() {
         },
       })
 
-      // Veins overlay: permanent coloring for all owned hexes (always visible)
-      // These layers must be above h3-hex-fill to show the permanent colors
-      // Find a layer to place them before (like labels or roads)
-      const beforeId = map.getStyle().layers?.find((l) => l.id.includes('label') || l.id.includes('road'))?.id || undefined
-      
+      // Veins overlay: soft red polygons for all owned hexes.
       map.addLayer({
         id: 'owned-veins-layer',
         type: 'fill',
         source: 'owned-veins',
-        beforeId: beforeId, // Place above h3-hex-fill but below labels
         layout: {
-          visibility: 'visible',  // Always visible for permanent coloring
+          visibility: 'none',
         },
         paint: {
-          'fill-color': '#ffd700',  // Gold for my mined hexes
-          'fill-opacity': 0.3,  // More transparent as requested
+          'fill-color': '#f59e0b',
+          'fill-opacity': 0.45,
         },
       })
 
@@ -1421,13 +1248,12 @@ function App() {
         id: 'others-veins-layer',
         type: 'fill',
         source: 'others-veins',
-        beforeId: beforeId, // Place above h3-hex-fill but below labels
         layout: {
-          visibility: 'visible',  // Always visible for permanent coloring
+          visibility: 'none',
         },
         paint: {
-          'fill-color': '#1e3a8a',  // Dark blue for others' hexes
-          'fill-opacity': 0.3,  // More transparent as requested
+          'fill-color': '#a855f7',
+          'fill-opacity': 0.28,
         },
       })
 
@@ -1877,76 +1703,6 @@ function App() {
     }
   }, [apiBase, authToken])
 
-  // Helper function to update veins layers with current owned hexes
-  const updateVeinsLayers = async () => {
-    const map = mapRef.current
-    if (!map) return
-
-    const source = map.getSource('owned-veins') as maplibregl.GeoJSONSource | undefined
-    const othersSource = map.getSource('others-veins') as maplibregl.GeoJSONSource | undefined
-
-    if (!source || !othersSource) return
-
-    const toPolygonFeatures = (hexes: string[]) => {
-      return hexes.map((idx) => {
-        const boundary = h3.cellToBoundary(idx, true)
-        // h3.cellToBoundary with true returns [lng, lat] format
-        // But if coordinates appear reversed (lat in lng position), swap them
-        const coords = boundary.map((coord) => {
-          const [first, second] = coord
-          // Check if coordinates might be reversed: if first value is 29-34 and second is 34-36, it's likely [lat, lng]
-          // Otherwise assume [lng, lat] format
-          if (first >= 29 && first <= 34 && second >= 34 && second <= 36) {
-            // Likely reversed: swap to [lng, lat]
-            return [second, first] as [number, number]
-          }
-          // Normal: [lng, lat]
-          return [first, second] as [number, number]
-        })
-        if (coords.length > 0) {
-          coords.push(coords[0])
-        }
-        return {
-          type: 'Feature' as const,
-          properties: { h3Index: idx },
-          geometry: {
-            type: 'Polygon' as const,
-            coordinates: [coords],
-          },
-        }
-      })
-    }
-
-    try {
-      console.log('[VEINS-UPDATE] Updating veins with current owned hexes...')
-      const res = await authedFetch(`${apiBase}/api/owned-hexes/global`)
-      if (!res.ok) {
-        console.log('[VEINS-UPDATE] Failed to fetch owned hexes, status:', res.status)
-        return
-      }
-      const data: { mine?: string[]; others?: string[] } = await res.json().catch(() => ({}))
-
-      const mineHexes = Array.isArray(data.mine) ? data.mine : []
-      const othersHexes = Array.isArray(data.others) ? data.others : []
-
-      console.log('[VEINS-UPDATE] Updating:', mineHexes.length, 'mine,', othersHexes.length, 'others')
-
-      source.setData({
-        type: 'FeatureCollection' as const,
-        features: toPolygonFeatures(mineHexes),
-      })
-
-      othersSource.setData({
-        type: 'FeatureCollection' as const,
-        features: toPolygonFeatures(othersHexes),
-      })
-
-      console.log('[VEINS-UPDATE] ✓ Veins updated')
-    } catch (err) {
-      console.log('[VEINS-UPDATE] ✗ Error updating veins:', err)
-    }
-  }
-
   // Veins overlay: when toggled on, populate the dedicated MapLibre source
   // with all owned hexes as polygon features, and show the fill layer. When
   // toggled off, hide the layer. This is intentionally decoupled from the main
@@ -1965,18 +1721,16 @@ function App() {
 
     if (!source || !othersSource) return
 
-    // Veins layers are always visible now for permanent coloring
-    // showVeins toggle only affects main layer opacity for highlighting
-    if (map.getLayer(layerId)) {
-      map.setLayoutProperty(layerId, 'visibility', 'visible')
-    }
-    if (map.getLayer(othersLayerId)) {
-      map.setLayoutProperty(othersLayerId, 'visibility', 'visible')
-    }
+    if (!showVeins) {
+      // Hide the layer when the overlay is turned off.
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', 'none')
+      }
+      if (map.getLayer(othersLayerId)) {
+        map.setLayoutProperty(othersLayerId, 'visibility', 'none')
+      }
 
-    // Update main layer opacity based on showVeins toggle
-    if (map.getLayer(mainLayerId)) {
-      if (!showVeins) {
+      if (map.getLayer(mainLayerId)) {
         map.setPaintProperty(mainLayerId, 'fill-color', [
           'case',
           ['get', 'selected'],
@@ -1997,37 +1751,27 @@ function App() {
           0.15,
           0.2,
         ])
-      } else {
-        map.setPaintProperty(mainLayerId, 'fill-opacity', [
-          'case',
-          ['get', 'selected'],
-          0.6,
-          ['get', 'claimed'],
-          0,
-          ['get', 'canMine'],
-          0.08,
-          0.08,
-        ])
       }
+      return
     }
 
-    // Always load veins data for permanent coloring, regardless of showVeins toggle
+    if (map.getLayer(mainLayerId)) {
+      map.setPaintProperty(mainLayerId, 'fill-opacity', [
+        'case',
+        ['get', 'selected'],
+        0.6,
+        ['get', 'claimed'],
+        0,
+        ['get', 'canMine'],
+        0.08,
+        0.08,
+      ])
+    }
+
     const toPolygonFeatures = (hexes: string[]) => {
       return hexes.map((idx) => {
         const boundary = h3.cellToBoundary(idx, true)
-        // h3.cellToBoundary with true returns [lng, lat] format
-        // But if coordinates appear reversed (lat in lng position), swap them
-        const coords = boundary.map((coord) => {
-          const [first, second] = coord
-          // Check if coordinates might be reversed: if first value is 29-34 and second is 34-36, it's likely [lat, lng]
-          // Otherwise assume [lng, lat] format
-          if (first >= 29 && first <= 34 && second >= 34 && second <= 36) {
-            // Likely reversed: swap to [lng, lat]
-            return [second, first] as [number, number]
-          }
-          // Normal: [lng, lat]
-          return [first, second] as [number, number]
-        })
+        const coords = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
         if (coords.length > 0) {
           coords.push(coords[0])
         }
@@ -2044,18 +1788,14 @@ function App() {
 
     void (async () => {
       try {
-        console.log('[VEINS] Loading owned hexes for veins display...')
         const res = await authedFetch(`${apiBase}/api/owned-hexes/global`)
         if (!res.ok) {
-          console.log('[VEINS] Failed to fetch owned hexes, status:', res.status)
           return
         }
         const data: { mine?: string[]; others?: string[] } = await res.json().catch(() => ({}))
 
         const mineHexes = Array.isArray(data.mine) ? data.mine : []
         const othersHexes = Array.isArray(data.others) ? data.others : []
-
-        console.log('[VEINS] Loaded:', mineHexes.length, 'mine,', othersHexes.length, 'others')
 
         source.setData({
           type: 'FeatureCollection' as const,
@@ -2067,22 +1807,17 @@ function App() {
           features: toPolygonFeatures(othersHexes),
         })
 
-        console.log('[VEINS] ✓ Veins data updated on map')
-        // Layers are always visible now, no need to set visibility here
-      } catch (err) {
-        console.log('[VEINS] ✗ Error loading veins:', err)
+        if (map.getLayer(othersLayerId)) {
+          map.setLayoutProperty(othersLayerId, 'visibility', 'visible')
+        }
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, 'visibility', 'visible')
+        }
+      } catch {
+        // ignore
       }
     })()
-  }, [apiBase, authToken])  // Remove showVeins dependency - always load veins for permanent coloring
-
-  // Update veins when showVeins changes (user clicks the button)
-  useEffect(() => {
-    if (showVeins) {
-      // When veins is toggled on, force update the veins layers
-      console.log('[VEINS-TOGGLE] Veins toggled ON, updating veins layers...')
-      updateVeinsLayers()
-    }
-  }, [showVeins])
+  }, [showVeins, apiBase, authToken])
 
   useEffect(() => {
     const loadMinedStats = async () => {
@@ -2157,11 +1892,10 @@ function App() {
           if (data.reason === 'ALREADY_MINED') {
             setMineMessage('This hex has already been mined for this user.')
           } else if (data.reason === 'FORBIDDEN_ZONE') {
-            if (data.zoneType === 'COAST') {
-              setMineMessage('Mining is forbidden on COAST hexes due to danger.')
-            } else {
-              setMineMessage('Mining is forbidden in this zone.')
-            }
+            setMineMessage('Mining is forbidden in this zone.')
+          } else if (data.reason === 'NOT_ADJACENT') {
+            setMineMessage('You can only mine hexes that touch an already mined hex.')
+            setCanSpawnHere(true)
           } else {
             setMineMessage('Mining was not accepted.')
           }
@@ -2197,9 +1931,6 @@ function App() {
 
         ownedHexesRef.current.add(h3Index)
         globalOwnedHexesRef.current.add(h3Index)
-
-        // Update veins layers to show the newly mined hex
-        await updateVeinsLayers()
 
         const currentFeatures = featuresRef.current
         if (!currentFeatures || currentFeatures.length === 0 || !mapRef.current) {
@@ -2542,97 +2273,71 @@ function App() {
       return
     }
 
-    // If GPS is not active, activate it and move to current location
-    if (!usingMyLocationRef.current) {
-      setUsingMyLocation(true)
-      setFollowMyLocation(true)
-      usingMyLocationRef.current = true
-      followMyLocationRef.current = true
-      lastFollowAtRef.current = 0
+    setUsingMyLocation(true)
+    setFollowMyLocation(true)
+    usingMyLocationRef.current = true
+    followMyLocationRef.current = true
+    lastFollowAtRef.current = 0
 
-      if (geoWatchIdRef.current === null) {
-        geoWatchIdRef.current = navigator.geolocation.watchPosition(
-          (pos) => {
-            const heading =
-              typeof pos.coords.heading === 'number' && Number.isFinite(pos.coords.heading)
-                ? pos.coords.heading
-                : null
-            setMapUserLocation({
-              lon: pos.coords.longitude,
-              lat: pos.coords.latitude,
-              accuracyM: typeof pos.coords.accuracy === 'number' ? pos.coords.accuracy : 30,
-              headingDeg: heading,
-            })
-          },
-          (error) => {
+    if (geoWatchIdRef.current === null) {
+      geoWatchIdRef.current = navigator.geolocation.watchPosition(
+        (pos) => {
+          const heading =
+            typeof pos.coords.heading === 'number' && Number.isFinite(pos.coords.heading)
+              ? pos.coords.heading
+              : null
+          setMapUserLocation({
+            lon: pos.coords.longitude,
+            lat: pos.coords.latitude,
+            accuracyM: typeof pos.coords.accuracy === 'number' ? pos.coords.accuracy : 30,
+            headingDeg: heading,
+          })
+        },
+        (error) => {
+          setToastMessage(error.message || 'Failed to get current location.')
+          setToastType('error')
+        },
+        { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
+      )
+    }
+
+    const doInitialFix = (options: PositionOptions) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          const map = mapRef.current
+          if (!map) return
+
+          const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
+          map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
+
+          setToastMessage(
+            `Moved to location: lat ${latitude.toFixed(5)}, lon ${longitude.toFixed(5)}`,
+          )
+          setToastType('success')
+        },
+        (error) => {
+          const map = mapRef.current
+          // If permission denied or other error, we surface a simple toast message.
+          if (error.code === 3) {
+            setToastMessage('Timed out while getting location. Retrying…')
+            setToastType('error')
+            window.setTimeout(() => {
+              doInitialFix({ enableHighAccuracy: false, maximumAge: 60_000, timeout: 20_000 })
+            }, 350)
+          } else {
             setToastMessage(error.message || 'Failed to get current location.')
             setToastType('error')
-          },
-          { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
-        )
-      }
-
-      // Move to current location immediately
-      const doInitialFix = (options: PositionOptions) => {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords
-            const map = mapRef.current
-            if (!map) return
-
-            const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
-            map.flyTo({ center: [longitude, latitude], zoom: desiredZoom })
-
-            setToastMessage('GPS activated - following your location')
-            setToastType('success')
-          },
-          (error) => {
-            const map = mapRef.current
-            // If permission denied or other error, we surface a simple toast message.
-            if (error.code === 3) {
-              setToastMessage('Timed out while getting location. Retrying…')
-              setToastType('error')
-              window.setTimeout(() => {
-                doInitialFix({ enableHighAccuracy: false, maximumAge: 60_000, timeout: 20_000 })
-              }, 350)
-            } else {
-              setToastMessage(error.message || 'Failed to get current location.')
-              setToastType('error')
-            }
-
-            // Optionally we could fall back to keeping the current view; do nothing.
-            if (!map) return
-          },
-          options,
-        )
-      }
-
-      doInitialFix({ enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 })
-    } else {
-      // GPS is already active - toggle follow mode
-      const newFollowState = !followMyLocationRef.current
-      setFollowMyLocation(newFollowState)
-      followMyLocationRef.current = newFollowState
-      
-      if (newFollowState) {
-        // If turning on follow mode, move to current GPS location
-        if (lastGeoCoordsRef.current) {
-          const map = mapRef.current
-          if (map) {
-            const desiredZoom = (driveModeActiveRef.current ? 17.3 : 16.8) - 1
-            map.flyTo({ 
-              center: [lastGeoCoordsRef.current.lon, lastGeoCoordsRef.current.lat], 
-              zoom: desiredZoom 
-            })
-            setToastMessage('GPS follow mode ON - following your location')
-            setToastType('success')
           }
-        }
-      } else {
-        setToastMessage('GPS follow mode OFF - free navigation mode')
-        setToastType('success')
-      }
+
+          // Optionally we could fall back to keeping the current view; do nothing.
+          if (!map) return
+        },
+        options,
+      )
     }
+
+    doInitialFix({ enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 })
   }
 
   useEffect(() => {
@@ -2936,7 +2641,7 @@ function App() {
         <div className="mobile-fab-controls">
           <button
             type="button"
-            className={usingMyLocation ? 'mobile-fab mobile-fab-location mobile-fab-location-active' : 'mobile-fab mobile-fab-location'}
+            className="mobile-fab mobile-fab-location"
             onClick={handleUseMyLocationClick}
             aria-label="Use my location"
           >
@@ -2956,119 +2661,8 @@ function App() {
           </button>
           <button
             type="button"
-            className={autoMineEnabled ? 'mobile-fab mobile-fab-auto-mine mobile-fab-auto-mine-active' : 'mobile-fab mobile-fab-auto-mine'}
-            onClick={async () => {
-              const wasEnabled = autoMineEnabled
-              const willBeEnabled = !wasEnabled
-              
-              if (willBeEnabled) {
-                // Enabling auto-mine - charge 5 GHX upfront
-                try {
-                  console.log('[AUTO-MINE] Charging 5 GHX upfront fee for enabling auto-mine')
-                  console.log('[AUTO-MINE] API Base:', apiBase)
-                  console.log('[AUTO-MINE] Auth token:', authTokenRef.current ? 'present' : 'missing')
-                  
-                  const res = await authedFetch(`${apiBase}/api/auto-mine-fee`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fee: 5, hexCount: 0, isUpfront: true }),
-                  })
-                  
-                  console.log('[AUTO-MINE] Response status:', res.status, res.statusText)
-                  
-                  // Read response once
-                  const data: { ok?: boolean; newBalance?: number; reason?: string; error?: string } = await res.json().catch((err) => {
-                    console.log('[AUTO-MINE] JSON parse error:', err)
-                    return { ok: false, error: 'NETWORK_ERROR' }
-                  })
-                  
-                  console.log('[AUTO-MINE] Response data:', data)
-                  
-                  if (!res.ok || !data.ok) {
-                    // Error response
-                    const errorReason = data.reason || data.error || 'UNKNOWN_ERROR'
-                    console.log('[AUTO-MINE] Fee failed:', errorReason, 'Balance:', data.newBalance, 'Status:', res.status)
-                    setToastMessage(errorReason === 'INSUFFICIENT_GHX' ? 'Insufficient GHX (need 5 GHX)' : `Failed to enable auto-mining: ${errorReason}`)
-                    setToastType('error')
-                    if (typeof data.newBalance === 'number') {
-                      setUserBalance(data.newBalance)
-                    }
-                    return // Don't enable if fee failed
-                  }
-                  
-                  // Success
-                  if (typeof data.newBalance === 'number') {
-                    setUserBalance(data.newBalance)
-                    setAutoMineEnabled(true)
-                    setToastMessage(`⛏️ Auto-mining enabled (5 GHX fee)`)
-                    setToastType('success')
-                    // Reset auto-mined hexes list for new session
-                    autoMinedHexesRef.current = []
-                  } else {
-                    setToastMessage('Failed to enable auto-mining (invalid response)')
-                    setToastType('error')
-                    return
-                  }
-                } catch (err) {
-                  console.log('[AUTO-MINE] Error charging upfront fee:', err)
-                  setToastMessage('Failed to enable auto-mining (network error)')
-                  setToastType('error')
-                  return
-                }
-              } else {
-                // Disabling auto-mine - charge 1 GHX per 10 hexes mined
-                setAutoMineEnabled(false)
-                
-                if (autoMinedHexesRef.current.length > 0) {
-                  const autoMinedCount = autoMinedHexesRef.current.length
-                  // 1 GHX per 10 hexes (rounded down)
-                  const fee = Math.floor(autoMinedCount / 10)
-                  
-                  if (fee > 0) {
-                    try {
-                      console.log(`[AUTO-MINE-FEE] Charging ${fee} GHX fee for ${autoMinedCount} auto-mined hexes (1 GHX per 10 hexes)`)
-                      const res = await authedFetch(`${apiBase}/api/auto-mine-fee`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fee, hexCount: autoMinedCount }),
-                      })
-                      
-                      const data: { ok?: boolean; newBalance?: number } = await res.json().catch(() => ({}))
-                      if (data.ok && typeof data.newBalance === 'number') {
-                        setUserBalance(data.newBalance)
-                        setToastMessage(`⛏️ Auto-mining fee: ${fee} GHX (1 GHX per 10 hexes, ${autoMinedCount} total)`)
-                        setToastType('success')
-                      }
-                    } catch (err) {
-                      console.log('[AUTO-MINE-FEE] Error charging fee:', err)
-                    }
-                  }
-                  
-                  // Reset auto-mined hexes list
-                  autoMinedHexesRef.current = []
-                }
-              }
-            }}
-            disabled={!usingMyLocation}
-            aria-label="Toggle auto mine"
-          >
-            ⛏️
-          </button>
-          <button
-            type="button"
             className={showVeins ? 'mobile-fab mobile-fab-veins mobile-fab-veins-active' : 'mobile-fab mobile-fab-veins'}
-            onClick={() => {
-              setShowVeins((prev) => {
-                const newValue = !prev
-                // Force update veins when toggling on
-                if (newValue) {
-                  setTimeout(() => {
-                    updateVeinsLayers()
-                  }, 100)
-                }
-                return newValue
-              })
-            }}
+            onClick={() => setShowVeins((prev) => !prev)}
             aria-label="Toggle mined veins overlay"
           >
             Veins
