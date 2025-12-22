@@ -1728,6 +1728,18 @@ app.post('/api/mine', requireAuth, (req, res) => {
     return
   }
 
+  // Check if hex is owned by another user
+  const globalOwned = buildGlobalOwnedHexesSet()
+  if (globalOwned.has(h3Index)) {
+    res.json({
+      ok: false,
+      reason: 'OWNED_BY_OTHER',
+      balance: user.balance,
+      owned: false,
+    })
+    return
+  }
+
   // Safety rule: forbid mining on COAST and in a persisted buffer around
   // detected coastlines (legal/safety protection).
   if (coastBufferHexes.has(h3Index)) {
