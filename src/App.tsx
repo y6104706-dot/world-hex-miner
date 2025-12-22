@@ -3129,6 +3129,47 @@ function App() {
                 </div>
               </div>
             )}
+            {authToken && (
+              <div className="account-section">
+                <div className="account-section-title">Admin</div>
+                <div className="account-row">
+                  <button
+                    type="button"
+                    className="account-action"
+                    onClick={async () => {
+                      if (!confirm('Are you sure you want to reset ALL mined hexes for ALL users? This cannot be undone.')) {
+                        return
+                      }
+                      try {
+                        const res = await authedFetch(`${apiBase}/api/admin/reset-hexes`, {
+                          method: 'POST',
+                        })
+                        if (res.ok) {
+                          const data = await res.json()
+                          setToastMessage(`✓ ${data.message || 'All hexes reset'}`)
+                          setToastType('success')
+                          // Reload account info
+                          setViewMode('ACCOUNT')
+                          // Force reload by toggling view mode
+                          setTimeout(() => {
+                            window.location.reload()
+                          }, 1000)
+                        } else {
+                          setToastMessage('Failed to reset hexes')
+                          setToastType('error')
+                        }
+                      } catch (err) {
+                        setToastMessage(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+                        setToastType('error')
+                      }
+                    }}
+                    style={{ backgroundColor: '#d32f2f', color: 'white' }}
+                  >
+                    Reset All Hexes
+                  </button>
+                </div>
+              </div>
+            )}
             {accountLoading && <div className="account-row">Loading account…</div>}
             {accountError && !accountLoading && (
               <div className="account-row account-error">{accountError}</div>
