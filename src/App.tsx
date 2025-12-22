@@ -2760,10 +2760,11 @@ function App() {
                   type="button"
                   onClick={() => {
                     const newLat = simulatedCoords.lat + 0.001
-                    setSimulatedCoords({ ...simulatedCoords, lat: newLat })
+                    const newCoords = { lat: newLat, lon: simulatedCoords.lon }
+                    setSimulatedCoords(newCoords)
                     setMapUserLocation({
-                      lat: newLat,
-                      lon: simulatedCoords.lon,
+                      lat: newCoords.lat,
+                      lon: newCoords.lon,
                       accuracyM: 10,
                       headingDeg: 0,
                     })
@@ -2778,15 +2779,16 @@ function App() {
                     type="button"
                     onClick={() => {
                       const newLon = simulatedCoords.lon - 0.001
-                      setSimulatedCoords({ ...simulatedCoords, lon: newLon })
-                      setMapUserLocation({
-                        lat: simulatedCoords.lat,
-                        lon: newLon,
-                        accuracyM: 10,
-                        headingDeg: 270,
-                      })
-                      setUsingMyLocation(true)
-                      usingMyLocationRef.current = true
+                    const newCoords = { lat: simulatedCoords.lat, lon: newLon }
+                    setSimulatedCoords(newCoords)
+                    setMapUserLocation({
+                      lat: newCoords.lat,
+                      lon: newCoords.lon,
+                      accuracyM: 10,
+                      headingDeg: 270,
+                    })
+                    setUsingMyLocation(true)
+                    usingMyLocationRef.current = true
                     }}
                   >
                     ← West
@@ -2810,15 +2812,16 @@ function App() {
                     type="button"
                     onClick={() => {
                       const newLon = simulatedCoords.lon + 0.001
-                      setSimulatedCoords({ ...simulatedCoords, lon: newLon })
-                      setMapUserLocation({
-                        lat: simulatedCoords.lat,
-                        lon: newLon,
-                        accuracyM: 10,
-                        headingDeg: 90,
-                      })
-                      setUsingMyLocation(true)
-                      usingMyLocationRef.current = true
+                    const newCoords = { lat: simulatedCoords.lat, lon: newLon }
+                    setSimulatedCoords(newCoords)
+                    setMapUserLocation({
+                      lat: newCoords.lat,
+                      lon: newCoords.lon,
+                      accuracyM: 10,
+                      headingDeg: 90,
+                    })
+                    setUsingMyLocation(true)
+                    usingMyLocationRef.current = true
                     }}
                   >
                     East →
@@ -2828,10 +2831,11 @@ function App() {
                   type="button"
                   onClick={() => {
                     const newLat = simulatedCoords.lat - 0.001
-                    setSimulatedCoords({ ...simulatedCoords, lat: newLat })
+                    const newCoords = { lat: newLat, lon: simulatedCoords.lon }
+                    setSimulatedCoords(newCoords)
                     setMapUserLocation({
-                      lat: newLat,
-                      lon: simulatedCoords.lon,
+                      lat: newCoords.lat,
+                      lon: newCoords.lon,
                       accuracyM: 10,
                       headingDeg: 180,
                     })
