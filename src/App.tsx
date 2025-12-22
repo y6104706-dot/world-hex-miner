@@ -239,6 +239,8 @@ function App() {
   const [followMyLocation, setFollowMyLocation] = useState(false)
   const [driveModeActive, setDriveModeActive] = useState(false)
   const [autoMineActive, setAutoMineActive] = useState(false)
+  const [gpsSimulatorActive, setGpsSimulatorActive] = useState(false)
+  const [simulatedCoords, setSimulatedCoords] = useState({ lat: 32.0853, lon: 34.7818 }) // Tel Aviv default
   const driveModeActiveRef = useRef(false)
   const lastDriveHexRef = useRef<string | null>(null)
   const autoMineActiveRef = useRef(false)
@@ -2597,6 +2599,15 @@ function App() {
             </button>
             <button
               type="button"
+              className={gpsSimulatorActive ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={() => setGpsSimulatorActive((prev) => !prev)}
+              style={{ marginRight: '10px' }}
+              title="GPS Simulator for testing"
+            >
+              🎮 Simulator
+            </button>
+            <button
+              type="button"
               className={viewMode === 'MAP' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
               onClick={() => setViewMode('MAP')}
             >
@@ -2707,6 +2718,133 @@ function App() {
       )}
       <div className="map-wrapper">
         <div ref={mapContainerRef} className="map-container" />
+        {gpsSimulatorActive && (
+          <div className="gps-simulator-panel">
+            <div className="gps-simulator-header">
+              <h3>GPS Simulator</h3>
+              <button
+                type="button"
+                onClick={() => setGpsSimulatorActive(false)}
+                className="gps-simulator-close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="gps-simulator-controls">
+              <div className="gps-simulator-inputs">
+                <label>
+                  Lat:
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={simulatedCoords.lat}
+                    onChange={(e) =>
+                      setSimulatedCoords({ ...simulatedCoords, lat: parseFloat(e.target.value) || 0 })
+                    }
+                  />
+                </label>
+                <label>
+                  Lon:
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={simulatedCoords.lon}
+                    onChange={(e) =>
+                      setSimulatedCoords({ ...simulatedCoords, lon: parseFloat(e.target.value) || 0 })
+                    }
+                  />
+                </label>
+              </div>
+              <div className="gps-simulator-buttons">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newLat = simulatedCoords.lat + 0.001
+                    setSimulatedCoords({ ...simulatedCoords, lat: newLat })
+                    setMapUserLocation({
+                      lat: newLat,
+                      lon: simulatedCoords.lon,
+                      accuracyM: 10,
+                      headingDeg: 0,
+                    })
+                    setUsingMyLocation(true)
+                    usingMyLocationRef.current = true
+                  }}
+                >
+                  ↑ North
+                </button>
+                <div className="gps-simulator-row">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newLon = simulatedCoords.lon - 0.001
+                      setSimulatedCoords({ ...simulatedCoords, lon: newLon })
+                      setMapUserLocation({
+                        lat: simulatedCoords.lat,
+                        lon: newLon,
+                        accuracyM: 10,
+                        headingDeg: 270,
+                      })
+                      setUsingMyLocation(true)
+                      usingMyLocationRef.current = true
+                    }}
+                  >
+                    ← West
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMapUserLocation({
+                        lat: simulatedCoords.lat,
+                        lon: simulatedCoords.lon,
+                        accuracyM: 10,
+                        headingDeg: null,
+                      })
+                      setUsingMyLocation(true)
+                      usingMyLocationRef.current = true
+                    }}
+                  >
+                    Set
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newLon = simulatedCoords.lon + 0.001
+                      setSimulatedCoords({ ...simulatedCoords, lon: newLon })
+                      setMapUserLocation({
+                        lat: simulatedCoords.lat,
+                        lon: newLon,
+                        accuracyM: 10,
+                        headingDeg: 90,
+                      })
+                      setUsingMyLocation(true)
+                      usingMyLocationRef.current = true
+                    }}
+                  >
+                    East →
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newLat = simulatedCoords.lat - 0.001
+                    setSimulatedCoords({ ...simulatedCoords, lat: newLat })
+                    setMapUserLocation({
+                      lat: newLat,
+                      lon: simulatedCoords.lon,
+                      accuracyM: 10,
+                      headingDeg: 180,
+                    })
+                    setUsingMyLocation(true)
+                    usingMyLocationRef.current = true
+                  }}
+                >
+                  ↓ South
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="mobile-fab-controls">
           <button
             type="button"
@@ -2747,6 +2885,14 @@ function App() {
             aria-label="Toggle mined veins overlay"
           >
             Veins
+          </button>
+          <button
+            type="button"
+            className={gpsSimulatorActive ? 'mobile-fab mobile-fab-drive mobile-fab-drive-active' : 'mobile-fab mobile-fab-drive'}
+            onClick={() => setGpsSimulatorActive((prev) => !prev)}
+            aria-label="GPS Simulator"
+          >
+            🎮
           </button>
         </div>
         {viewMode === 'MAP' && (
