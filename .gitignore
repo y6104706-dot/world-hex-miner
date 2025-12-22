@@ -21,7 +21,6 @@ dist-ssr
 
 # Data files (should not be in git)
 data/
-server-dist/
 
 # Backup files
 *.backup
