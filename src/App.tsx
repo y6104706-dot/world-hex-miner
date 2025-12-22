@@ -9,11 +9,31 @@ import type { ZoneType } from './utils/hexUtils'
 function App() {
   // API base URL: use environment variable if set, otherwise use same origin (for Render deployment)
   // or fallback to localhost:4000 for local development
-  const apiBase =
-    import.meta.env.VITE_API_BASE_URL ??
-    (window.location.port === '4000' || window.location.hostname === 'localhost'
-      ? `${window.location.protocol}//${window.location.hostname}:4000`
-      : `${window.location.protocol}//${window.location.host}`)
+  const apiBase = (() => {
+    // If environment variable is set, use it
+    if (import.meta.env.VITE_API_BASE_URL) {
+      return import.meta.env.VITE_API_BASE_URL
+    }
+    
+    // For local development: if we're on localhost or port 4000, use localhost:4000
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname.startsWith('192.168.') ||
+                       window.location.hostname.startsWith('10.0.')
+    
+    if (isLocalhost && window.location.port !== '4000') {
+      // Local development but not on port 4000 - use localhost:4000
+      return `${window.location.protocol}//${window.location.hostname}:4000`
+    }
+    
+    if (window.location.port === '4000') {
+      // Already on port 4000 - use same origin
+      return `${window.location.protocol}//${window.location.host}`
+    }
+    
+    // For production (Render): use same origin (HTTPS)
+    return `${window.location.protocol}//${window.location.host}`
+  })()
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
