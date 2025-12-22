@@ -238,7 +238,6 @@ function App() {
   const [usingMyLocation, setUsingMyLocation] = useState(false)
   const [followMyLocation, setFollowMyLocation] = useState(false)
   const [driveModeActive, setDriveModeActive] = useState(false)
-  const [currentGpsHex, setCurrentGpsHex] = useState<string | null>(null)
   const [autoMineActive, setAutoMineActive] = useState(false)
   const driveModeActiveRef = useRef(false)
   const lastDriveHexRef = useRef<string | null>(null)
@@ -386,12 +385,10 @@ function App() {
       try {
         const newGpsHex = h3.latLngToCell(coords.lat, coords.lon, 11)
         gpsSelectedHexRef.current = newGpsHex
-        setCurrentGpsHex(newGpsHex)
         console.log('[GPS→HEX] GPS coords:', coords.lat, coords.lon, '→ H3 hex:', newGpsHex)
       } catch (err) {
         console.log('[GPS→HEX] ERROR converting GPS to H3:', err)
         gpsSelectedHexRef.current = null
-        setCurrentGpsHex(null)
       }
 
       // Mark GPS hex as selected - this will make it orange
