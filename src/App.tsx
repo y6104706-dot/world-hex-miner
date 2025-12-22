@@ -19,9 +19,8 @@ function App() {
   )
   const gpsSelectedHexRef = useRef<string | null>(null)
   const lastAutoSelectHexRef = useRef<string | null>(null)
-  const lastAutoMineHexRef = useRef<string | null>(null)
-  const lastAutoMineAtRef = useRef<number>(0)
   const lastGpsDriveStepAtRef = useRef<number>(0)
+  const lastAutoMineAtRef = useRef<number>(0)
   const lastFollowAtRef = useRef<number>(0)
   const lastGpsSelectedHexRef = useRef<string | null>(null)
   const lastGpsReloadHexRef = useRef<string | null>(null)
@@ -240,8 +239,11 @@ function App() {
   const [followMyLocation, setFollowMyLocation] = useState(false)
   const [driveModeActive, setDriveModeActive] = useState(false)
   const [currentGpsHex, setCurrentGpsHex] = useState<string | null>(null)
+  const [autoMineActive, setAutoMineActive] = useState(false)
   const driveModeActiveRef = useRef(false)
   const lastDriveHexRef = useRef<string | null>(null)
+  const autoMineActiveRef = useRef(false)
+  const lastAutoMinedHexRef = useRef<string | null>(null)
 
   useEffect(() => {
     usingMyLocationRef.current = usingMyLocation
@@ -254,6 +256,14 @@ function App() {
   useEffect(() => {
     authTokenRef.current = authToken
   }, [authToken])
+
+  useEffect(() => {
+    driveModeActiveRef.current = driveModeActive
+  }, [driveModeActive])
+
+  useEffect(() => {
+    autoMineActiveRef.current = autoMineActive
+  }, [autoMineActive])
 
   const buildCirclePolygon = (lon: number, lat: number, radiusM: number) => {
     const steps = 60
@@ -527,8 +537,82 @@ function App() {
                     }
 
                     lastDriveHexRef.current = currentHex
-                    lastAutoMineHexRef.current = currentHex
-                    lastAutoMineAtRef.current = now
+                  } catch {
+                    // ignore
+                  }
+                })()
+              }
+            }
+          }
+
+          // Auto-Mine mode: automatically mine the current hex when entering it
+          if (autoMineActiveRef.current && authTokenRef.current) {
+            const currentLastAutoMineHex = lastAutoMinedHexRef.current
+            if (currentLastAutoMineHex !== currentHex) {
+              const now = Date.now()
+              const minIntervalMs = 1000
+              const lastAutoMineAt = lastAutoMineAtRef.current || 0
+              if (now - lastAutoMineAt >= minIntervalMs) {
+                lastAutoMineAtRef.current = now
+
+                void (async () => {
+                  try {
+                    const res = await authedFetch(`${apiBase}/api/mine`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ h3Index: currentHex }),
+                    })
+
+                    if (!res.ok) {
+                      return
+                    }
+
+                    const data: { ok?: boolean; balance?: number; reason?: string } = await res.json()
+
+                    if (data.ok) {
+                      if (typeof data.balance === 'number') {
+                        setUserBalance(data.balance)
+                      }
+
+                      const ownedSetInner = ownedHexesRef.current
+                      ownedSetInner.add(currentHex)
+                      globalOwnedHexesRef.current.add(currentHex)
+
+                      const current = featuresRef.current
+                      if (current && current.length > 0) {
+                        const globalOwnedSet = globalOwnedHexesRef.current
+                        const updated: HexFeature[] = current.map((f) => {
+                          const idx = f.properties.h3Index
+                          const isOwnedHex = ownedSetInner.has(idx)
+                          const neighbors = h3.gridDisk(idx, 1)
+                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
+
+                          return {
+                            ...f,
+                            properties: {
+                              ...f.properties,
+                              claimed: isOwnedHex,
+                              canMine: canMineNeighbor,
+                            },
+                          }
+                        })
+
+                        featuresRef.current = updated
+
+                        const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                        if (src) {
+                          src.setData({ type: 'FeatureCollection' as const, features: updated })
+                        }
+                      }
+
+                      setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
+                      setToastMessage('✓ Auto-mined hex!')
+                      setToastType('success')
+                    }
+
+                    lastAutoMinedHexRef.current = currentHex
                   } catch {
                     // ignore
                   }
@@ -1818,26 +1902,7 @@ function App() {
       return
     }
 
-    // GPS verification - must be using GPS and in the correct hex
-    if (!usingMyLocationRef.current) {
-      setMineMessage('❌ GPS must be enabled to mine. Please enable GPS location.')
-      setMineMessageType('error')
-      return
-    }
-
-    if (!gpsSelectedHexRef.current) {
-      setMineMessage('❌ Waiting for GPS location. Please wait for GPS to acquire your position.')
-      setMineMessageType('error')
-      return
-    }
-
     const { h3Index } = selectedHex
-
-    if (h3Index !== gpsSelectedHexRef.current) {
-      setMineMessage('❌ GPS verification failed: You must be physically inside this hex to mine it. Your GPS shows you are in a different hex.')
-      setMineMessageType('error')
-      return
-    }
 
     const doMine = async () => {
       try {
@@ -2512,6 +2577,14 @@ function App() {
             </button>
             <button
               type="button"
+              className={autoMineActive ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
+              onClick={() => setAutoMineActive((prev) => !prev)}
+              style={{ marginRight: '10px' }}
+            >
+              ⛏️ Auto-Mine
+            </button>
+            <button
+              type="button"
               className={viewMode === 'MAP' ? 'top-bar-tab top-bar-tab-active' : 'top-bar-tab'}
               onClick={() => setViewMode('MAP')}
             >
@@ -2630,6 +2703,18 @@ function App() {
             aria-label="Use my location"
           >
             GPS
+          </button>
+          <button
+            type="button"
+            className={
+              autoMineActive
+                ? 'mobile-fab mobile-fab-drive mobile-fab-drive-active'
+                : 'mobile-fab mobile-fab-drive'
+            }
+            onClick={() => setAutoMineActive((prev) => !prev)}
+            aria-label="Toggle Auto-Mine Mode"
+          >
+            {autoMineActive ? '⛏️ AUTO' : '⛏️ Auto'}
           </button>
           <button
             type="button"
@@ -3324,22 +3409,9 @@ function App() {
               type="button" 
               className="mine-button" 
               onClick={handleMineClick}
-              disabled={
-                !usingMyLocation || 
-                !currentGpsHex || 
-                selectedHex.h3Index !== currentGpsHex
-              }
-              title={
-                !usingMyLocation 
-                  ? "Enable GPS to mine" 
-                  : !currentGpsHex 
-                    ? "Waiting for GPS location..." 
-                    : selectedHex.h3Index !== currentGpsHex
-                      ? "You must be in this hex to mine it (GPS verification required)"
-                      : "Mine this hex"
-              }
+              title="Mine this hex"
             >
-              Mine this hex {(!usingMyLocation || selectedHex.h3Index !== currentGpsHex) && "🔒"}
+              Mine this hex
             </button>
           )}
           {selectedHex && canSpawnHere && (
