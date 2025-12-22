@@ -266,6 +266,18 @@ function App() {
     autoMineActiveRef.current = autoMineActive
   }, [autoMineActive])
 
+  // Stop real GPS when simulator is active
+  useEffect(() => {
+    if (gpsSimulatorActive) {
+      // Stop real GPS tracking
+      if (geoWatchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(geoWatchIdRef.current)
+        geoWatchIdRef.current = null
+      }
+      // Don't disable usingMyLocation state, just stop the watch
+    }
+  }, [gpsSimulatorActive])
+
   const buildCirclePolygon = (lon: number, lat: number, radiusM: number) => {
     const steps = 60
     const earthRadiusM = 6378137
