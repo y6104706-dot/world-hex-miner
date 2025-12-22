@@ -3,7 +3,6 @@ import maplibregl from 'maplibre-gl'
 import * as h3 from 'h3-js'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './App.css'
-import { CanvasHexLayer } from './components/CanvasHexLayer'
 import type { HexFeature } from './types/hex'
 import type { ZoneType } from './utils/hexUtils'
 
