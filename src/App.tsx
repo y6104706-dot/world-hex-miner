@@ -15,23 +15,32 @@ function App() {
       return import.meta.env.VITE_API_BASE_URL
     }
     
-    // For local development: if we're on localhost or port 4000, use localhost:4000
-    const isLocalhost = window.location.hostname === 'localhost' || 
-                       window.location.hostname === '127.0.0.1' ||
-                       window.location.hostname.startsWith('192.168.') ||
-                       window.location.hostname.startsWith('10.0.')
-    
-    if (isLocalhost && window.location.port !== '4000') {
-      // Local development but not on port 4000 - use localhost:4000
-      return `${window.location.protocol}//${window.location.hostname}:4000`
-    }
-    
-    if (window.location.port === '4000') {
-      // Already on port 4000 - use same origin
+    // Check if we're on HTTPS (production) - always use same origin
+    if (window.location.protocol === 'https:') {
       return `${window.location.protocol}//${window.location.host}`
     }
     
-    // For production (Render): use same origin (HTTPS)
+    // Check if we're on a known production domain (Render, etc.)
+    const isProductionDomain = window.location.hostname.includes('.onrender.com') ||
+                              window.location.hostname.includes('.vercel.app') ||
+                              window.location.hostname.includes('.netlify.app')
+    
+    // For production domains: always use same origin
+    if (isProductionDomain) {
+      return `${window.location.protocol}//${window.location.host}`
+    }
+    
+    // For local development: only use localhost:4000 if we're on actual localhost
+    // (not local IP addresses, as those might be accessed from mobile devices)
+    const isActualLocalhost = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1'
+    
+    if (isActualLocalhost && window.location.port !== '4000') {
+      return `${window.location.protocol}//${window.location.hostname}:4000`
+    }
+    
+    // Default: use same origin (works for both local and production)
+    // This handles cases like accessing via local IP from mobile devices
     return `${window.location.protocol}//${window.location.host}`
   })()
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
