@@ -18,10 +18,6 @@ const port = Number(process.env.PORT) || 4000
 app.use(cors())
 app.use(express.json())
 
-app.get('/', (_req, res) => {
-  res.json({ ok: true, service: 'world-hex-miner-api' })
-})
-
 type User = {
   id: string
   email: string

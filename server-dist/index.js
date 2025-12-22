@@ -14,9 +14,6 @@ const app = express();
 const port = Number(process.env.PORT) || 4000;
 app.use(cors());
 app.use(express.json());
-app.get('/', (_req, res) => {
-    res.json({ ok: true, service: 'world-hex-miner-api' });
-});
 function buildGlobalOwnedHexesSet() {
     const all = new Set();
     for (const u of usersById.values()) {
