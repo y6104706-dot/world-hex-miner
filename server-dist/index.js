@@ -142,7 +142,7 @@ function createUser(emailRaw, passwordRaw) {
         id,
         email,
         passwordHash,
-        balance: 100, // Fixed: should be 100, not 10
+        balance: 10,
         usdtBalance: 1_000,
         ownedHexes: new Set([DEFAULT_START_HEX]),
     };
@@ -168,23 +168,16 @@ function requireAuth(req, res, next) {
             res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
             return;
         }
-        // Reload users from disk to ensure we have the latest data
-        // This prevents issues where users might be sharing the same user object
-        const currentUsers = loadUsers();
-        const user = currentUsers.get(userId);
+        const user = usersById.get(userId);
         if (!user) {
-            console.log('[AUTH] User not found:', userId);
             res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
             return;
         }
-        // Update the in-memory map to keep it in sync
-        usersById.set(userId, user);
-        console.log('[AUTH] Authenticated user:', user.id, user.email, 'ownedHexes:', user.ownedHexes.size);
+        ;
         req.user = user;
         next();
     }
-    catch (err) {
-        console.log('[AUTH] Token verification failed:', err);
+    catch {
         res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
     }
 }
@@ -1050,25 +1043,20 @@ app.post('/api/auth/login', (req, res) => {
     const body = req.body;
     const email = body.email;
     const password = body.password;
-    console.log('[LOGIN] Attempt:', { email, hasPassword: !!password, passwordLength: password?.length });
     if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
-        console.log('[LOGIN] ✗ Invalid input format');
         res.status(400).json({ ok: false, error: 'INVALID_CREDENTIALS' });
         return;
     }
     const user = findUserByEmail(email);
     if (!user) {
-        console.log('[LOGIN] ✗ User not found:', email);
         res.status(401).json({ ok: false, error: 'INVALID_CREDENTIALS' });
         return;
     }
     const ok = bcrypt.compareSync(password, user.passwordHash);
     if (!ok) {
-        console.log('[LOGIN] ✗ Password mismatch for:', email);
         res.status(401).json({ ok: false, error: 'INVALID_CREDENTIALS' });
         return;
     }
-    console.log('[LOGIN] ✓ Success for:', email);
     const token = signAuthToken(user);
     res.json({
         ok: true,
@@ -1427,47 +1415,7 @@ app.post('/api/mine', requireAuth, (req, res) => {
         res.status(400).json({ ok: false, error: 'INVALID_H3_INDEX' });
         return;
     }
-    if (typeof lat !== 'number' ||
-        typeof lon !== 'number' ||
-        typeof accuracyM !== 'number' ||
-        typeof gpsAt !== 'number' ||
-        !Number.isFinite(lat) ||
-        !Number.isFinite(lon) ||
-        !Number.isFinite(accuracyM) ||
-        !Number.isFinite(gpsAt)) {
-        res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false });
-        return;
-    }
-    const now = Date.now();
-    if (now - gpsAt > GPS_MINE_MAX_AGE_MS) {
-        res.json({ ok: false, reason: 'GPS_STALE', balance: user.balance, owned: false });
-        return;
-    }
-    if (accuracyM > GPS_MINE_ACCURACY_THRESHOLD_M) {
-        res.json({
-            ok: false,
-            reason: 'GPS_ACCURACY_LOW',
-            balance: user.balance,
-            owned: false,
-            thresholdM: GPS_MINE_ACCURACY_THRESHOLD_M,
-        });
-        return;
-    }
-    let gpsHex = null;
-    try {
-        gpsHex = h3.latLngToCell(lat, lon, 11);
-    }
-    catch {
-        gpsHex = null;
-    }
-    if (!gpsHex) {
-        res.json({ ok: false, reason: 'GPS_REQUIRED', balance: user.balance, owned: false });
-        return;
-    }
-    if (gpsHex !== h3Index) {
-        res.json({ ok: false, reason: 'GPS_MISMATCH', balance: user.balance, owned: false });
-        return;
-    }
+    // GPS verification temporarily disabled for testing
     const alreadyOwned = user.ownedHexes.has(h3Index);
     if (alreadyOwned) {
         res.json({
@@ -1478,21 +1426,12 @@ app.post('/api/mine', requireAuth, (req, res) => {
         });
         return;
     }
-    // Check if hex is already owned by ANY other user (global ownership check)
-    // Build set excluding current user to check if another user owns this hex
-    const otherUsersOwned = new Set();
-    for (const otherUser of usersById.values()) {
-        if (otherUser.id !== user.id) {
-            for (const idx of otherUser.ownedHexes) {
-                otherUsersOwned.add(idx);
-            }
-        }
-    }
-    if (otherUsersOwned.has(h3Index)) {
-        // Hex is already owned by another user - cannot mine it
+    // Check if hex is owned by another user
+    const globalOwned = buildGlobalOwnedHexesSet();
+    if (globalOwned.has(h3Index)) {
         res.json({
             ok: false,
-            reason: 'ALREADY_OWNED_BY_OTHER',
+            reason: 'OWNED_BY_OTHER',
             balance: user.balance,
             owned: false,
         });
@@ -1510,13 +1449,9 @@ app.post('/api/mine', requireAuth, (req, res) => {
         });
         return;
     }
-    // Removed NOT_ADJACENT rule - users can now mine any hex that is not already owned
-    console.log('[MINE] Mining hex:', h3Index, 'for user:', user.id, user.email);
-    console.log('[MINE] User balance before:', user.balance, 'ownedHexes count:', user.ownedHexes.size);
+    // Frontier rule temporarily disabled for testing
     user.ownedHexes.add(h3Index);
     user.balance += 1;
-    console.log('[MINE] User balance after:', user.balance, 'ownedHexes count:', user.ownedHexes.size);
-    console.log('[MINE] User ownedHexes:', Array.from(user.ownedHexes).slice(0, 5), '...');
     miningEvents.push({
         timestamp: Date.now(),
         userId: user.id,
@@ -1524,50 +1459,10 @@ app.post('/api/mine', requireAuth, (req, res) => {
     });
     saveMiningEvents(miningEvents);
     saveUsers(usersById);
-    // Verify the save worked
-    const savedUsers = loadUsers();
-    const savedUser = savedUsers.get(user.id);
-    console.log('[MINE] After save - user ownedHexes count:', savedUser?.ownedHexes.size, 'balance:', savedUser?.balance);
     res.json({
         ok: true,
         balance: user.balance,
         owned: true,
-    });
-});
-// Auto-mine fee endpoint: charge 10% fee on all auto-mined hexes
-app.post('/api/auto-mine-fee', requireAuth, (req, res) => {
-    const user = req.user;
-    if (!user) {
-        res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' });
-        return;
-    }
-    const { fee, hexCount, isUpfront } = req.body;
-    if (typeof fee !== 'number' || !Number.isFinite(fee) || fee < 0) {
-        res.status(400).json({ ok: false, error: 'INVALID_FEE' });
-        return;
-    }
-    if (typeof hexCount !== 'number' || !Number.isFinite(hexCount) || hexCount < 0) {
-        res.status(400).json({ ok: false, error: 'INVALID_HEX_COUNT' });
-        return;
-    }
-    if (user.balance < fee) {
-        res.json({
-            ok: false,
-            reason: 'INSUFFICIENT_GHX',
-            balance: user.balance,
-            requiredFee: fee,
-        });
-        return;
-    }
-    user.balance -= fee;
-    collectTreasuryFee(fee);
-    saveUsers(usersById);
-    res.json({
-        ok: true,
-        newBalance: user.balance,
-        fee,
-        hexCount,
-        isUpfront: !!isUpfront,
     });
 });
 // Heavier endpoint used only on explicit user interaction (click on a hex).
@@ -1601,6 +1496,7 @@ app.get('/api/hex/:h3Index/osm', async (req, res) => {
     };
     res.json(result);
 });
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Backend listening on http://localhost:${port}`);
+    console.log(`Network: http://10.0.0.14:${port}`);
 });
