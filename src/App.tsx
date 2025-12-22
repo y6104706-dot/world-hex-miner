@@ -840,14 +840,31 @@ function App() {
 
     mapStyleUrlRef.current = mapStyleUrl
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: mapStyleUrl,
-      center: centerLonLat,
-      zoom: 14,
-    })
+    let map: maplibregl.Map
+    try {
+      map = new maplibregl.Map({
+        container: mapContainerRef.current,
+        style: mapStyleUrl,
+        center: centerLonLat,
+        zoom: 14,
+      })
+    } catch (err) {
+      console.error('[Map] Failed to create map:', err)
+      setToastMessage('Failed to initialize map. WebGL may not be supported. Try a different browser or enable WebGL in settings.')
+      setToastType('error')
+      return
+    }
 
     mapRef.current = map
+
+    // Handle WebGL context errors
+    map.on('error', (e) => {
+      if (e.error?.message?.includes('WebGL') || e.error?.type === 'webglcontextcreationerror') {
+        console.error('[Map] WebGL error:', e.error)
+        setToastMessage('WebGL is not available. Please enable WebGL in your browser settings or try a different browser.')
+        setToastType('error')
+      }
+    })
 
     map.on('load', () => {
       let features: HexFeature[] = []
