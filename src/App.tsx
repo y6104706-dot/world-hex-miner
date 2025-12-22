@@ -444,6 +444,106 @@ function App() {
           }
         }
 
+        // Auto-Mine mode: automatically mine the current hex when entering it
+        // This runs regardless of whether the hex is loaded in features
+        if (autoMineActiveRef.current && authTokenRef.current && lastGeoCoordsRef.current) {
+          const currentLastAutoMineHex = lastAutoMinedHexRef.current
+          if (currentLastAutoMineHex !== currentHex) {
+            const now = Date.now()
+            const minIntervalMs = 1000
+            const lastAutoMineAt = lastAutoMineAtRef.current || 0
+            if (now - lastAutoMineAt >= minIntervalMs) {
+              lastAutoMineAtRef.current = now
+
+              console.log('[Auto-Mine] Attempting to mine hex:', currentHex)
+
+              void (async () => {
+                try {
+                  const gpsCoords = lastGeoCoordsRef.current
+                  if (!gpsCoords) {
+                    console.log('[Auto-Mine] No GPS coordinates')
+                    return
+                  }
+
+                  const res = await authedFetch(`${apiBase}/api/mine`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      h3Index: currentHex,
+                      lat: gpsCoords.lat,
+                      lon: gpsCoords.lon,
+                      accuracyM: gpsCoords.accuracyM || 10,
+                      gpsAt: now,
+                    }),
+                  })
+
+                  if (!res.ok) {
+                    console.log('[Auto-Mine] Request failed:', res.status, res.statusText)
+                    return
+                  }
+
+                  const data: { ok?: boolean; balance?: number; reason?: string } = await res.json()
+
+                  if (data.ok) {
+                    console.log('[Auto-Mine] ✓ Successfully mined hex:', currentHex)
+                    if (typeof data.balance === 'number') {
+                      setUserBalance(data.balance)
+                    }
+
+                    const ownedSetInner = ownedHexesRef.current
+                    ownedSetInner.add(currentHex)
+                    globalOwnedHexesRef.current.add(currentHex)
+
+                    const current = featuresRef.current
+                    if (current && current.length > 0) {
+                      const globalOwnedSet = globalOwnedHexesRef.current
+                      const updated: HexFeature[] = current.map((f) => {
+                        const idx = f.properties.h3Index
+                        const isOwnedHex = ownedSetInner.has(idx)
+                        const neighbors = h3.gridDisk(idx, 1)
+                        const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
+
+                        return {
+                          ...f,
+                          properties: {
+                            ...f.properties,
+                            claimed: isOwnedHex,
+                            canMine: canMineNeighbor,
+                          },
+                        }
+                      })
+
+                      featuresRef.current = updated
+
+                      const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+                      if (src) {
+                        src.setData({ type: 'FeatureCollection' as const, features: updated })
+                      }
+                    }
+
+                    setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
+                    setToastMessage('✓ Auto-mined hex!')
+                    setToastType('success')
+                  } else if (data.reason) {
+                    // Show error message for failed mining attempts
+                    console.log('[Auto-Mine] Mining failed:', data.reason)
+                    setToastMessage(`Mining failed: ${data.reason}`)
+                    setToastType('error')
+                  }
+
+                  lastAutoMinedHexRef.current = currentHex
+                } catch (err) {
+                  console.error('[Auto-Mine] Error:', err)
+                  setToastMessage(`Mining error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+                  setToastType('error')
+                }
+              })()
+            }
+          }
+        }
+
         // If this GPS hex is already present in features, select it (but only on hex change).
         const currentFeatures = featuresRef.current
         const feature = currentFeatures.find((f) => f.properties.h3Index === currentHex)
@@ -538,105 +638,6 @@ function App() {
                     lastDriveHexRef.current = currentHex
                   } catch {
                     // ignore
-                  }
-                })()
-              }
-            }
-          }
-
-          // Auto-Mine mode: automatically mine the current hex when entering it
-          if (autoMineActiveRef.current && authTokenRef.current && lastGeoCoordsRef.current) {
-            const currentLastAutoMineHex = lastAutoMinedHexRef.current
-            if (currentLastAutoMineHex !== currentHex) {
-              const now = Date.now()
-              const minIntervalMs = 1000
-              const lastAutoMineAt = lastAutoMineAtRef.current || 0
-              if (now - lastAutoMineAt >= minIntervalMs) {
-                lastAutoMineAtRef.current = now
-
-                console.log('[Auto-Mine] Attempting to mine hex:', currentHex)
-
-                void (async () => {
-                  try {
-                    const gpsCoords = lastGeoCoordsRef.current
-                    if (!gpsCoords) {
-                      console.log('[Auto-Mine] No GPS coordinates')
-                      return
-                    }
-
-                    const res = await authedFetch(`${apiBase}/api/mine`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        h3Index: currentHex,
-                        lat: gpsCoords.lat,
-                        lon: gpsCoords.lon,
-                        accuracyM: gpsCoords.accuracyM || 10,
-                        gpsAt: now,
-                      }),
-                    })
-
-                    if (!res.ok) {
-                      console.log('[Auto-Mine] Request failed:', res.status, res.statusText)
-                      return
-                    }
-
-                    const data: { ok?: boolean; balance?: number; reason?: string } = await res.json()
-
-                    if (data.ok) {
-                      console.log('[Auto-Mine] ✓ Successfully mined hex:', currentHex)
-                      if (typeof data.balance === 'number') {
-                        setUserBalance(data.balance)
-                      }
-
-                      const ownedSetInner = ownedHexesRef.current
-                      ownedSetInner.add(currentHex)
-                      globalOwnedHexesRef.current.add(currentHex)
-
-                      const current = featuresRef.current
-                      if (current && current.length > 0) {
-                        const globalOwnedSet = globalOwnedHexesRef.current
-                        const updated: HexFeature[] = current.map((f) => {
-                          const idx = f.properties.h3Index
-                          const isOwnedHex = ownedSetInner.has(idx)
-                          const neighbors = h3.gridDisk(idx, 1)
-                          const canMineNeighbor = !isOwnedHex && neighbors.some((n) => globalOwnedSet.has(n))
-
-                          return {
-                            ...f,
-                            properties: {
-                              ...f.properties,
-                              claimed: isOwnedHex,
-                              canMine: canMineNeighbor,
-                            },
-                          }
-                        })
-
-                        featuresRef.current = updated
-
-                        const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-                        if (src) {
-                          src.setData({ type: 'FeatureCollection' as const, features: updated })
-                        }
-                      }
-
-                      setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
-                      setToastMessage('✓ Auto-mined hex!')
-                      setToastType('success')
-                    } else if (data.reason) {
-                      // Show error message for failed mining attempts
-                      console.log('[Auto-Mine] Mining failed:', data.reason)
-                      setToastMessage(`Mining failed: ${data.reason}`)
-                      setToastType('error')
-                    }
-
-                    lastAutoMinedHexRef.current = currentHex
-                  } catch (err) {
-                    console.error('[Auto-Mine] Error:', err)
-                    setToastMessage(`Mining error: ${err instanceof Error ? err.message : 'Unknown error'}`)
-                    setToastType('error')
                   }
                 })()
               }
