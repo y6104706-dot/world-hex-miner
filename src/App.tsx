@@ -508,9 +508,11 @@ function App() {
                     ownedSetInner.add(currentHex)
                     globalOwnedHexesRef.current.add(currentHex)
 
+                    // Update existing features if loaded
                     const current = featuresRef.current
+                    const globalOwnedSet = globalOwnedHexesRef.current
+                    
                     if (current && current.length > 0) {
-                      const globalOwnedSet = globalOwnedHexesRef.current
                       const updated: HexFeature[] = current.map((f) => {
                         const idx = f.properties.h3Index
                         const isOwnedHex = ownedSetInner.has(idx)
@@ -527,12 +529,53 @@ function App() {
                         }
                       })
 
+                      // Check if the newly mined hex is already in features
+                      const hexExistsInFeatures = current.some((f) => f.properties.h3Index === currentHex)
+                      
+                      if (!hexExistsInFeatures) {
+                        // Add the newly mined hex to features
+                        const boundary = h3.cellToBoundary(currentHex, true)
+                        const coords: [number, number][] = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
+                        coords.push(coords[0])
+
+                        // Get zone type from cache or default to URBAN
+                        const infoCache = hexInfoCacheRef.current
+                        const cached = infoCache.get(currentHex)
+                        const zoneType: ZoneType = cached?.zoneType || 'URBAN'
+                        const debugInfo = cached?.debugInfo || []
+
+                        const neighbors = h3.gridDisk(currentHex, 1)
+                        const canMineNeighbor = neighbors.some((n) => globalOwnedSet.has(n))
+
+                        updated.push({
+                          type: 'Feature',
+                          properties: {
+                            h3Index: currentHex,
+                            zoneType,
+                            claimed: true,
+                            selected: false,
+                            canMine: canMineNeighbor,
+                            owner: 'mine',
+                            isMine: true,
+                            isOthers: false,
+                            debugInfo,
+                          },
+                          geometry: {
+                            type: 'Polygon',
+                            coordinates: [coords],
+                          },
+                        })
+                      }
+
                       featuresRef.current = updated
 
                       const src = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
                       if (src) {
                         src.setData({ type: 'FeatureCollection' as const, features: updated })
                       }
+                    } else {
+                      // If no features loaded yet, force reload to load the newly mined hex
+                      loadHexesForCurrentViewRef.current?.()
                     }
 
                     setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
