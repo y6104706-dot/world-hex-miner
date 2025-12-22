@@ -15,7 +15,15 @@ const __dirname = path.dirname(__filename)
 const app = express()
 const port = Number(process.env.PORT) || 4000
 
-app.use(cors())
+// CORS configuration - allow all origins for mobile access
+app.use(
+  cors({
+    origin: true, // Allow all origins
+    credentials: true, // Allow cookies/auth headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
+)
 app.use(express.json())
 
 type User = {

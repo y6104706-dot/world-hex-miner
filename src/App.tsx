@@ -7,8 +7,13 @@ import type { HexFeature } from './types/hex'
 import type { ZoneType } from './utils/hexUtils'
 
 function App() {
+  // API base URL: use environment variable if set, otherwise use same origin (for Render deployment)
+  // or fallback to localhost:4000 for local development
   const apiBase =
-    import.meta.env.VITE_API_BASE_URL ?? `${window.location.protocol}//${window.location.hostname}:4000`
+    import.meta.env.VITE_API_BASE_URL ??
+    (window.location.port === '4000' || window.location.hostname === 'localhost'
+      ? `${window.location.protocol}//${window.location.hostname}:4000`
+      : `${window.location.protocol}//${window.location.host}`)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
@@ -56,12 +61,39 @@ function App() {
     }
   }
 
-  const authedFetch = (input: RequestInfo | URL, init?: RequestInit) => {
+  const authedFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const headers = new Headers(init?.headers)
     if (authToken) {
       headers.set('Authorization', `Bearer ${authToken}`)
     }
-    return fetch(input, { ...init, headers })
+    
+    try {
+      const response = await fetch(input, { ...init, headers })
+      
+      // If we get 401, check if it's really an auth issue or just a network problem
+      if (response.status === 401) {
+        // Try to parse the error to see if it's really an auth issue
+        try {
+          const errorData = await response.clone().json().catch(() => ({}))
+          // Only clear token if server explicitly says UNAUTHENTICATED
+          // Don't clear on network errors or other 401s that might be temporary
+          if (errorData.error === 'UNAUTHENTICATED') {
+            console.warn('[Auth] Token invalid, clearing auth token')
+            setAndPersistAuthToken(null)
+          }
+        } catch {
+          // If we can't parse the response, don't clear token - might be network issue
+          console.warn('[Auth] Got 401 but couldn\'t parse response - might be network issue, keeping token')
+        }
+      }
+      
+      return response
+    } catch (error) {
+      // Network errors (like when switching from WiFi to mobile data) should not clear the token
+      console.warn('[Auth] Network error during fetch:', error)
+      // Re-throw to let the caller handle it
+      throw error
+    }
   }
 
   type MiningRule = {
