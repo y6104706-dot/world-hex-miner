@@ -1526,7 +1526,7 @@ const distPath = path.join(__dirname, '..', 'dist');
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
     // Serve index.html for all non-API routes (SPA routing)
-    app.get('*', (req, res, next) => {
+    app.get('/*', (req, res, next) => {
         // Skip API routes
         if (req.path.startsWith('/api/')) {
             return next();
