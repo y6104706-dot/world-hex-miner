@@ -1808,6 +1808,54 @@ app.get('/api/hex/:h3Index/osm', async (req, res) => {
   res.json(result)
 })
 
+// Admin endpoint: Reset all mined hexes for all users (development/testing only)
+app.post('/api/admin/reset-hexes', requireAuth, (req, res) => {
+  const user = (req as express.Request & { user?: User }).user
+  if (!user) {
+    res.status(401).json({ ok: false, error: 'UNAUTHENTICATED' })
+    return
+  }
+
+  // Reset ownedHexes for all users (keep only default start hex)
+  let resetCount = 0
+  for (const u of usersById.values()) {
+    const beforeCount = u.ownedHexes.size
+    u.ownedHexes = new Set<string>([DEFAULT_START_HEX])
+    if (beforeCount > 1) {
+      resetCount++
+    }
+  }
+
+  saveUsers(usersById)
+
+  res.json({
+    ok: true,
+    message: 'All mined hexes reset',
+    usersReset: resetCount,
+    defaultHex: DEFAULT_START_HEX,
+  })
+})
+
+// Serve static files from dist directory (built frontend)
+// This must be after all API routes
+const distPath = path.join(__dirname, '..', 'dist')
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath))
+  // Serve index.html for all non-API routes (SPA routing)
+  app.get('*', (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return next()
+    }
+    const indexPath = path.join(distPath, 'index.html')
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath)
+    } else {
+      res.json({ ok: true, service: 'world-hex-miner-api', note: 'Frontend not built yet' })
+    }
+  })
+}
+
 app.listen(port, '0.0.0.0', () => {
   console.log(`Backend listening on http://localhost:${port}`)
   console.log(`Network: http://10.0.0.14:${port}`)

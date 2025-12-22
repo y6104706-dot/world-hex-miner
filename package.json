@@ -7,8 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:server": "tsc -p tsconfig.server.json",
+    "build:all": "npm run build:server && npm run build",
+    "start": "node server-dist/index.js",
     "start:server": "node server-dist/index.js",
     "precompute:gush-dan": "ts-node server/precomputeGushDanCache.ts",
+    "reset-hexes": "node reset-hexes.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },

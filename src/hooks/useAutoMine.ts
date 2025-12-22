@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react'
-import { latLngToSymmetricHex } from '../utils/hexUtils'
+import * as h3 from 'h3-js'
 
 const API_BASE = ''
 
@@ -84,7 +84,8 @@ export function useAutoMine(options: UseAutoMineOptions) {
     }
 
     try {
-      const currentHex = latLngToSymmetricHex(gpsCoords.lat, gpsCoords.lon)
+      // Use H3 resolution 11 (same as the main app)
+      const currentHex = h3.latLngToCell(gpsCoords.lat, gpsCoords.lon, 11)
 
       // Don't mine if already mined
       if (lastMinedHexRef.current === currentHex) {

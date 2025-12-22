@@ -543,7 +543,7 @@ function App() {
           }
 
           // Auto-Mine mode: automatically mine the current hex when entering it
-          if (autoMineActiveRef.current && authTokenRef.current) {
+          if (autoMineActiveRef.current && authTokenRef.current && lastGeoCoordsRef.current) {
             const currentLastAutoMineHex = lastAutoMinedHexRef.current
             if (currentLastAutoMineHex !== currentHex) {
               const now = Date.now()
@@ -554,12 +554,23 @@ function App() {
 
                 void (async () => {
                   try {
+                    const gpsCoords = lastGeoCoordsRef.current
+                    if (!gpsCoords) {
+                      return
+                    }
+
                     const res = await authedFetch(`${apiBase}/api/mine`, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
                       },
-                      body: JSON.stringify({ h3Index: currentHex }),
+                      body: JSON.stringify({
+                        h3Index: currentHex,
+                        lat: gpsCoords.lat,
+                        lon: gpsCoords.lon,
+                        accuracyM: gpsCoords.accuracyM || 10,
+                        gpsAt: now,
+                      }),
                     })
 
                     if (!res.ok) {
@@ -607,10 +618,14 @@ function App() {
                       setOwnedCount((prev) => (typeof prev === 'number' ? prev + 1 : 1))
                       setToastMessage('✓ Auto-mined hex!')
                       setToastType('success')
+                    } else if (data.reason) {
+                      // Show error message for failed mining attempts
+                      console.log('[Auto-Mine] Mining failed:', data.reason)
                     }
 
                     lastAutoMinedHexRef.current = currentHex
-                  } catch {
+                  } catch (err) {
+                    console.error('[Auto-Mine] Error:', err)
                     // ignore
                   }
                 })()
