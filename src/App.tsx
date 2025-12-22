@@ -812,10 +812,6 @@ function App() {
         data: { type: 'FeatureCollection' as const, features: [] as any[] },
       })
 
-      map.addSource('hex-center-dots', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection' as const, features: [] as any[] },
-      })
 
       map.addLayer({
         id: 'user-accuracy-fill',
@@ -871,32 +867,47 @@ function App() {
       })
 
       map.addLayer({
-        id: 'hex-center-dots-mined',
-        type: 'circle',
-        source: 'hex-center-dots',
-        filter: ['==', ['get', 'isMine'], true],
+        id: 'h3-hex-fill',
+        type: 'fill',
+        source: 'h3-hex',
         paint: {
-          'circle-radius': 8,
-          'circle-color': '#00FF00',
-          'circle-opacity': 0.9,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#00AA00',
-          'circle-stroke-opacity': 1,
+          'fill-color': [
+            'case',
+            ['==', ['get', 'selected'], true], '#FFD700',
+            ['==', ['get', 'isMine'], true], '#00FF00',
+            ['==', ['get', 'isOthers'], true], '#00008B',
+            '#3388ff'
+          ],
+          'fill-opacity': [
+            'case',
+            ['==', ['get', 'selected'], true], 0.7,
+            ['==', ['get', 'isMine'], true], 0.6,
+            ['==', ['get', 'isOthers'], true], 0.5,
+            0.2
+          ],
         },
       })
 
       map.addLayer({
-        id: 'hex-center-dots-gps',
-        type: 'circle',
-        source: 'hex-center-dots',
-        filter: ['==', ['get', 'isGpsLocation'], true],
+        id: 'h3-hex-outline',
+        type: 'line',
+        source: 'h3-hex',
         paint: {
-          'circle-radius': 10,
-          'circle-color': '#FFD700',
-          'circle-opacity': 0.95,
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#FFA500',
-          'circle-stroke-opacity': 1,
+          'line-color': [
+            'case',
+            ['==', ['get', 'selected'], true], '#FFD700',
+            ['==', ['get', 'isMine'], true], '#00FF00',
+            ['==', ['get', 'isOthers'], true], '#00008B',
+            '#888888'
+          ],
+          'line-width': [
+            'case',
+            ['==', ['get', 'selected'], true], 3,
+            ['==', ['get', 'isMine'], true], 2,
+            ['==', ['get', 'isOthers'], true], 2,
+            1
+          ],
+          'line-opacity': 0.8,
         },
       })
 
@@ -1122,40 +1133,6 @@ function App() {
           // its own data.
         }
 
-        // Create center dots for each hex
-        const centerDots = newFeatures.map((feature) => {
-          const hexIndex = feature.properties.h3Index
-          const [lat, lng] = h3.cellToLatLng(hexIndex)
-          const isOwned = ownedSet.has(hexIndex)
-          const isGpsLocation = hexIndex === gpsHex
-          
-          return {
-            type: 'Feature' as const,
-            properties: {
-              h3Index: hexIndex,
-              isMine: isOwned,
-              isGpsLocation: isGpsLocation,
-            },
-            geometry: {
-              type: 'Point' as const,
-              coordinates: [lng, lat],
-            },
-          }
-        })
-
-        const centerDotsCollection = {
-          type: 'FeatureCollection' as const,
-          features: centerDots,
-        }
-
-        try {
-          const dotsSource = map.getSource('hex-center-dots') as maplibregl.GeoJSONSource | undefined
-          if (dotsSource) {
-            dotsSource.setData(centerDotsCollection)
-          }
-        } catch {
-          // Ignore if source not ready
-        }
 
         if (!hasFitToHexes && features.length > 0) {
           const allCoords = features.flatMap((f) => f.geometry.coordinates[0] as [number, number][])
