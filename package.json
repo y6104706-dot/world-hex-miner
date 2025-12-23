@@ -14,7 +14,8 @@
     "precompute:gush-dan": "ts-node server/precomputeGushDanCache.ts",
     "reset-hexes": "node reset-hexes.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tunnel:info": "node tunnel-server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

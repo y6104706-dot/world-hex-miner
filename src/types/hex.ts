@@ -25,6 +25,7 @@ export interface HexProperties {
   zoneType: ZoneType
   claimed: boolean
   selected: boolean
+  isGpsHex: boolean // True when user is physically located in this hex (GPS)
   canMine: boolean
   owner: 'mine' | 'others' | null
   isMine: boolean

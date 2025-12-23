@@ -10,6 +10,14 @@ function App() {
   // API base URL: use environment variable if set, otherwise use same origin (for Render deployment)
   // or fallback to localhost:4000 for local development
   const apiBase = (() => {
+    // For tunneling (ngrok, cloudflare, etc.) - set this to your tunnel URL
+    // Example: const TUNNEL_URL = 'https://abc123.ngrok.io'
+    // Uncomment and set when using tunnel:
+    // const TUNNEL_URL = ''
+    // if (TUNNEL_URL) {
+    //   return TUNNEL_URL
+    // }
+    
     // If environment variable is set, use it
     if (import.meta.env.VITE_API_BASE_URL) {
       return import.meta.env.VITE_API_BASE_URL
@@ -30,17 +38,20 @@ function App() {
       return `${window.location.protocol}//${window.location.host}`
     }
     
-    // For local development: only use localhost:4000 if we're on actual localhost
-    // (not local IP addresses, as those might be accessed from mobile devices)
+    // For local development: detect localhost or local IP addresses
     const isActualLocalhost = window.location.hostname === 'localhost' || 
                               window.location.hostname === '127.0.0.1'
     
-    if (isActualLocalhost && window.location.port !== '4000') {
+    // Check if hostname is a local IP (private network range)
+    const isLocalIP = /^10\.|^172\.(1[6-9]|2[0-9]|3[01])\.|^192\.168\./.test(window.location.hostname)
+    
+    // If we're on localhost or local IP, and not already on port 4000, connect to backend on port 4000
+    if ((isActualLocalhost || isLocalIP) && window.location.port !== '4000') {
       return `${window.location.protocol}//${window.location.hostname}:4000`
     }
     
     // Default: use same origin (works for both local and production)
-    // This handles cases like accessing via local IP from mobile devices
+    // This handles cases like accessing via local IP from mobile devices when already on port 4000
     return `${window.location.protocol}//${window.location.host}`
   })()
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
@@ -472,29 +483,27 @@ function App() {
         gpsSelectedHexRef.current = null
       }
 
-      // Mark GPS hex as selected - this will make it orange
+      // Mark GPS hex - this will make it gold (separate from manual selection)
+      // Only the current GPS hex should be gold, previous ones should return to normal
       const gpsHex = usingMyLocationRef.current ? gpsSelectedHexRef.current : null
-      if (gpsHex && shouldUpdateLayers) {
+      if (shouldUpdateLayers) {
         const currentFeatures = featuresRef.current
         if (currentFeatures && currentFeatures.length > 0) {
-          // Check if GPS hex exists in loaded features
-          const gpsHexExists = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
+          // Update all features: only current GPS hex should be isGpsHex: true
+          const updatedFeatures = currentFeatures.map((f) => ({
+            ...f,
+            properties: {
+              ...f.properties,
+              isGpsHex: gpsHex ? f.properties.h3Index === gpsHex : false,
+            },
+          }))
           
-          if (gpsHexExists) {
-            // Mark GPS hex as selected
-            const updatedFeatures = currentFeatures.map((f) => ({
-              ...f,
-              properties: {
-                ...f.properties,
-                selected: f.properties.h3Index === gpsHex,
-              },
-            }))
-            
-            featuresRef.current = updatedFeatures
-            const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
-            if (source) {
-              source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
-              console.log('[GPS→HEX] ✓ GPS hex marked orange:', gpsHex)
+          featuresRef.current = updatedFeatures
+          const source = map.getSource('h3-hex') as maplibregl.GeoJSONSource | undefined
+          if (source) {
+            source.setData({ type: 'FeatureCollection' as const, features: updatedFeatures })
+            if (gpsHex) {
+              console.log('[GPS→HEX] ✓ GPS hex marked gold:', gpsHex)
             }
           }
         }
@@ -621,6 +630,7 @@ function App() {
                             zoneType,
                             claimed: true,
                             selected: false,
+                            isGpsHex: false,
                             canMine: canMineNeighbor,
                             owner: 'mine',
                             isMine: true,
@@ -769,21 +779,24 @@ function App() {
       }
 
       // If the current GPS hex exists in the currently loaded features,
-      // highlight it immediately (orange) without waiting for a reload.
+      // highlight it immediately (gold) without waiting for a reload.
+      // Only the current GPS hex should be gold, previous ones should return to normal.
       if (!isManualSelectLocked && usingMyLocationRef.current) {
         const gpsHex = gpsSelectedHexRef.current
-        if (gpsHex) {
-          const currentFeatures = featuresRef.current
-          if (currentFeatures && currentFeatures.length > 0) {
-            const hasGpsFeature = currentFeatures.some((f) => f.properties.h3Index === gpsHex)
+        const currentFeatures = featuresRef.current
+        if (currentFeatures && currentFeatures.length > 0) {
+          // Update all features: only current GPS hex should be isGpsHex: true
+          const updatedFeatures: HexFeature[] = currentFeatures.map((f) => ({
+            ...f,
+            properties: {
+              ...f.properties,
+              isGpsHex: gpsHex ? f.properties.h3Index === gpsHex : false,
+            },
+          }))
+          
+          if (gpsHex) {
+            const hasGpsFeature = updatedFeatures.some((f) => f.properties.h3Index === gpsHex)
             if (hasGpsFeature) {
-              const updatedFeatures: HexFeature[] = currentFeatures.map((f) => ({
-                ...f,
-                properties: {
-                  ...f.properties,
-                  selected: f.properties.h3Index === gpsHex,
-                },
-              }))
 
               featuresRef.current = updatedFeatures
 
@@ -1127,7 +1140,8 @@ function App() {
         paint: {
           'fill-color': [
             'case',
-            ['==', ['get', 'selected'], true], '#FFD700',
+            ['==', ['get', 'selected'], true], '#FFD700', // Manual selection (click) - gold
+            ['==', ['get', 'isGpsHex'], true], '#FFD700', // GPS hex (physical location) - gold
             ['==', ['get', 'isMine'], true], '#00FF00',
             ['==', ['get', 'isOthers'], true], '#00008B',
             '#3388ff'
@@ -1135,6 +1149,7 @@ function App() {
           'fill-opacity': [
             'case',
             ['==', ['get', 'selected'], true], 0.7,
+            ['==', ['get', 'isGpsHex'], true], 0.7, // GPS hex - same opacity as selected
             ['==', ['get', 'isMine'], true], 0.6,
             ['==', ['get', 'isOthers'], true], 0.5,
             0.2
@@ -1149,7 +1164,8 @@ function App() {
         paint: {
           'line-color': [
             'case',
-            ['==', ['get', 'selected'], true], '#FFD700',
+            ['==', ['get', 'selected'], true], '#FFD700', // Manual selection - gold
+            ['==', ['get', 'isGpsHex'], true], '#FFD700', // GPS hex - gold
             ['==', ['get', 'isMine'], true], '#00FF00',
             ['==', ['get', 'isOthers'], true], '#00008B',
             '#888888'
@@ -1157,6 +1173,7 @@ function App() {
           'line-width': [
             'case',
             ['==', ['get', 'selected'], true], 3,
+            ['==', ['get', 'isGpsHex'], true], 3, // GPS hex - same width as selected
             ['==', ['get', 'isMine'], true], 2,
             ['==', ['get', 'isOthers'], true], 2,
             1
@@ -1314,6 +1331,8 @@ function App() {
         const manualSelectedHex =
           Date.now() < manualSelectUntilRef.current ? manualSelectedHexRef.current : null
 
+        // gpsHex is already defined above (line 1310), use it here for selection highlighting
+
         for (const hexIndex of hexIndexes) {
           const boundary = h3.cellToBoundary(hexIndex, true)
           const coords: [number, number][] = boundary.map(([lat, lng]) => [lng, lat] as [number, number])
@@ -1333,12 +1352,11 @@ function App() {
           const neighbors = h3.gridDisk(hexIndex, 1)
           const canMine = !isOwned && neighbors.some((n) => globalOwnedSet.has(n))
 
-          // Priority: manual selection > GPS hex
-          const isSelected = manualSelectedHex
-            ? hexIndex === manualSelectedHex
-            : gpsHex
-              ? hexIndex === gpsHex
-              : false
+          // Check if this is the GPS hex (user is physically located here)
+          const isGpsHex = gpsHex ? hexIndex === gpsHex : false
+
+          // Manual selection (from click) - separate from GPS
+          const isSelected = manualSelectedHex ? hexIndex === manualSelectedHex : false
 
           newFeatures.push({
             type: 'Feature',
@@ -1347,6 +1365,7 @@ function App() {
               zoneType,
               claimed: isOwned,
               selected: isSelected,
+              isGpsHex: isGpsHex,
               canMine,
               owner: isOwned ? 'mine' : isOthers ? 'others' : null,
               isMine: isOwned,

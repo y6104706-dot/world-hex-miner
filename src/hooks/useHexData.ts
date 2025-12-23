@@ -233,6 +233,7 @@ export function useHexData(options: UseHexDataOptions) {
           zoneType: parentInfo.zoneType, // Use parent hex zone type
           claimed: isOwned,
           selected: isSelected || false,
+          isGpsHex: false, // Not used for symmetric hexes
           canMine: canMine || false,
           owner: ownershipData.owner || null,
           isMine: ownershipData.isMine || false,
