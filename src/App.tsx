@@ -291,6 +291,7 @@ function App() {
   const [mineMessage, setMineMessage] = useState<string | null>(null)
   const [mineMessageType, setMineMessageType] = useState<'success' | 'error' | null>(null)
   const [selectedOwned, setSelectedOwned] = useState<boolean | null>(null)
+  const [currentHexInfo, setCurrentHexInfo] = useState<{ h3Index: string; lat: number; lng: number } | null>(null)
   const [canSpawnHere, setCanSpawnHere] = useState(false)
   const [userBalance, setUserBalance] = useState<number | null>(null)
   const [ownedCount, setOwnedCount] = useState<number | null>(null)
@@ -461,6 +462,11 @@ function App() {
         const newGpsHex = h3.latLngToCell(coords.lat, coords.lon, 11)
         gpsSelectedHexRef.current = newGpsHex
         console.log('[GPS→HEX] GPS coords:', coords.lat, coords.lon, '→ H3 hex:', newGpsHex)
+        
+        // Update current hex info for the bottom button when GPS updates
+        if (usingMyLocationRef.current) {
+          setCurrentHexInfo({ h3Index: newGpsHex, lat: coords.lat, lng: coords.lon })
+        }
       } catch (err) {
         console.log('[GPS→HEX] ERROR converting GPS to H3:', err)
         gpsSelectedHexRef.current = null
@@ -839,6 +845,15 @@ function App() {
             setSelectedHex({ h3Index: currentHex, zoneType })
             setSelectedOwned(ownedHexesRef.current.has(currentHex))
             setMineMessage(null)
+            
+            // Update current hex info for the bottom button
+            try {
+              const [lat, lng] = h3.cellToLatLng(currentHex)
+              setCurrentHexInfo({ h3Index: currentHex, lat, lng })
+            } catch {
+              // If conversion fails, still set the h3Index
+              setCurrentHexInfo({ h3Index: currentHex, lat: coords.lat, lng: coords.lon })
+            }
             setMineMessageType(null)
             setCanSpawnHere(false)
 
@@ -1353,6 +1368,15 @@ function App() {
           if (gpsFeature) {
             setSelectedHex({ h3Index: gpsHex, zoneType: gpsFeature.properties.zoneType })
             setSelectedOwned(ownedSet.has(gpsHex))
+            
+            // Update current hex info for the bottom button
+            try {
+              const [lat, lng] = h3.cellToLatLng(gpsHex)
+              setCurrentHexInfo({ h3Index: gpsHex, lat, lng })
+            } catch {
+              // If conversion fails, clear the info
+              setCurrentHexInfo(null)
+            }
           }
         }
 
@@ -1508,18 +1532,49 @@ function App() {
         const feature = event.features?.[0] as maplibregl.MapGeoJSONFeature | undefined
         if (!feature) return
 
-        const h3Index = feature.properties?.h3Index as string | undefined
+        // Calculate hex ID directly from click coordinates to get the correct hex
+        // event.lngLat has {lng, lat} properties, h3.latLngToCell expects (lat, lng)
+        const clickLngLat = event.lngLat
+        let h3Index = feature.properties?.h3Index as string | undefined
+        
+        // Calculate hex from click coordinates - this gives us the correct hex ID
+        if (clickLngLat) {
+          try {
+            const computedHex = h3.latLngToCell(clickLngLat.lat, clickLngLat.lng, 11)
+            console.log('[click] Click coords:', clickLngLat, 'computed hex:', computedHex, 'feature hex:', h3Index)
+            // Use the computed hex ID for the bottom button (correct one)
+            h3Index = computedHex
+          } catch (err) {
+            console.error('[click] Failed to compute hex from click coords:', err)
+            // Fall back to feature.properties.h3Index if computation fails
+          }
+        }
+        
+        // Still use feature h3Index for the panel (to keep existing behavior)
+        const featureH3Index = feature.properties?.h3Index as string | undefined
         let zoneType = feature.properties?.zoneType as ZoneType | undefined
         let rawDebug = feature.properties?.debugInfo as unknown
 
-        if (!h3Index || !zoneType) return
+        if (!featureH3Index || !zoneType) return
 
-        manualSelectedHexRef.current = h3Index
+        manualSelectedHexRef.current = featureH3Index
+
+        // Update current hex info for the bottom button using the computed hex (correct one)
+        if (h3Index) {
+          try {
+            const [lat, lng] = h3.cellToLatLng(h3Index)
+            setCurrentHexInfo({ h3Index, lat, lng })
+          } catch {
+            // If conversion fails, use click coordinates directly
+            setCurrentHexInfo({ h3Index, lat: clickLngLat.lat, lng: clickLngLat.lng })
+          }
+        }
 
         // On click, try to refine the zoneType using OSM/Overpass for this
         // specific hex only, to avoid rate limiting.
+        // Use featureH3Index for the panel (existing behavior)
         try {
-          const res = await fetch(`${apiBase}/api/hex/${h3Index}/osm`)
+          const res = await fetch(`${apiBase}/api/hex/${featureH3Index}/osm`)
           if (res.ok) {
             const data: { zoneType?: ZoneType; debug?: string[] } = await res.json()
             if (data.zoneType) {
@@ -1548,17 +1603,17 @@ function App() {
             : `Required minimum speed: ${rule.minSpeedKmh} km/h.`
 
         setSelectedInfo(
-          `Hex: ${h3Index}\nZone type: ${zoneType}\n${rule.description}\n${speedText}`,
+          `Hex: ${featureH3Index}\nZone type: ${zoneType}\n${rule.description}\n${speedText}`,
         )
 
         setSelectedDebug(debugInfo)
-        setSelectedHex({ h3Index, zoneType })
+        setSelectedHex({ h3Index: featureH3Index, zoneType })
         setMineMessage(null)
         setMineMessageType(null)
         setCanSpawnHere(false)
 
         const ownedSet = ownedHexesRef.current
-        const isOwned = ownedSet.has(h3Index)
+        const isOwned = ownedSet.has(featureH3Index)
         setSelectedOwned(isOwned)
 
         const currentFeatures = featuresRef.current
@@ -1567,7 +1622,7 @@ function App() {
             ...f,
             properties: {
               ...f.properties,
-              selected: f.properties.h3Index === h3Index,
+              selected: f.properties.h3Index === featureH3Index,
             },
           }))
 
@@ -1593,14 +1648,17 @@ function App() {
 
           if (!currentLastDriveHex) {
             // Start of a drive sequence.
-            lastDriveHexRef.current = h3Index
-            setToastMessage('Drive Mode: starting from this hex. Click another road hex to continue.')
-            setToastType('success')
+            // Use featureH3Index for drive mode (existing behavior)
+            if (featureH3Index) {
+              lastDriveHexRef.current = featureH3Index
+              setToastMessage('Drive Mode: starting from this hex. Click another road hex to continue.')
+              setToastType('success')
+            }
             return
           }
 
           const fromH3 = currentLastDriveHex
-          const toH3 = h3Index
+          const toH3 = featureH3Index || ''
 
           try {
             const res = await authedFetch(`${apiBase}/api/drive/step`, {
@@ -1704,7 +1762,10 @@ function App() {
             )
             setToastType('success')
 
-            lastDriveHexRef.current = h3Index
+            // Use featureH3Index for drive mode (existing behavior)
+            if (featureH3Index) {
+              lastDriveHexRef.current = featureH3Index
+            }
           } catch {
             setToastMessage('Drive step failed due to a network error.')
             setToastType('error')
@@ -3787,6 +3848,18 @@ function App() {
               ))}
             </div>
           )}
+        </div>
+      )}
+      
+      {/* Bottom hex info button - shows current hex ID and coordinates */}
+      {currentHexInfo && (
+        <div className="hex-info-bottom-button">
+          <div className="hex-info-bottom-content">
+            <div className="hex-info-bottom-id">{currentHexInfo.h3Index}</div>
+            <div className="hex-info-bottom-coords">
+              {currentHexInfo.lat.toFixed(6)}, {currentHexInfo.lng.toFixed(6)}
+            </div>
+          </div>
         </div>
       )}
     </div>
